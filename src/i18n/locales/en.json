@@ -348,7 +348,9 @@
     "vs": "VS",
     "hdg": "HDG",
     "center": "Center",
-    "centerTooltip": "Center map on aircraft"
+    "centerTooltip": "Center map on aircraft",
+    "following": "Following",
+    "followingTooltip": "Click to stop following aircraft"
   },
 
   "weather": {
