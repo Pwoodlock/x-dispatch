@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils/helpers';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
+import { useMapStore } from '@/stores/mapStore';
 import type { PlaneState } from '@/types/xplane';
 
 interface FlightStripProps {
@@ -33,6 +34,7 @@ function formatVS(vs: number | undefined): string {
 export default function FlightStrip({ planeState, connected, onCenterPlane }: FlightStripProps) {
   const { t } = useTranslation();
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
+  const followPlane = useMapStore((s) => s.followPlane);
 
   // Position above FlightPlanBar when it's visible (FlightPlanBar is ~52px tall + 16px bottom margin)
   const positionClass = showFlightPlanBar ? 'bottom-[72px]' : 'bottom-4';
@@ -103,11 +105,14 @@ export default function FlightStrip({ planeState, connected, onCenterPlane }: Fl
           variant="ghost"
           size="sm"
           onClick={onCenterPlane}
-          className="h-full rounded-l-none rounded-r-lg"
-          title={t('flightStrip.centerTooltip')}
+          className={cn(
+            'h-full rounded-l-none rounded-r-lg',
+            followPlane && 'bg-info/20 text-info'
+          )}
+          title={followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')}
         >
-          <Crosshair className="mr-1.5 h-3.5 w-3.5" />
-          {t('flightStrip.center')}
+          <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
+          {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
         </Button>
       </Card>
     </div>

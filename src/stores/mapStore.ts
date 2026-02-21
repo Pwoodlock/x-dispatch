@@ -46,6 +46,8 @@ interface MapState {
   selectedFeature: FeatureDebugInfo | null;
   vatsimEnabled: boolean;
   showPlaneTracker: boolean;
+  /** When true, map follows plane position and heading */
+  followPlane: boolean;
   explore: ExploreState;
   /** Incremented when map style changes to trigger layer re-adds */
   styleVersion: number;
@@ -63,6 +65,7 @@ interface MapState {
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
   setShowPlaneTracker: (enabled: boolean) => void;
+  setFollowPlane: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
 
   setExploreOpen: (isOpen: boolean) => void;
@@ -85,6 +88,7 @@ export const useMapStore = create<MapState>()(
       selectedFeature: null as FeatureDebugInfo | null,
       vatsimEnabled: false,
       showPlaneTracker: false,
+      followPlane: false,
       explore: {
         isOpen: false,
         activeTab: 'featured' as ExploreTab,
@@ -141,6 +145,7 @@ export const useMapStore = create<MapState>()(
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
       setVatsimEnabled: (enabled) => set({ vatsimEnabled: enabled }),
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
+      setFollowPlane: (enabled) => set({ followPlane: enabled }),
       resetLayerVisibility: () =>
         set({
           layerVisibility: DEFAULT_LAYER_VISIBILITY,

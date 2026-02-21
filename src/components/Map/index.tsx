@@ -82,6 +82,8 @@ export default function Map({ airports }: MapProps) {
   const debugEnabled = useMapStore((s) => s.debugEnabled);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
+  const followPlane = useMapStore((s) => s.followPlane);
+  const setFollowPlane = useMapStore((s) => s.setFollowPlane);
   const toggleLayer = useMapStore((s) => s.toggleLayer);
   const toggleNavLayer = useMapStore((s) => s.toggleNavLayer);
   const setDebugEnabled = useMapStore((s) => s.setDebugEnabled);
@@ -548,12 +550,52 @@ export default function Map({ airports }: MapProps) {
 
   const handleCenterPlane = useCallback(() => {
     if (!planePosition || !mapRef.current) return;
+    // Toggle follow mode
+    setFollowPlane(!followPlane);
+    // Initial fly to plane position with heading
     mapRef.current.flyTo({
       center: [planePosition.lng, planePosition.lat],
+      bearing: planePosition.heading ?? 0,
       zoom: 12,
       duration: 1500,
     });
-  }, [mapRef, planePosition]);
+  }, [mapRef, planePosition, followPlane, setFollowPlane]);
+
+  // Follow plane position and heading when follow mode is active
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !followPlane || !planePosition) return;
+
+    // Smoothly update map to follow plane
+    map.easeTo({
+      center: [planePosition.lng, planePosition.lat],
+      bearing: planePosition.heading ?? 0,
+      duration: 500,
+    });
+  }, [mapRef, followPlane, planePosition]);
+
+  // Disable follow mode when user interacts with the map
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const disableFollow = () => {
+      if (followPlane) {
+        setFollowPlane(false);
+      }
+    };
+
+    // User interactions that should disable follow mode
+    map.on('dragstart', disableFollow);
+    map.on('zoomstart', disableFollow);
+    map.on('rotatestart', disableFollow);
+
+    return () => {
+      map.off('dragstart', disableFollow);
+      map.off('zoomstart', disableFollow);
+      map.off('rotatestart', disableFollow);
+    };
+  }, [mapRef, followPlane, setFollowPlane]);
 
   return (
     <div
