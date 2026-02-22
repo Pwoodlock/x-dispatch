@@ -1,10 +1,13 @@
-import { useCallback, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Navigation, Radio, Star, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils/helpers';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import type { FlightPlanChip } from '@/types/fms';
+
+// Minimum pixels moved to consider it a drag (not a click)
+const DRAG_THRESHOLD = 5;
 
 interface FlightPlanBarProps {
   onWaypointClick?: (chip: FlightPlanChip) => void;
@@ -12,7 +15,6 @@ interface FlightPlanBarProps {
 
 export default function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
   const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
@@ -20,91 +22,153 @@ export default function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   const getChips = useFlightPlanStore((s) => s.getChips);
   const fmsData = useFlightPlanStore((s) => s.fmsData);
 
+  // Drag-to-scroll refs (using refs to avoid re-renders)
+  const isDraggingRef = useRef(false);
+  const hasDraggedRef = useRef(false); // True if mouse moved beyond threshold
+  const dragStartX = useRef(0);
+  const scrollStartX = useRef(0);
+
+  // getChips() reads fmsData internally - component re-renders when fmsData changes
   const chips = getChips();
 
-  const handleScroll = useCallback((direction: 'left' | 'right') => {
-    if (!scrollRef.current) return;
-    const scrollAmount = 200;
-    scrollRef.current.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
-    });
-  }, []);
-
   const handleChipClick = useCallback(
-    (chip: FlightPlanChip, index: number) => {
+    (chip: FlightPlanChip) => {
+      // Don't trigger click if we actually dragged
+      if (hasDraggedRef.current) return;
       setSelectedWaypoint(chip.waypointIndex ?? null);
       onWaypointClick?.(chip);
     },
     [setSelectedWaypoint, onWaypointClick]
   );
 
+  const scrollLeft = useCallback(() => {
+    scrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+  }, []);
+
+  const scrollRight = useCallback(() => {
+    scrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+  }, []);
+
+  // Drag-to-scroll handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    dragStartX.current = e.clientX;
+    scrollStartX.current = scrollRef.current.scrollLeft;
+    // Change cursor immediately
+    scrollRef.current.style.cursor = 'grabbing';
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDraggingRef.current || !scrollRef.current) return;
+    const dx = e.clientX - dragStartX.current;
+
+    // Mark as dragged if moved beyond threshold
+    if (Math.abs(dx) > DRAG_THRESHOLD) {
+      hasDraggedRef.current = true;
+    }
+
+    scrollRef.current.scrollLeft = scrollStartX.current - dx;
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    isDraggingRef.current = false;
+    if (scrollRef.current) {
+      scrollRef.current.style.cursor = 'grab';
+    }
+    // Reset hasDragged after a short delay to allow click to be blocked
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 0);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      hasDraggedRef.current = false;
+      if (scrollRef.current) {
+        scrollRef.current.style.cursor = 'grab';
+      }
+    }
+  }, []);
+
   if (!showFlightPlanBar || !fmsData) return null;
 
-  // Calculate progress (selected waypoint position)
-  const progressPercent =
-    selectedWaypointIndex !== null && chips.length > 0
-      ? ((selectedWaypointIndex + 1) / chips.length) * 100
-      : 0;
-
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-40">
-      <Card className="flex flex-col gap-0 overflow-hidden p-0">
-        {/* Waypoint chips row */}
-        <div className="flex h-10 items-center gap-1 px-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            onClick={() => handleScroll('left')}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+    <div className="flex h-10 items-center overflow-hidden rounded-lg border border-border bg-card/95 backdrop-blur-sm">
+      {/* Left scroll button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={scrollLeft}
+        className="h-10 w-8 shrink-0 rounded-none border-r border-border text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
 
-          <div
-            ref={scrollRef}
-            className="scrollbar-hide flex flex-1 items-center gap-1 overflow-x-auto"
-          >
-            {chips.map((chip, index) => (
-              <WaypointChip
-                key={`${chip.type}-${chip.id}-${index}`}
-                chip={chip}
-                isActive={chip.waypointIndex === selectedWaypointIndex}
-                onClick={() => handleChipClick(chip, index)}
-              />
-            ))}
-          </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            onClick={() => handleScroll('right')}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-            onClick={clearFlightPlan}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Progress line */}
-        <div className="h-1 w-full bg-muted">
-          <div
-            className="h-full bg-info transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
+      {/* Scrollable chips area - drag to scroll */}
+      <div
+        ref={scrollRef}
+        className="scrollbar-hidden flex flex-1 cursor-grab select-none items-center gap-1.5 overflow-x-auto px-2 py-1.5"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+      >
+        {chips.map((chip, index) => (
+          <WaypointChip
+            key={`${chip.type}-${chip.id}-${index}`}
+            chip={chip}
+            isActive={chip.waypointIndex === selectedWaypointIndex}
+            onClick={() => handleChipClick(chip)}
           />
-        </div>
-      </Card>
+        ))}
+      </div>
+
+      {/* Right scroll button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={scrollRight}
+        className="h-10 w-8 shrink-0 rounded-none border-l border-border text-muted-foreground hover:text-foreground"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+
+      {/* Close button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={clearFlightPlan}
+        className="h-10 w-8 shrink-0 rounded-none border-l border-border text-muted-foreground hover:text-destructive"
+        aria-label="Clear flight plan"
+      >
+        <X className="h-4 w-4" />
+      </Button>
     </div>
   );
 }
+
+// Badge variant mapping for chip types
+const CHIP_VARIANTS: Record<string, 'warning' | 'violet' | 'info' | 'outline'> = {
+  departure: 'warning',
+  arrival: 'warning',
+  sid: 'violet',
+  star: 'violet',
+  vor: 'info',
+  ndb: 'info',
+  dme: 'info',
+};
+
+const CHIP_ICONS: Record<string, React.ReactNode> = {
+  departure: <Star className="h-3 w-3" />,
+  arrival: <MapPin className="h-3 w-3" />,
+  sid: <Navigation className="h-3 w-3" />,
+  star: <Navigation className="h-3 w-3" />,
+  vor: <Radio className="h-3 w-3" />,
+  ndb: <Radio className="h-3 w-3" />,
+};
 
 interface WaypointChipProps {
   chip: FlightPlanChip;
@@ -112,71 +176,37 @@ interface WaypointChipProps {
   onClick: () => void;
 }
 
-function WaypointChip({ chip, isActive, onClick }: WaypointChipProps) {
-  const getChipStyle = () => {
-    switch (chip.type) {
-      case 'departure':
-      case 'arrival':
-        return 'bg-warning/20 text-warning border-warning/30';
-      case 'sid':
-      case 'star':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      case 'vor':
-      case 'ndb':
-        return 'bg-info/20 text-info border-info/30';
-      default:
-        return 'bg-muted text-muted-foreground border-border';
-    }
-  };
+const WaypointChip = memo(function WaypointChip({ chip, isActive, onClick }: WaypointChipProps) {
+  const variant = CHIP_VARIANTS[chip.type] || 'outline';
+  const icon = CHIP_ICONS[chip.type];
 
-  const getIcon = () => {
-    switch (chip.type) {
-      case 'departure':
-        return <Star className="h-3 w-3" />;
-      case 'arrival':
-        return <MapPin className="h-3 w-3" />;
-      case 'sid':
-      case 'star':
-        return <Navigation className="h-3 w-3" />;
-      case 'vor':
-      case 'ndb':
-        return <Radio className="h-3 w-3" />;
-      default:
-        return null;
-    }
-  };
+  const label =
+    chip.type === 'latlon' ? `${chip.latitude?.toFixed(1)}/${chip.longitude?.toFixed(1)}` : chip.id;
 
-  const getLabel = () => {
-    if (chip.type === 'latlon') {
-      return `${chip.latitude?.toFixed(2)}/${chip.longitude?.toFixed(2)}`;
-    }
-    return chip.id;
-  };
-
-  const getSubLabel = () => {
-    if (chip.via && chip.via !== 'DRCT' && chip.via !== 'ADEP' && chip.via !== 'ADES') {
+  // Show airway or flight level as suffix
+  const suffix = useMemo(() => {
+    if (chip.via && !['DRCT', 'ADEP', 'ADES'].includes(chip.via)) {
       return chip.via;
     }
     if (chip.altitude && chip.altitude > 1000) {
-      return `FL${Math.round(chip.altitude / 100)}`;
+      return Math.round(chip.altitude / 100).toString();
     }
     return null;
-  };
-
-  const subLabel = getSubLabel();
+  }, [chip.via, chip.altitude]);
 
   return (
-    <button
+    <Badge
+      variant={variant}
       onClick={onClick}
       className={cn(
-        'flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-all',
-        getChipStyle(),
-        isActive && 'ring-2 ring-info ring-offset-1 ring-offset-background'
+        'cursor-pointer gap-1 whitespace-nowrap px-2 py-0.5 text-[11px]',
+        'transition-all hover:scale-[1.02] active:scale-[0.98]',
+        isActive && 'ring-1 ring-info ring-offset-1 ring-offset-background'
       )}
     >
-      {getIcon()}
-      <span>{getLabel()}</span>
-      {subLabel && <span className="text-[10px] opacity-70">{subLabel}</span>}
-    </button>
+      {icon}
+      <span>{label}</span>
+      {suffix && <span className="opacity-60">{suffix}</span>}
+    </Badge>
   );
-}
+});

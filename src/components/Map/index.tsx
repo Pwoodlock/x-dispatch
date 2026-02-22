@@ -617,15 +617,17 @@ export default function Map({ airports }: MapProps) {
         style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
       />
 
-      <Toolbar
-        airports={airports}
-        onSelectAirport={selectAirport}
-        onToggleVatsim={handleToggleVatsim}
-        onTogglePlaneTracker={handleTogglePlaneTracker}
-        onNavToggle={handleNavLayerToggle}
-      />
-
-      <FlightPlanBar onWaypointClick={handleWaypointClick} />
+      {/* Top bar layout container - handles positioning for both bars */}
+      <div className="absolute left-4 right-4 top-4 z-50 flex flex-col gap-2">
+        <FlightPlanBar onWaypointClick={handleWaypointClick} />
+        <Toolbar
+          airports={airports}
+          onSelectAirport={selectAirport}
+          onToggleVatsim={handleToggleVatsim}
+          onTogglePlaneTracker={handleTogglePlaneTracker}
+          onNavToggle={handleNavLayerToggle}
+        />
+      </div>
 
       <SettingsDialog
         open={showSettings}
