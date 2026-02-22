@@ -629,6 +629,7 @@ export default function Map({ airports }: MapProps) {
 
       {/* Other map overlays */}
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
+      <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} />
 
       {showPlaneTracker && (
         <FlightStrip
