@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { DecodedMETAR } from '@/lib/utils/format/metar';
+import { cn } from '@/lib/utils/helpers';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
 
 interface CompassWidgetProps {
   mapBearing: number;
@@ -59,6 +61,7 @@ const LABEL_POSITIONS = Object.entries({
 const LUBBER_POINTS = `${CENTER},${CENTER - RADIUS - 1} ${CENTER - 3},${CENTER - RADIUS + 5} ${CENTER + 3},${CENTER - RADIUS + 5}`;
 
 export default function CompassWidget({ mapBearing, metar }: CompassWidgetProps) {
+  const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
   const wind = metar?.wind;
 
   // Memoize wind rotation calculation
@@ -75,7 +78,10 @@ export default function CompassWidget({ mapBearing, metar }: CompassWidgetProps)
 
   return (
     <Card
-      className="absolute left-4 top-16 z-10 border-border bg-card p-2"
+      className={cn(
+        'absolute left-4 z-10 border-border bg-card p-2',
+        showFlightPlanBar ? 'top-28' : 'top-16'
+      )}
       role="region"
       aria-label="Navigation instruments"
     >
