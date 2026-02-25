@@ -105,6 +105,14 @@ const config: ForgeConfig = {
           });
         })
       );
+
+      // Copy drizzle migrations folder
+      const sourceDrizzlePath = path.resolve(__dirname, 'drizzle');
+      const destDrizzlePath = path.resolve(buildPath, 'drizzle');
+      await cp(sourceDrizzlePath, destDrizzlePath, {
+        recursive: true,
+        preserveTimestamps: true,
+      });
     },
   },
 };
