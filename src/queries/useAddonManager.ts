@@ -9,6 +9,7 @@ import type {
   SceneryError,
 } from '@/lib/addonManager/core/types';
 import { getBrowserErrorMessage, getSceneryErrorMessage } from '@/lib/addonManager/core/types';
+import { getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
 
 // Query keys
 export const addonKeys = {
@@ -414,6 +415,20 @@ export function usePluginCheckUpdates() {
     onSuccess: (data) => {
       // Use setQueryData to preserve update results instead of refetching
       queryClient.setQueryData(addonKeys.plugins, data);
+    },
+  });
+}
+
+// ===== INSTALLER =====
+
+export function useInstallerAnalyze() {
+  return useMutation({
+    mutationFn: async (filePaths: string[]) => {
+      const result = await window.addonManagerAPI.installer.analyze(filePaths);
+      if (!result.ok) {
+        throw new Error(getInstallerErrorMessage(result.error));
+      }
+      return result.value;
     },
   });
 }
