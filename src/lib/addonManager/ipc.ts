@@ -6,6 +6,7 @@ import * as path from 'path';
 import { BrowserManager } from './browser';
 import type { BrowserError } from './core/types';
 import { err } from './core/types';
+import { InstallerManager } from './installer';
 import { SceneryManager } from './scenery/SceneryManager';
 
 // TODO: Refactor main.ts - move other IPC handlers to separate files based on module:
@@ -435,5 +436,29 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     } catch {
       return null;
     }
+  });
+
+  // ===== INSTALLER =====
+
+  ipcMain.handle('addon:installer:analyze', async (_event, filePaths: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+
+    // Validate input
+    if (!Array.isArray(filePaths) || !filePaths.every((p) => typeof p === 'string')) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'filePaths' } };
+    }
+
+    // Security: validate paths
+    for (const filePath of filePaths) {
+      if (filePath.includes('..') || filePath.length > 1000) {
+        return { ok: false, error: { code: 'PATH_TRAVERSAL', path: filePath } };
+      }
+    }
+
+    const manager = new InstallerManager(xplanePath);
+    return manager.analyze(filePaths as string[]);
   });
 }
