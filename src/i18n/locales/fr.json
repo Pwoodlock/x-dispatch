@@ -96,6 +96,7 @@
       "nav": "Afficher/masquer les couches de navigation",
       "track": "Suivre votre avion dans X-Plane",
       "vatsim": "Afficher le trafic VATSIM en direct",
+      "simbrief": "Importer un plan de vol depuis SimBrief",
       "launch": "Lancer X-Plane avec la position sélectionnée",
       "launchDisabled": "Sélectionnez d'abord un aéroport",
       "launchSelectPosition": "Sélectionnez d'abord une porte, piste ou héliport",
@@ -109,10 +110,20 @@
     "tabs": {
       "xplane": "X-Plane",
       "appearance": "Apparence",
+      "simbrief": "SimBrief",
       "navigation": "Navigation",
       "data": "Données Nav",
       "vatsim": "VATSIM",
       "about": "À propos"
+    },
+    "simbrief": {
+      "description": "Importer des plans de vol depuis SimBrief",
+      "pilotId": "ID Pilote",
+      "pilotIdHelp": "Votre ID Pilote SimBrief (dans les paramètres de votre compte)",
+      "pilotIdNote": "Votre ID Pilote est un identifiant numérique. Trouvez-le sur simbrief.com → Paramètres du compte → Pilot ID.",
+      "testSuccess": "Plan de vol trouvé",
+      "needAccount": "Vous n'avez pas de compte SimBrief ?",
+      "freeService": "SimBrief est un service gratuit de planification de vol"
     },
     "about": {
       "title": "À propos",
@@ -680,6 +691,46 @@
       "Livery": "Livrée",
       "LuaScript": "Script Lua",
       "Navdata": "Données de navigation"
+    }
+  },
+
+  "simbrief": {
+    "title": "Importer depuis SimBrief",
+    "description": "Récupérer votre dernier plan de vol depuis SimBrief",
+    "notConfigured": "SimBrief non configuré",
+    "configurePilotId": "Veuillez configurer votre ID Pilote dans Paramètres → SimBrief",
+    "fetching": "Récupération du plan de vol...",
+    "fetchError": "Échec de la récupération du plan de vol",
+    "ready": "Prêt à récupérer",
+    "clickToFetch": "Cliquez sur le bouton ci-dessous pour récupérer votre dernier plan de vol",
+    "fetchLatest": "Récupérer le dernier",
+    "refetch": "Actualiser",
+    "import": "Importer le plan de vol",
+    "showDetails": "Afficher les détails",
+    "tabs": {
+      "fuel": "Carburant",
+      "weights": "Masses",
+      "route": "Route"
+    },
+    "fuel": {
+      "ramp": "Carburant bloc",
+      "trip": "Carburant trajet",
+      "contingency": "Réserve de route",
+      "reserve": "Réserve finale",
+      "alternate": "Dégagement",
+      "taxi": "Roulage"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "payload": "Charge utile",
+      "pax": "Passagers",
+      "cargo": "Fret"
+    },
+    "route": {
+      "departure": "Départ",
+      "arrival": "Arrivée"
     }
   }
 }

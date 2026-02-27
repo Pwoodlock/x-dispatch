@@ -96,6 +96,7 @@
       "nav": "Mostrar capas de navegación cerca del aeropuerto",
       "track": "Seguir tu avión en X-Plane",
       "vatsim": "Mostrar tráfico VATSIM en vivo",
+      "simbrief": "Importar plan de vuelo desde SimBrief",
       "launch": "Iniciar X-Plane con la posición seleccionada",
       "launchDisabled": "Selecciona primero un aeropuerto",
       "launchSelectPosition": "Selecciona primero una puerta, pista o helipuerto",
@@ -153,9 +154,19 @@
       "xplane": "X-Plane",
       "data": "Datos Nav",
       "appearance": "Apariencia",
+      "simbrief": "SimBrief",
       "navigation": "Navegación",
       "vatsim": "VATSIM",
       "about": "Acerca de"
+    },
+    "simbrief": {
+      "description": "Importar planes de vuelo desde SimBrief",
+      "pilotId": "ID de Piloto",
+      "pilotIdHelp": "Tu ID de Piloto SimBrief (en la configuración de tu cuenta)",
+      "pilotIdNote": "Tu ID de Piloto es un identificador numérico. Encuéntralo en simbrief.com → Configuración de cuenta → Pilot ID.",
+      "testSuccess": "Plan de vuelo encontrado",
+      "needAccount": "¿No tienes cuenta SimBrief?",
+      "freeService": "SimBrief es un servicio gratuito de planificación de vuelos"
     },
     "about": {
       "title": "Acerca de",
@@ -761,6 +772,46 @@
       "Livery": "Librea",
       "LuaScript": "Script Lua",
       "Navdata": "Datos de navegación"
+    }
+  },
+
+  "simbrief": {
+    "title": "Importar desde SimBrief",
+    "description": "Obtener tu último plan de vuelo desde SimBrief",
+    "notConfigured": "SimBrief no configurado",
+    "configurePilotId": "Por favor configura tu ID de Piloto en Configuración → SimBrief",
+    "fetching": "Obteniendo plan de vuelo...",
+    "fetchError": "Error al obtener el plan de vuelo",
+    "ready": "Listo para obtener",
+    "clickToFetch": "Haz clic en el botón para obtener tu último plan de vuelo",
+    "fetchLatest": "Obtener último",
+    "refetch": "Actualizar",
+    "import": "Importar plan de vuelo",
+    "showDetails": "Mostrar detalles",
+    "tabs": {
+      "fuel": "Combustible",
+      "weights": "Pesos",
+      "route": "Ruta"
+    },
+    "fuel": {
+      "ramp": "Combustible de bloque",
+      "trip": "Combustible de viaje",
+      "contingency": "Contingencia",
+      "reserve": "Reserva final",
+      "alternate": "Alternativo",
+      "taxi": "Rodaje"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "payload": "Carga útil",
+      "pax": "Pasajeros",
+      "cargo": "Carga"
+    },
+    "route": {
+      "departure": "Salida",
+      "arrival": "Llegada"
     }
   }
 }

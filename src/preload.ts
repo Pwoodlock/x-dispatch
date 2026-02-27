@@ -90,6 +90,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   getConfigPath: () => ipcRenderer.invoke('app:getConfigPath'),
   openConfigFolder: () => ipcRenderer.invoke('app:openConfigFolder'),
   openPath: (path: string) => ipcRenderer.invoke('app:openPath', path),
+  openExternal: (url: string) => ipcRenderer.invoke('app:openExternal', url),
   getSendCrashReports: () => ipcRenderer.invoke('app:getSendCrashReports'),
   setSendCrashReports: (enabled: boolean) => ipcRenderer.invoke('app:setSendCrashReports', enabled),
 });
@@ -188,6 +189,10 @@ contextBridge.exposeInMainWorld('flightPlanAPI', {
   openFile: () => ipcRenderer.invoke('flightplan:openFile'),
   enrich: (fmsData: import('./types/fms').FMSFlightPlan) =>
     ipcRenderer.invoke('flightplan:enrich', fmsData),
+});
+
+contextBridge.exposeInMainWorld('simbriefAPI', {
+  fetchLatest: (pilotId: string) => ipcRenderer.invoke('simbrief:fetchLatest', pilotId),
 });
 
 // X-Plane Service API - REST + WebSocket
@@ -310,6 +315,7 @@ declare global {
       getConfigPath: () => Promise<string>;
       openConfigFolder: () => Promise<void>;
       openPath: (path: string) => Promise<void>;
+      openExternal: (url: string) => Promise<{ success: boolean; error?: string }>;
       getSendCrashReports: () => Promise<boolean>;
       setSendCrashReports: (enabled: boolean) => Promise<boolean>;
     };
@@ -405,6 +411,9 @@ declare global {
       enrich: (
         fmsData: import('./types/fms').FMSFlightPlan
       ) => Promise<import('./types/fms').EnrichedFlightPlan | null>;
+    };
+    simbriefAPI: {
+      fetchLatest: (pilotId: string) => Promise<import('./types/simbrief').SimBriefFetchResult>;
     };
     // REST + WebSocket (REST goes through IPC to avoid CORS)
     xplaneServiceAPI: {

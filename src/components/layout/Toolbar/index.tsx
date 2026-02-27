@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronDown,
+  CloudDownload,
   Compass,
   FileUp,
   Locate,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddonManager } from '@/components/dialogs/AddonManager';
+import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,6 +57,7 @@ export default function Toolbar({
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [addonManagerOpen, setAddonManagerOpen] = useState(false);
+  const [simbriefOpen, setSimbriefOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -75,6 +78,7 @@ export default function Toolbar({
   // Flight plan store
   const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
   const fmsData = useFlightPlanStore((s) => s.fmsData);
+  const simbriefData = useFlightPlanStore((s) => s.simbriefData);
 
   // Queries
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
@@ -281,7 +285,10 @@ export default function Toolbar({
             <Button
               variant="outline"
               onClick={handleLoadFlightPlan}
-              className={cn('h-9 gap-2 px-3', fmsData && 'border-info/50 text-info')}
+              className={cn(
+                'h-9 gap-2 px-3',
+                fmsData && !simbriefData && 'border-info/50 text-info'
+              )}
             >
               <FileUp className="h-4 w-4" />
               <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
@@ -289,6 +296,25 @@ export default function Toolbar({
           </TooltipTrigger>
           <TooltipContent>
             <p>{t('toolbar.tooltips.loadPlan')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* SimBrief */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              onClick={() => setSimbriefOpen(true)}
+              className={cn('h-9 gap-2 px-3', simbriefData && 'border-info/50 text-info')}
+            >
+              <CloudDownload className="h-4 w-4" />
+              <span className="text-xs font-medium">SimBrief</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('toolbar.tooltips.simbrief', 'Import flight plan from SimBrief')}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -448,6 +474,9 @@ export default function Toolbar({
 
       {/* Addon Manager Dialog */}
       <AddonManager open={addonManagerOpen} onClose={() => setAddonManagerOpen(false)} />
+
+      {/* SimBrief Dialog */}
+      <SimbriefDialog open={simbriefOpen} onClose={() => setSimbriefOpen(false)} />
     </div>
   );
 }

@@ -93,6 +93,7 @@
       "addons": "Zarządzaj samolotami, wtyczkami i scenerią",
       "loadPlan": "Wczytaj pliki planu lotu X-Plane .fms",
       "explore": "Odkryj polecane lotniska i trasy",
+      "simbrief": "Importuj plan lotu z SimBrief",
       "nav": "Pokaż warstwy nawigacyjne wokół lotniska",
       "track": "Śledź swój samolot w X-Plane",
       "vatsim": "Pokaż ruch VATSIM na żywo",
@@ -153,9 +154,19 @@
       "xplane": "X-Plane",
       "data": "Dane Nav",
       "appearance": "Wygląd",
+      "simbrief": "SimBrief",
       "navigation": "Nawigacja",
       "vatsim": "VATSIM",
       "about": "O programie"
+    },
+    "simbrief": {
+      "description": "Importuj plany lotu z SimBrief",
+      "pilotId": "ID Pilota",
+      "pilotIdHelp": "Twój ID Pilota SimBrief (znajdziesz w ustawieniach konta SimBrief)",
+      "pilotIdNote": "Twój ID Pilota to identyfikator numeryczny. Znajdziesz go na simbrief.com → Ustawienia konta → ID Pilota.",
+      "testSuccess": "Znaleziono plan lotu",
+      "needAccount": "Nie masz konta SimBrief?",
+      "freeService": "SimBrief to darmowy serwis planowania lotów"
     },
     "about": {
       "title": "O programie",
@@ -761,6 +772,46 @@
       "Livery": "Malowanie",
       "LuaScript": "Skrypt Lua",
       "Navdata": "Dane nawigacyjne"
+    }
+  },
+
+  "simbrief": {
+    "title": "Importuj z SimBrief",
+    "description": "Pobierz najnowszy plan lotu z SimBrief",
+    "notConfigured": "SimBrief nie skonfigurowany",
+    "configurePilotId": "Skonfiguruj swój ID Pilota w Ustawienia → SimBrief",
+    "fetching": "Pobieranie planu lotu...",
+    "fetchError": "Nie udało się pobrać planu lotu",
+    "ready": "Gotowy do pobrania",
+    "clickToFetch": "Kliknij przycisk poniżej, aby pobrać najnowszy plan lotu",
+    "fetchLatest": "Pobierz najnowszy",
+    "refetch": "Odśwież",
+    "import": "Importuj plan lotu",
+    "showDetails": "Pokaż szczegóły",
+    "tabs": {
+      "fuel": "Paliwo",
+      "weights": "Wagi",
+      "route": "Trasa"
+    },
+    "fuel": {
+      "ramp": "Paliwo blokowe",
+      "trip": "Paliwo na lot",
+      "contingency": "Rezerwa",
+      "reserve": "Minimalna rezerwa",
+      "alternate": "Lotnisko zapasowe",
+      "taxi": "Kołowanie"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "payload": "Ładunek",
+      "pax": "Pasażerowie",
+      "cargo": "Cargo"
+    },
+    "route": {
+      "departure": "Odlot",
+      "arrival": "Przylot"
     }
   }
 }

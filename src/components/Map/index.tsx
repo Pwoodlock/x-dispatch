@@ -5,6 +5,7 @@ import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
 import AirportInfoPanel from '@/components/layout/AirportInfoPanel';
+import FlightInfoPanel from '@/components/layout/FlightInfoPanel';
 import FlightPlanBar from '@/components/layout/FlightPlanBar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
@@ -296,10 +297,8 @@ export default function Map({ airports }: MapProps) {
     const map = mapRef.current;
     if (!map) return;
 
-    // Wait for style to be loaded
-    if (!map.isStyleLoaded()) return;
-
     if (fmsData) {
+      console.log('[FlightPlan] Adding flight plan layer, waypoints:', fmsData.waypoints.length);
       addFlightPlanLayer(map, fmsData);
       // Only fit on initial load, not on style change
       if (styleVersion === 0) {
@@ -642,6 +641,9 @@ export default function Map({ airports }: MapProps) {
           onReconnect={handleReconnect}
         />
       )}
+
+      {/* Flight Info Panel - shows SimBrief data when loaded */}
+      <FlightInfoPanel />
 
       {/* Airport Info Panel - floating overlay */}
       {showSidebar && selectedAirportData && (

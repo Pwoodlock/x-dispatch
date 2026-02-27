@@ -170,6 +170,22 @@ function registerIpcHandlers() {
     }
     shell.openPath(p);
   });
+  ipcMain.handle('app:openExternal', (_, url: string) => {
+    // Security: Only allow http/https URLs
+    if (typeof url !== 'string' || url.length > 2000) {
+      return { success: false, error: 'Invalid URL' };
+    }
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+        return { success: false, error: 'Only HTTP/HTTPS URLs are allowed' };
+      }
+      shell.openExternal(url);
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Invalid URL format' };
+    }
+  });
   ipcMain.handle('app:getSendCrashReports', () => getSendCrashReports());
   ipcMain.handle('app:setSendCrashReports', (_, enabled: boolean) => {
     const success = setSendCrashReports(enabled);
@@ -684,6 +700,42 @@ function registerIpcHandlers() {
     } catch (err) {
       logger.main.error('Failed to enrich flight plan', err);
       return null;
+    }
+  });
+
+  // SimBrief API
+  ipcMain.handle('simbrief:fetchLatest', async (_, pilotId: string) => {
+    // Validate pilot ID
+    if (!pilotId || typeof pilotId !== 'string') {
+      return { success: false, error: 'Invalid pilot ID' };
+    }
+    if (!/^\d{1,10}$/.test(pilotId)) {
+      return { success: false, error: 'Pilot ID must be numeric' };
+    }
+
+    try {
+      const url = `https://www.simbrief.com/api/xml.fetcher.php?userid=${encodeURIComponent(pilotId)}&json=1`;
+      const result = await proxyFetch(url);
+
+      if (result.error) {
+        return { success: false, error: result.error };
+      }
+
+      if (!result.data) {
+        return { success: false, error: 'No data received' };
+      }
+
+      const data = JSON.parse(result.data);
+
+      // Check for SimBrief error response
+      if (data.fetch?.status === 'Error') {
+        return { success: false, error: 'No flight plan found' };
+      }
+
+      return { success: true, data };
+    } catch (err) {
+      logger.main.error('Failed to fetch SimBrief flight plan', err);
+      return { success: false, error: 'Failed to fetch flight plan' };
     }
   });
 
