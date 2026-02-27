@@ -13,7 +13,7 @@
   <a href="https://github.com/lyestarzalt/x-dispatch/releases"><img src="https://img.shields.io/github/downloads/lyestarzalt/x-dispatch/total?style=flat-square&v=1" alt="Downloads"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/blob/main/LICENSE"><img src="https://img.shields.io/github/license/lyestarzalt/x-dispatch?style=flat-square&v=1" alt="License"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/actions"><img src="https://img.shields.io/github/actions/workflow/status/lyestarzalt/x-dispatch/check.yml?style=flat-square&label=checks&v=1" alt="CI"></a>
-  <a href="https://discord.gg/MTG9xerw"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://discord.gg/gjpBhVjY"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
 <p align="center">
@@ -85,6 +85,13 @@ The app has grown to include SimBrief integration, live flight tracking, SID/STA
 </details>
 
 <details>
+<summary>Starting Position</summary>
+
+![Starting Point](screenshots/starting-point-select.png)
+
+</details>
+
+<details>
 <summary>Flight Setup</summary>
 
 ![Flight Setup](screenshots/flight-setup.png)
@@ -94,7 +101,7 @@ The app has grown to include SimBrief integration, live flight tracking, SID/STA
 <details>
 <summary>Live Flight Tracking</summary>
 
-![Flight Tracking](screenshots/flight-tracking.png)
+![Flight Tracking](screenshots/track-plane.png)
 
 </details>
 
@@ -228,7 +235,7 @@ npm run make
 
 ## Support
 
-- **Discord**: [Join the server](https://discord.gg/MTG9xerw) for help, feedback, and discussion
+- **Discord**: [Join the server](https://discord.gg/gjpBhVjY) for help, feedback, and discussion
 - **Issues**: [Open an issue](https://github.com/lyestarzalt/x-dispatch/issues) for bug reports and feature requests
 
 ## License
