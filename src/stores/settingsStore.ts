@@ -60,9 +60,15 @@ export interface MapSettings {
   };
 }
 
+export interface SimBriefSettings {
+  pilotId: string;
+}
+
 interface SettingsState {
   map: MapSettings;
+  simbrief: SimBriefSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
+  updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
   resetToDefaults: () => void;
 }
 
@@ -75,24 +81,35 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   },
 };
 
+const DEFAULT_SIMBRIEF_SETTINGS: SimBriefSettings = {
+  pilotId: '',
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       map: DEFAULT_MAP_SETTINGS,
+      simbrief: DEFAULT_SIMBRIEF_SETTINGS,
 
       updateMapSettings: (settings) =>
         set((state) => ({
           map: { ...state.map, ...settings },
         })),
 
-      resetToDefaults: () => set({ map: DEFAULT_MAP_SETTINGS }),
+      updateSimbriefSettings: (settings) =>
+        set((state) => ({
+          simbrief: { ...state.simbrief, ...settings },
+        })),
+
+      resetToDefaults: () =>
+        set({ map: DEFAULT_MAP_SETTINGS, simbrief: DEFAULT_SIMBRIEF_SETTINGS }),
     }),
     {
       name: 'xplane-viz-settings',
-      version: 7,
+      version: 8,
       migrate: (persistedState, version) => {
         if (version < 6) {
-          return { map: DEFAULT_MAP_SETTINGS };
+          return { map: DEFAULT_MAP_SETTINGS, simbrief: DEFAULT_SIMBRIEF_SETTINGS };
         }
         if (version < 7) {
           // Add units preference
@@ -103,6 +120,14 @@ export const useSettingsStore = create<SettingsState>()(
               ...state.map,
               units: DEFAULT_MAP_SETTINGS.units,
             },
+          };
+        }
+        if (version < 8) {
+          // Add SimBrief settings
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            simbrief: DEFAULT_SIMBRIEF_SETTINGS,
           };
         }
         return persistedState as SettingsState;

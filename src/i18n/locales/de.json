@@ -96,6 +96,7 @@
       "nav": "Navigationsebenen um Flughafen anzeigen",
       "track": "Ihr Flugzeug in X-Plane verfolgen",
       "vatsim": "Live VATSIM-Verkehr anzeigen",
+      "simbrief": "Flugplan von SimBrief importieren",
       "launch": "X-Plane mit ausgewählter Position starten",
       "launchDisabled": "Wählen Sie zuerst einen Flughafen",
       "launchSelectPosition": "Wählen Sie zuerst ein Gate, eine Landebahn oder einen Hubschrauberlandeplatz",
@@ -109,10 +110,20 @@
     "tabs": {
       "xplane": "X-Plane",
       "appearance": "Aussehen",
+      "simbrief": "SimBrief",
       "navigation": "Navigation",
       "data": "Nav-Daten",
       "vatsim": "VATSIM",
       "about": "Über"
+    },
+    "simbrief": {
+      "description": "Flugpläne von SimBrief importieren",
+      "pilotId": "Piloten-ID",
+      "pilotIdHelp": "Ihre SimBrief Piloten-ID (in Ihren Kontoeinstellungen)",
+      "pilotIdNote": "Ihre Piloten-ID ist eine numerische Kennung. Finden Sie sie unter simbrief.com → Kontoeinstellungen → Pilot ID.",
+      "testSuccess": "Flugplan gefunden",
+      "needAccount": "Kein SimBrief-Konto?",
+      "freeService": "SimBrief ist ein kostenloser Flugplanungsdienst"
     },
     "about": {
       "title": "Über",
@@ -680,6 +691,46 @@
       "Livery": "Bemalung",
       "LuaScript": "Lua-Skript",
       "Navdata": "Navigationsdaten"
+    }
+  },
+
+  "simbrief": {
+    "title": "Von SimBrief importieren",
+    "description": "Ihren letzten Flugplan von SimBrief abrufen",
+    "notConfigured": "SimBrief nicht konfiguriert",
+    "configurePilotId": "Bitte konfigurieren Sie Ihre Piloten-ID unter Einstellungen → SimBrief",
+    "fetching": "Flugplan wird abgerufen...",
+    "fetchError": "Flugplan konnte nicht abgerufen werden",
+    "ready": "Bereit zum Abrufen",
+    "clickToFetch": "Klicken Sie auf die Schaltfläche unten, um Ihren letzten Flugplan abzurufen",
+    "fetchLatest": "Neuesten abrufen",
+    "refetch": "Aktualisieren",
+    "import": "Flugplan importieren",
+    "showDetails": "Details anzeigen",
+    "tabs": {
+      "fuel": "Treibstoff",
+      "weights": "Gewichte",
+      "route": "Route"
+    },
+    "fuel": {
+      "ramp": "Blocktreibstoff",
+      "trip": "Streckentreibstoff",
+      "contingency": "Reserve",
+      "reserve": "Endreserve",
+      "alternate": "Ausweichflughafen",
+      "taxi": "Rollen"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "payload": "Nutzlast",
+      "pax": "Passagiere",
+      "cargo": "Fracht"
+    },
+    "route": {
+      "departure": "Abflug",
+      "arrival": "Ankunft"
     }
   }
 }

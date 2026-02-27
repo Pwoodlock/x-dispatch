@@ -6,6 +6,7 @@
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
+    "test": "Test",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -92,6 +93,7 @@
     "tooltips": {
       "addons": "Manage aircraft, plugins, and scenery",
       "loadPlan": "Load X-Plane .fms flight plan files",
+      "simbrief": "Import flight plan from SimBrief",
       "explore": "Discover featured airports and routes",
       "nav": "Toggle navigation layers around airport",
       "track": "Track your aircraft in X-Plane",
@@ -153,9 +155,19 @@
       "xplane": "X-Plane",
       "data": "Nav Data",
       "appearance": "Appearance",
+      "simbrief": "SimBrief",
       "navigation": "Navigation",
       "vatsim": "VATSIM",
       "about": "About"
+    },
+    "simbrief": {
+      "description": "Import flight plans from SimBrief",
+      "pilotId": "Pilot ID",
+      "pilotIdHelp": "Your SimBrief Pilot ID (found in your SimBrief account settings)",
+      "pilotIdNote": "Your Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.",
+      "testSuccess": "Found flight plan",
+      "needAccount": "Don't have a SimBrief account?",
+      "freeService": "SimBrief is a free flight planning service"
     },
     "about": {
       "title": "About",
@@ -776,6 +788,46 @@
       "Livery": "Livery",
       "LuaScript": "Lua Script",
       "Navdata": "Navigation Data"
+    }
+  },
+
+  "simbrief": {
+    "title": "Import from SimBrief",
+    "description": "Fetch your latest flight plan from SimBrief",
+    "notConfigured": "SimBrief not configured",
+    "configurePilotId": "Please configure your Pilot ID in Settings → SimBrief",
+    "fetching": "Fetching flight plan...",
+    "fetchError": "Failed to fetch flight plan",
+    "ready": "Ready to fetch",
+    "clickToFetch": "Click the button below to fetch your latest flight plan",
+    "fetchLatest": "Fetch Latest",
+    "refetch": "Refresh",
+    "import": "Import Flight Plan",
+    "showDetails": "Show details",
+    "tabs": {
+      "fuel": "Fuel",
+      "weights": "Weights",
+      "route": "Route"
+    },
+    "fuel": {
+      "ramp": "Block Fuel",
+      "trip": "Trip Fuel",
+      "contingency": "Contingency",
+      "reserve": "Reserve",
+      "alternate": "Alternate",
+      "taxi": "Taxi"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "payload": "Payload",
+      "pax": "Passengers",
+      "cargo": "Cargo"
+    },
+    "route": {
+      "departure": "Departure",
+      "arrival": "Arrival"
     }
   }
 }

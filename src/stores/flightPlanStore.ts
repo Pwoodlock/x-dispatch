@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { parseFMSFile } from '@/lib/parsers/fms';
 import type { EnrichedFlightPlan, FlightPlanChip } from '@/types/fms';
+import type { SimBriefOFP } from '@/types/simbrief';
 
 export interface FlightPlanWaypoint {
   id: string; // Fix ID (e.g., "LOGEN", "BOS", "J42")
@@ -33,6 +34,9 @@ interface FlightPlanState {
   fileName: string | null;
   isEnriching: boolean;
 
+  // SimBrief data (rich info beyond just route)
+  simbriefData: SimBriefOFP | null;
+
   // UI state
   selectedWaypointIndex: number | null;
   showFlightPlanBar: boolean;
@@ -54,6 +58,9 @@ interface FlightPlanState {
   clearFlightPlan: () => void;
   getChips: () => FlightPlanChip[];
 
+  // SimBrief Actions
+  loadFromSimbrief: (data: SimBriefOFP) => void;
+
   // Parse route string (e.g., "KJFK LOGEN J42 BOSSS KATL")
   parseRouteString: (routeString: string) => void;
 }
@@ -66,6 +73,7 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
   fmsData: null,
   fileName: null,
   isEnriching: false,
+  simbriefData: null,
   selectedWaypointIndex: null,
   showFlightPlanBar: false,
 
@@ -103,6 +111,7 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       fmsData: null,
       fileName: null,
       isEnriching: false,
+      simbriefData: null,
       selectedWaypointIndex: null,
       showFlightPlanBar: false,
     }),
@@ -182,12 +191,87 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       fmsData: null,
       fileName: null,
       isEnriching: false,
+      simbriefData: null,
       selectedWaypointIndex: null,
       showFlightPlanBar: false,
       departure: null,
       arrival: null,
       route: [],
     }),
+
+  loadFromSimbrief: (data) => {
+    console.log('[FlightPlanStore] loadFromSimbrief called');
+    console.log('[FlightPlanStore] navlog fixes:', data.navlog?.fix?.length);
+
+    // Map SimBrief fix type to FMS waypoint type
+    const mapFixType = (type: string): 1 | 2 | 3 | 11 | 28 => {
+      switch (type) {
+        case 'apt':
+          return 1; // Airport
+        case 'ndb':
+          return 2; // NDB
+        case 'vor':
+          return 3; // VOR
+        case 'ltlg':
+          return 28; // Lat/Lon
+        default:
+          return 11; // Fix/waypoint
+      }
+    };
+
+    // Convert SimBrief to EnrichedFlightPlan for map layer
+    const enrichedPlan: EnrichedFlightPlan = {
+      version: 1100,
+      cycle: data.general.airac,
+      departure: {
+        icao: data.origin.icao_code,
+        runway: data.origin.plan_rwy,
+      },
+      arrival: {
+        icao: data.destination.icao_code,
+        runway: data.destination.plan_rwy,
+      },
+      waypoints: data.navlog.fix.map((fix) => ({
+        type: mapFixType(fix.type),
+        id: fix.ident,
+        via: fix.via_airway || 'DRCT',
+        altitude: parseInt(fix.altitude_feet, 10),
+        latitude: parseFloat(fix.pos_lat),
+        longitude: parseFloat(fix.pos_long),
+        found: true,
+      })),
+      resolution: {
+        total: data.navlog.fix.length,
+        found: data.navlog.fix.length,
+        notFound: 0,
+        cycleMatch: true,
+      },
+    };
+
+    console.log('[FlightPlanStore] Setting fmsData with waypoints:', enrichedPlan.waypoints.length);
+    console.log('[FlightPlanStore] First waypoint:', enrichedPlan.waypoints[0]);
+    console.log(
+      '[FlightPlanStore] Last waypoint:',
+      enrichedPlan.waypoints[enrichedPlan.waypoints.length - 1]
+    );
+
+    set({
+      simbriefData: data,
+      fmsData: enrichedPlan,
+      fileName: `SimBrief: ${data.origin.icao_code}-${data.destination.icao_code}`,
+      showFlightPlanBar: true,
+      departure: {
+        icao: data.origin.icao_code,
+        runway: data.origin.plan_rwy,
+      },
+      arrival: {
+        icao: data.destination.icao_code,
+        runway: data.destination.plan_rwy,
+      },
+    });
+
+    console.log('[FlightPlanStore] State updated');
+  },
 
   getChips: () => {
     const { fmsData } = get();
