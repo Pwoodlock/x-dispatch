@@ -84,6 +84,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Pull latest (includes version bump)
+        run: git pull origin main
+
       - name: Generate release notes
         id: changelog
         uses: orhun/git-cliff-action@v4
