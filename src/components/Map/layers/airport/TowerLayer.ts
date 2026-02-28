@@ -1,4 +1,5 @@
 import maplibregl from 'maplibre-gl';
+import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
@@ -44,10 +45,18 @@ export class TowerLayer extends BaseLayerRenderer {
       id: this.layerId,
       type: 'symbol',
       source: this.sourceId,
-      minzoom: 13,
+      minzoom: ZOOM_BEHAVIORS.tower.minZoom,
       layout: {
         'icon-image': 'tower-icon',
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.5, 17, 0.7],
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          ZOOM_BEHAVIORS.tower.minZoom,
+          0.5,
+          17,
+          0.7,
+        ],
         'icon-allow-overlap': true,
       },
       paint: {

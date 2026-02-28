@@ -1,4 +1,5 @@
 import maplibregl from 'maplibre-gl';
+import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { ParsedAirport } from '@/types/apt';
 import type { Helipad, StartupLocation } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
@@ -97,15 +98,27 @@ export class GateLayer extends BaseLayerRenderer {
     const geoJSON = this.createGeoJSON(airport.startupLocations, airport.helipads);
     this.addSource(map, geoJSON);
 
+    const minZoom = ZOOM_BEHAVIORS.startupLocations.minZoom;
+
     // Ring layer with unified colors (bottom) — excludes helipads
     this.addLayer(map, {
       id: 'airport-gates-ring',
       type: 'circle',
       source: this.sourceId,
-      minzoom: 15,
+      minzoom: minZoom,
       filter: ['!=', ['get', 'locationType'], 'helipad'],
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 12, 17, 16, 19, 22],
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          minZoom,
+          10,
+          minZoom + 2,
+          14,
+          19,
+          22,
+        ],
         'circle-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
@@ -146,11 +159,21 @@ export class GateLayer extends BaseLayerRenderer {
       id: 'airport-gates-helipad-bg',
       type: 'symbol',
       source: this.sourceId,
-      minzoom: 15,
+      minzoom: minZoom,
       filter: ['==', ['get', 'locationType'], 'helipad'],
       layout: {
         'icon-image': 'gate-helipad-bg',
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 15, 0.55, 17, 0.75, 19, 1.0],
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          minZoom,
+          0.45,
+          minZoom + 2,
+          0.65,
+          19,
+          1.0,
+        ],
         'icon-rotate': ['get', 'heading'],
         'icon-rotation-alignment': 'map',
         'icon-allow-overlap': true,
@@ -181,17 +204,17 @@ export class GateLayer extends BaseLayerRenderer {
       id: this.layerId,
       type: 'symbol',
       source: this.sourceId,
-      minzoom: 15,
+      minzoom: minZoom,
       layout: {
         'icon-image': ['get', 'iconName'],
         'icon-size': [
           'interpolate',
           ['linear'],
           ['zoom'],
-          15,
-          ['*', ['get', 'iconScale'], 0.3],
-          17,
-          ['*', ['get', 'iconScale'], 0.45],
+          minZoom,
+          ['*', ['get', 'iconScale'], 0.2],
+          minZoom + 2,
+          ['*', ['get', 'iconScale'], 0.4],
           19,
           ['*', ['get', 'iconScale'], 0.6],
         ],
@@ -211,11 +234,11 @@ export class GateLayer extends BaseLayerRenderer {
       id: 'airport-gate-labels',
       type: 'symbol',
       source: this.sourceId,
-      minzoom: 17,
+      minzoom: minZoom,
       layout: {
         'text-field': ['get', 'name'],
         'text-font': ['Open Sans Bold'],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 17, 11, 19, 14],
+        'text-size': ['interpolate', ['linear'], ['zoom'], minZoom, 9, 17, 12, 19, 14],
         'text-offset': [0, 1.8],
         'text-anchor': 'top',
         'text-allow-overlap': false,
