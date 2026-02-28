@@ -812,6 +812,18 @@
     "route": {
       "departure": "出発",
       "arrival": "到着"
+    },
+    "briefing": {
+      "sigmetsTitle": "有効なSIGMET ({{count}}件)",
+      "sigmetsDesc": "ルート沿いの重大な気象警報 — 乱気流、着氷、雷雨など",
+      "noSigmets": "ルート沿いに重大な気象警報はありません",
+      "firTitle": "FIRルート",
+      "firDesc": "フライトが通過する航空交通管制区域",
+      "notamsTitle": "NOTAM",
+      "notamsDesc": "航空従事者への通知 — 空港閉鎖、滑走路変更、その他の運用上の警告",
+      "noNotams": "NOTAMはありません",
+      "transAltTitle": "転移高度",
+      "transAltDesc": "現地気圧（QNH）と標準気圧（STD）を切り替える高度 — 高度計を適切に設定してください"
     }
   }
 }

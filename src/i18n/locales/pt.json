@@ -812,6 +812,18 @@
     "route": {
       "departure": "Partida",
       "arrival": "Chegada"
+    },
+    "briefing": {
+      "sigmetsTitle": "SIGMETs ativos ({{count}})",
+      "sigmetsDesc": "Avisos meteorológicos significativos ao longo da rota — turbulência, formação de gelo, trovoadas, etc.",
+      "noSigmets": "Sem avisos meteorológicos significativos ao longo da rota",
+      "firTitle": "Rota FIR",
+      "firDesc": "Regiões de controle de tráfego aéreo que o seu voo atravessa",
+      "notamsTitle": "NOTAMs",
+      "notamsDesc": "Avisos aos aeronavegantes — fechamentos de aeroporto, mudanças de pista e outros alertas operacionais",
+      "noNotams": "Nenhum NOTAM disponível",
+      "transAltTitle": "Altitudes de transição",
+      "transAltDesc": "Altitude onde você troca entre altímetro local (QNH) e pressão padrão (STD) — ajuste seu altímetro adequadamente"
     }
   }
 }

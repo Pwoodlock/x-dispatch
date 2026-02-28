@@ -812,6 +812,18 @@
     "route": {
       "departure": "出发",
       "arrival": "到达"
+    },
+    "briefing": {
+      "sigmetsTitle": "有效 SIGMET ({{count}})",
+      "sigmetsDesc": "沿航路的重大气象警报 — 颠簸、积冰、雷暴等",
+      "noSigmets": "沿航路无重大气象警报",
+      "firTitle": "FIR 航路",
+      "firDesc": "您的航班经过的空中交通管制区域",
+      "notamsTitle": "NOTAM",
+      "notamsDesc": "航行通告 — 机场关闭、跑道变更及其他运行提示",
+      "noNotams": "暂无 NOTAM",
+      "transAltTitle": "过渡高度",
+      "transAltDesc": "在本场气压（QNH）和标准气压（STD）之间切换的高度 — 请相应调整高度表"
     }
   }
 }
