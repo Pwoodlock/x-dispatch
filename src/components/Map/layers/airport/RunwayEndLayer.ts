@@ -1,4 +1,5 @@
 import maplibregl from 'maplibre-gl';
+import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
@@ -27,9 +28,21 @@ export class RunwayEndLayer extends BaseLayerRenderer {
       id: this.layerId,
       type: 'circle',
       source: this.sourceId,
-      minzoom: 13,
+      minzoom: ZOOM_BEHAVIORS.runwayEnds.minZoom,
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 4, 15, 6, 17, 10, 19, 14],
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          ZOOM_BEHAVIORS.runwayEnds.minZoom,
+          4,
+          15,
+          6,
+          17,
+          10,
+          19,
+          14,
+        ],
         'circle-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
@@ -66,11 +79,19 @@ export class RunwayEndLayer extends BaseLayerRenderer {
       id: 'airport-runway-ends-labels',
       type: 'symbol',
       source: this.sourceId,
-      minzoom: 14,
+      minzoom: ZOOM_BEHAVIORS.labels.minZoom,
       layout: {
         'text-field': ['get', 'name'],
         'text-font': ['Open Sans Bold'],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 14, 10, 17, 14],
+        'text-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          ZOOM_BEHAVIORS.labels.minZoom,
+          10,
+          17,
+          14,
+        ],
         'text-offset': [0, 0],
         'text-anchor': 'center',
         'text-allow-overlap': true,

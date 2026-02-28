@@ -1,4 +1,5 @@
 import maplibregl from 'maplibre-gl';
+import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
@@ -44,10 +45,18 @@ export class BeaconLayer extends BaseLayerRenderer {
       id: this.layerId,
       type: 'symbol',
       source: this.sourceId,
-      minzoom: 12,
+      minzoom: ZOOM_BEHAVIORS.beacon.minZoom,
       layout: {
         'icon-image': 'beacon-icon',
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.4, 16, 0.6],
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          ZOOM_BEHAVIORS.beacon.minZoom,
+          0.4,
+          16,
+          0.6,
+        ],
         'icon-allow-overlap': true,
       },
       paint: {

@@ -1,5 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import { RUNWAY_LIGHT_COLORS } from '@/config/mapStyles/theme';
+import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import {
   calculateBearing,
   destinationPoint as calculatePoint,
@@ -33,13 +34,15 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
     const lights = this.generateRunwayLights(airport.runways);
     this.addSource(map, lights);
 
+    const lightingMinZoom = ZOOM_BEHAVIORS.lighting.minZoom;
+
     // Edge lights - white/yellow (small subtle points)
     this.addLayer(map, {
       id: 'airport-runway-edge-lights',
       type: 'circle',
       source: this.sourceId,
       filter: ['==', ['get', 'type'], 'edge'],
-      minzoom: 14,
+      minzoom: lightingMinZoom,
       paint: {
         'circle-color': [
           'case',
@@ -47,7 +50,17 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
           RUNWAY_LIGHT_COLORS.edgeYellow,
           RUNWAY_LIGHT_COLORS.edgeWhite,
         ],
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 0.8, 17, 1.5, 20, 2.5],
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          lightingMinZoom,
+          0.8,
+          17,
+          1.5,
+          20,
+          2.5,
+        ],
         'circle-blur': 0.2,
         'circle-opacity': 0.85,
       },
@@ -59,10 +72,10 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       type: 'circle',
       source: this.sourceId,
       filter: ['==', ['get', 'type'], 'threshold'],
-      minzoom: 14,
+      minzoom: lightingMinZoom,
       paint: {
         'circle-color': RUNWAY_LIGHT_COLORS.thresholdGreen,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 1, 17, 2, 20, 3],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], lightingMinZoom, 1, 17, 2, 20, 3],
         'circle-blur': 0.3,
         'circle-opacity': 0.9,
       },
@@ -74,10 +87,10 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       type: 'circle',
       source: this.sourceId,
       filter: ['==', ['get', 'type'], 'end'],
-      minzoom: 14,
+      minzoom: lightingMinZoom,
       paint: {
         'circle-color': RUNWAY_LIGHT_COLORS.endRed,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 1, 17, 2, 20, 3],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], lightingMinZoom, 1, 17, 2, 20, 3],
         'circle-blur': 0.3,
         'circle-opacity': 0.9,
       },
@@ -89,7 +102,7 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       type: 'circle',
       source: this.sourceId,
       filter: ['==', ['get', 'type'], 'centerline'],
-      minzoom: 15,
+      minzoom: lightingMinZoom + 1,
       paint: {
         'circle-color': [
           'case',
@@ -99,7 +112,17 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
           RUNWAY_LIGHT_COLORS.centerlineYellow,
           RUNWAY_LIGHT_COLORS.centerlineWhite,
         ],
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 0.5, 18, 1.5, 20, 2],
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          lightingMinZoom + 1,
+          0.5,
+          18,
+          1.5,
+          20,
+          2,
+        ],
         'circle-blur': 0.2,
         'circle-opacity': 0.75,
       },
@@ -111,7 +134,7 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       type: 'circle',
       source: this.sourceId,
       filter: ['==', ['get', 'type'], 'approach'],
-      minzoom: 13,
+      minzoom: ZOOM_BEHAVIORS.runwayEnds.minZoom,
       paint: {
         'circle-color': [
           'case',
@@ -119,7 +142,17 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
           RUNWAY_LIGHT_COLORS.approachRed,
           RUNWAY_LIGHT_COLORS.approachWhite,
         ],
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 0.8, 16, 1.5, 18, 2.5],
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          ZOOM_BEHAVIORS.runwayEnds.minZoom,
+          0.8,
+          16,
+          1.5,
+          18,
+          2.5,
+        ],
         'circle-blur': 0.2,
         'circle-opacity': 0.9,
       },

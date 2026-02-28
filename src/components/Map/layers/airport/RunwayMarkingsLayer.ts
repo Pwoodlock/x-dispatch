@@ -1,4 +1,5 @@
 import maplibregl from 'maplibre-gl';
+import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { calculateBearing, destinationPoint as calculatePoint } from '@/lib/utils/geomath';
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
@@ -62,13 +63,15 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       });
     }
 
+    const markingsMinZoom = ZOOM_BEHAVIORS.runwayMarkings.minZoom;
+
     // Threshold bars
     this.addLayer(map, {
       id: 'airport-runway-threshold-bars',
       type: 'fill',
       source: this.sourceId,
       filter: ['==', ['get', 'type'], 'threshold'],
-      minzoom: 14,
+      minzoom: markingsMinZoom,
       paint: {
         'fill-color': '#FFFFFF',
         'fill-opacity': 0.95,
@@ -81,7 +84,7 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       type: 'fill',
       source: this.sourceId,
       filter: ['==', ['get', 'type'], 'aiming'],
-      minzoom: 14,
+      minzoom: markingsMinZoom,
       paint: {
         'fill-color': '#FFFFFF',
         'fill-opacity': 0.95,
@@ -94,7 +97,7 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       type: 'fill',
       source: this.sourceId,
       filter: ['==', ['get', 'type'], 'tdz'],
-      minzoom: 15,
+      minzoom: markingsMinZoom + 1,
       paint: {
         'fill-color': '#FFFFFF',
         'fill-opacity': 0.9,
@@ -106,11 +109,23 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       id: 'airport-runway-numbers',
       type: 'symbol',
       source: this.numberSourceId,
-      minzoom: 13,
+      minzoom: ZOOM_BEHAVIORS.runwayEnds.minZoom,
       layout: {
         'text-field': ['get', 'number'],
         'text-font': ['Open Sans Bold'],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 13, 16, 15, 28, 17, 48, 19, 72],
+        'text-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          ZOOM_BEHAVIORS.runwayEnds.minZoom,
+          16,
+          15,
+          28,
+          17,
+          48,
+          19,
+          72,
+        ],
         'text-rotate': ['get', 'rotation'],
         'text-rotation-alignment': 'map',
         'text-pitch-alignment': 'map',
@@ -121,7 +136,15 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
         'text-color': '#FFFFFF',
         'text-halo-color': '#000000',
         'text-halo-width': 1,
-        'text-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.7, 15, 1],
+        'text-opacity': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          ZOOM_BEHAVIORS.runwayEnds.minZoom,
+          0.7,
+          15,
+          1,
+        ],
       },
     });
   }
