@@ -828,6 +828,18 @@
     "route": {
       "departure": "Departure",
       "arrival": "Arrival"
+    },
+    "briefing": {
+      "sigmetsTitle": "Active SIGMETs ({{count}})",
+      "sigmetsDesc": "Significant weather warnings along your route — turbulence, icing, thunderstorms, etc.",
+      "noSigmets": "No significant weather warnings along route",
+      "firTitle": "FIR Route",
+      "firDesc": "Air traffic control regions your flight passes through",
+      "notamsTitle": "NOTAMs",
+      "notamsDesc": "Notices to airmen — airport closures, runway changes, and other operational alerts",
+      "noNotams": "No NOTAMs available",
+      "transAltTitle": "Transition Altitudes",
+      "transAltDesc": "Altitude where you switch between local altimeter (QNH) and standard pressure (STD) — set your altimeter accordingly"
     }
   }
 }

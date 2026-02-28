@@ -6,8 +6,10 @@ import {
   Droplets,
   ExternalLink,
   Eye,
+  FileText,
   Fuel,
   Gauge,
+  List,
   Loader2,
   Navigation,
   Plane,
@@ -20,6 +22,7 @@ import {
   Timer,
   Users,
   Wind,
+  Zap,
 } from 'lucide-react';
 import { CloudQuantity, DistanceUnit, Intensity, parseMetar } from 'metar-taf-parser';
 import type {
@@ -55,6 +58,7 @@ import {
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SimBriefOFP } from '@/types/simbrief';
+import { BriefingTab, NavlogTab, PerformanceTab, VerticalProfile } from './components';
 
 // Helper to get unit from API response
 function getApiUnit(data: SimBriefOFP): string {
@@ -77,7 +81,8 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
 
   const handleOpenPDF = () => {
     if (fetchMutation.data?.files.pdf.link) {
-      window.appAPI.openExternal(fetchMutation.data.files.pdf.link);
+      const fullUrl = fetchMutation.data.files.directory + fetchMutation.data.files.pdf.link;
+      window.appAPI.openExternal(fullUrl);
     }
   };
 
@@ -133,8 +138,8 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
         {/* Not Configured State */}
         {!isConfigured && (
           <div className="flex flex-col items-center justify-center gap-6 py-16">
-            <div className="rounded-full bg-amber-500/10 p-4">
-              <AlertCircle className="h-12 w-12 text-amber-500" />
+            <div className="rounded-full bg-warning/10 p-4">
+              <AlertCircle className="h-12 w-12 text-warning" />
             </div>
             <div className="space-y-2 text-center">
               <p className="text-lg font-medium">
@@ -212,28 +217,48 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
 
               {/* Main Content Tabs */}
               <div className="p-4">
-                <Tabs defaultValue="overview" className="w-full">
-                  <TabsList className="mb-4 grid w-full grid-cols-4">
-                    <TabsTrigger value="overview" className="gap-2 text-xs">
+                <Tabs defaultValue="flight" className="w-full">
+                  <TabsList className="mb-4 grid w-full grid-cols-7">
+                    <TabsTrigger value="flight" className="gap-1.5 text-xs">
                       <Route className="h-3.5 w-3.5" />
-                      Overview
+                      Flight
                     </TabsTrigger>
-                    <TabsTrigger value="fuel" className="gap-2 text-xs">
+                    <TabsTrigger value="performance" className="gap-1.5 text-xs">
+                      <Zap className="h-3.5 w-3.5" />
+                      Perf
+                    </TabsTrigger>
+                    <TabsTrigger value="navlog" className="gap-1.5 text-xs">
+                      <List className="h-3.5 w-3.5" />
+                      Navlog
+                    </TabsTrigger>
+                    <TabsTrigger value="fuel" className="gap-1.5 text-xs">
                       <Fuel className="h-3.5 w-3.5" />
                       Fuel
                     </TabsTrigger>
-                    <TabsTrigger value="weights" className="gap-2 text-xs">
+                    <TabsTrigger value="weights" className="gap-1.5 text-xs">
                       <Scale className="h-3.5 w-3.5" />
                       Weights
                     </TabsTrigger>
-                    <TabsTrigger value="weather" className="gap-2 text-xs">
+                    <TabsTrigger value="weather" className="gap-1.5 text-xs">
                       <Cloud className="h-3.5 w-3.5" />
                       Weather
                     </TabsTrigger>
+                    <TabsTrigger value="briefing" className="gap-1.5 text-xs">
+                      <FileText className="h-3.5 w-3.5" />
+                      Briefing
+                    </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="overview" className="mt-0">
-                    <OverviewTab data={fetchMutation.data} apiUnit={apiUnit} />
+                  <TabsContent value="flight" className="mt-0">
+                    <FlightTab data={fetchMutation.data} apiUnit={apiUnit} />
+                  </TabsContent>
+
+                  <TabsContent value="performance" className="mt-0">
+                    <PerformanceTab data={fetchMutation.data} />
+                  </TabsContent>
+
+                  <TabsContent value="navlog" className="mt-0">
+                    <NavlogTab data={fetchMutation.data} apiUnit={apiUnit} />
                   </TabsContent>
 
                   <TabsContent value="fuel" className="mt-0">
@@ -246,6 +271,10 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
 
                   <TabsContent value="weather" className="mt-0">
                     <WeatherTab data={fetchMutation.data} />
+                  </TabsContent>
+
+                  <TabsContent value="briefing" className="mt-0">
+                    <BriefingTab data={fetchMutation.data} />
                   </TabsContent>
                 </Tabs>
               </div>
@@ -390,12 +419,34 @@ function StatItem({
   );
 }
 
-// Overview Tab
-function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
+// Flight Tab (with vertical profile)
+function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-4">
+      {/* Vertical Profile */}
+      <div className="rounded-lg border bg-card p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Vertical Profile
+          </h4>
+          <div className="flex items-center gap-2">
+            {data.general.sid_ident && (
+              <Badge variant="secondary" className="text-[10px]">
+                SID: {data.general.sid_ident}
+              </Badge>
+            )}
+            {data.general.star_ident && (
+              <Badge variant="secondary" className="text-[10px]">
+                STAR: {data.general.star_ident}
+              </Badge>
+            )}
+          </div>
+        </div>
+        <VerticalProfile fixes={data.navlog.fix} className="h-48" />
+      </div>
+
       {/* Route String */}
-      <div className="col-span-2 rounded-lg border bg-card p-4">
+      <div className="rounded-lg border bg-card p-4">
         <div className="mb-2 flex items-center justify-between">
           <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Route
@@ -407,106 +458,108 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
         <p className="font-mono text-xs leading-relaxed text-foreground/80">{data.general.route}</p>
       </div>
 
-      {/* Fuel Summary */}
-      <div className="rounded-lg border bg-card p-4">
-        <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          <Fuel className="h-3.5 w-3.5" />
-          Fuel Summary
-        </h4>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Block Fuel</span>
-            <span className="font-mono text-sm font-medium">
-              {formatFuel(data.fuel.plan_ramp, apiUnit)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Trip Fuel</span>
-            <span className="font-mono text-sm font-medium">
-              {formatFuel(data.fuel.enroute_burn, apiUnit)}
-            </span>
-          </div>
-          <Separator className="my-2" />
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Landing Fuel</span>
-            <span className="font-mono text-sm font-medium text-green-500">
-              {formatFuel(data.fuel.plan_landing, apiUnit)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Weights Summary */}
-      <div className="rounded-lg border bg-card p-4">
-        <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          <Scale className="h-3.5 w-3.5" />
-          Weights Summary
-        </h4>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">ZFW</span>
-            <span className="font-mono text-sm font-medium">
-              {formatWeight(data.weights.est_zfw, apiUnit)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">TOW</span>
-            <span className="font-mono text-sm font-medium">
-              {formatWeight(data.weights.est_tow, apiUnit)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">LDW</span>
-            <span className="font-mono text-sm font-medium">
-              {formatWeight(data.weights.est_ldw, apiUnit)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Payload */}
-      <div className="rounded-lg border bg-card p-4">
-        <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          <Users className="h-3.5 w-3.5" />
-          Payload
-        </h4>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Passengers</span>
-            <span className="font-mono text-sm font-medium">{data.weights.pax_count}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Cargo</span>
-            <span className="font-mono text-sm font-medium">
-              {formatWeight(data.weights.cargo, apiUnit)}
-            </span>
-          </div>
-          <Separator className="my-2" />
-          <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Total Payload</span>
-            <span className="font-mono text-sm font-medium">
-              {formatWeight(data.weights.payload, apiUnit)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Alternate */}
-      {data.alternate && (
+      <div className="grid grid-cols-2 gap-4">
+        {/* Fuel Summary */}
         <div className="rounded-lg border bg-card p-4">
           <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            <PlaneLanding className="h-3.5 w-3.5" />
-            Alternate
+            <Fuel className="h-3.5 w-3.5" />
+            Fuel Summary
           </h4>
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-xl font-bold">{data.alternate.icao_code}</span>
-            <div>
-              <p className="text-sm">{data.alternate.name}</p>
-              <p className="text-xs text-muted-foreground">RWY {data.alternate.plan_rwy}</p>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Block Fuel</span>
+              <span className="font-mono text-sm font-medium">
+                {formatFuel(data.fuel.plan_ramp, apiUnit)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Trip Fuel</span>
+              <span className="font-mono text-sm font-medium">
+                {formatFuel(data.fuel.enroute_burn, apiUnit)}
+              </span>
+            </div>
+            <Separator className="my-2" />
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Landing Fuel</span>
+              <span className="font-mono text-sm font-medium text-success">
+                {formatFuel(data.fuel.plan_landing, apiUnit)}
+              </span>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Weights Summary */}
+        <div className="rounded-lg border bg-card p-4">
+          <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Scale className="h-3.5 w-3.5" />
+            Weights Summary
+          </h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">ZFW</span>
+              <span className="font-mono text-sm font-medium">
+                {formatWeight(data.weights.est_zfw, apiUnit)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">TOW</span>
+              <span className="font-mono text-sm font-medium">
+                {formatWeight(data.weights.est_tow, apiUnit)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">LDW</span>
+              <span className="font-mono text-sm font-medium">
+                {formatWeight(data.weights.est_ldw, apiUnit)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Payload */}
+        <div className="rounded-lg border bg-card p-4">
+          <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Users className="h-3.5 w-3.5" />
+            Payload
+          </h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Passengers</span>
+              <span className="font-mono text-sm font-medium">{data.weights.pax_count}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Cargo</span>
+              <span className="font-mono text-sm font-medium">
+                {formatWeight(data.weights.cargo, apiUnit)}
+              </span>
+            </div>
+            <Separator className="my-2" />
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Total Payload</span>
+              <span className="font-mono text-sm font-medium">
+                {formatWeight(data.weights.payload, apiUnit)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Alternate */}
+        {data.alternate && (
+          <div className="rounded-lg border bg-card p-4">
+            <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <PlaneLanding className="h-3.5 w-3.5" />
+              Alternate
+            </h4>
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-xl font-bold">{data.alternate.icao_code}</span>
+              <div>
+                <p className="text-sm">{data.alternate.name}</p>
+                <p className="text-xs text-muted-foreground">RWY {data.alternate.plan_rwy}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -515,12 +568,12 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
 function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
   const totalFuel = parseInt(data.fuel.plan_ramp, 10);
   const fuelItems = [
-    { label: 'Taxi', value: data.fuel.taxi, color: 'bg-slate-500' },
+    { label: 'Taxi', value: data.fuel.taxi, color: 'bg-muted-foreground' },
     { label: 'Trip', value: data.fuel.enroute_burn, color: 'bg-primary' },
-    { label: 'Contingency', value: data.fuel.contingency, color: 'bg-amber-500' },
-    { label: 'Alternate', value: data.fuel.alternate_burn, color: 'bg-orange-500' },
-    { label: 'Final Reserve', value: data.fuel.reserve, color: 'bg-red-500' },
-    { label: 'Extra', value: data.fuel.extra, color: 'bg-green-500' },
+    { label: 'Contingency', value: data.fuel.contingency, color: 'bg-warning' },
+    { label: 'Alternate', value: data.fuel.alternate_burn, color: 'bg-warning' },
+    { label: 'Final Reserve', value: data.fuel.reserve, color: 'bg-destructive' },
+    { label: 'Extra', value: data.fuel.extra, color: 'bg-success' },
   ];
 
   return (
@@ -569,9 +622,9 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
             {formatFuel(data.fuel.plan_takeoff, apiUnit)}
           </p>
         </div>
-        <div className="rounded-lg border bg-green-500/5 p-4 text-center">
+        <div className="rounded-lg border bg-success/5 p-4 text-center">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Landing Fuel</p>
-          <p className="mt-1 font-mono text-xl font-bold text-green-500">
+          <p className="mt-1 font-mono text-xl font-bold text-success">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </p>
         </div>
@@ -627,7 +680,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                       className={cn(
                         'font-mono text-sm font-medium',
                         isCritical && 'text-destructive',
-                        isWarning && !isCritical && 'text-amber-500'
+                        isWarning && !isCritical && 'text-warning'
                       )}
                     >
                       {formatWeight(w.est.toString(), apiUnit)}
@@ -644,7 +697,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                     className={cn(
                       'h-3',
                       isCritical && '[&>div]:bg-destructive',
-                      isWarning && !isCritical && '[&>div]:bg-amber-500'
+                      isWarning && !isCritical && '[&>div]:bg-warning'
                     )}
                   />
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-bold text-white">
