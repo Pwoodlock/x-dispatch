@@ -16,7 +16,7 @@ let sqlite: SqlJsDatabase | null = null;
 let dbPath: string = '';
 let migrationsFolder: string = '';
 
-function getDbPath(): string {
+export function getDbPath(): string {
   return path.join(app.getPath('userData'), 'xplane-data.db');
 }
 
