@@ -140,6 +140,28 @@ function createWindow(): BrowserWindow {
   windowState.manage(window);
   window.once('ready-to-show', () => window.show());
 
+  window.webContents.on('will-navigate', (event, url) => {
+    try {
+      const parsedUrl = new URL(url);
+      if (
+        parsedUrl.protocol !== 'file:' &&
+        parsedUrl.hostname !== 'localhost' &&
+        parsedUrl.hostname !== '127.0.0.1'
+      ) {
+        event.preventDefault();
+      }
+    } catch {
+      event.preventDefault();
+    }
+  });
+
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://') || url.startsWith('http://')) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
+
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     window.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
@@ -1088,27 +1110,8 @@ app.whenReady().then(async () => {
       : path.join(__dirname, '..', '..', 'assets', 'icon.png');
     app.dock.setIcon(iconPath);
   }
-
-  mainWindow.webContents.on('will-navigate', (event, url) => {
-    const parsedUrl = new URL(url);
-    if (
-      parsedUrl.protocol !== 'file:' &&
-      parsedUrl.hostname !== 'localhost' &&
-      parsedUrl.hostname !== '127.0.0.1'
-    ) {
-      event.preventDefault();
-    }
-  });
-
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https://') || url.startsWith('http://')) {
-      shell.openExternal(url);
-    }
-    return { action: 'deny' };
-  });
 });
 
-// TODO: Revisit DB lifecycle management - ensure proper cleanup on all platforms
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     dataManager?.close();
@@ -1129,5 +1132,5 @@ app.on('before-quit', () => {
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
 });
