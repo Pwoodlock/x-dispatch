@@ -30,8 +30,11 @@ function getSchemaFingerprint(): string {
     .readdirSync(snapshotDir)
     .filter((f) => f.endsWith('_snapshot.json'))
     .sort();
-  const latest = files[files.length - 1];
-  const snapshot = JSON.parse(fs.readFileSync(path.join(snapshotDir, latest), 'utf-8'));
+  if (files.length === 0) throw new Error('No migration snapshots found in ' + snapshotDir);
+  const snapshot = JSON.parse(
+    fs.readFileSync(path.join(snapshotDir, files[files.length - 1]), 'utf-8')
+  );
+  if (!snapshot.id) throw new Error('Migration snapshot missing id field');
   return snapshot.id;
 }
 
@@ -70,10 +73,7 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
 
   logger.data.info(`Database initializing: ${dbPath}`);
 
-  // Read schema fingerprint once, use for both check and stamp
   const fingerprint = getSchemaFingerprint();
-
-  // Delete stale DB — schema changes mean fresh start
   deleteStaleDb(fingerprint);
 
   const SQL = await initSqlJs();
@@ -83,13 +83,16 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
     data = fs.readFileSync(dbPath);
   }
 
-  sqlite = new SQL.Database(data);
-  db = drizzle(sqlite, { schema });
+  try {
+    sqlite = new SQL.Database(data);
+    db = drizzle(sqlite, { schema });
+    migrate(db, { migrationsFolder });
+  } catch (err) {
+    sqlite = null;
+    db = null;
+    throw err;
+  }
 
-  // Create tables (Drizzle skips already-applied migrations)
-  migrate(db, { migrationsFolder });
-
-  // Stamp fingerprint after successful init
   fs.writeFileSync(dbPath + '.version', fingerprint);
 
   logger.data.info(`Database initialized: ${dbPath}`);
