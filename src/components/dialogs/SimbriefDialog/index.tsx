@@ -195,7 +195,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                   <p className="max-w-sm text-sm text-muted-foreground">
                     {t(
                       'simbrief.clickToFetch',
-                      'Fetch your latest operational flight plan from SimBrief'
+                      'Imports your most recently generated flight plan from SimBrief. Make sure to generate one on simbrief.com first.'
                     )}
                   </p>
                 </div>

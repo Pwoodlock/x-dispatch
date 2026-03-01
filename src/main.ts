@@ -756,6 +756,12 @@ function registerIpcHandlers() {
       // Check for SimBrief error response (API returns 400 with error details)
       if (data.fetch?.status?.startsWith('Error')) {
         const msg = data.fetch.status.replace(/^Error:\s*/, '');
+        if (msg.toLowerCase().includes('no flight plan on file')) {
+          return {
+            success: false,
+            error: 'No flight plan found. Generate one on simbrief.com first.',
+          };
+        }
         return { success: false, error: msg };
       }
 
