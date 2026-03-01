@@ -6,7 +6,7 @@ import * as os from 'os';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
-import { initDb } from './lib/db';
+import { getDbPath, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import logger, { getLogPath } from './lib/utils/logger';
 import {
@@ -1020,10 +1020,19 @@ app.whenReady().then(async () => {
   }
 
   Menu.setApplicationMenu(null);
-  await initDb();
+
+  try {
+    await initDb();
+  } catch (err) {
+    logger.main.error('Database init failed, deleting and retrying:', err);
+    const dbFile = getDbPath();
+    if (fs.existsSync(dbFile)) fs.unlinkSync(dbFile);
+    if (fs.existsSync(dbFile + '.version')) fs.unlinkSync(dbFile + '.version');
+    await initDb();
+  }
+
   dataManager = getXPlaneDataManager();
 
-  // If setup is complete, load cached data into memory
   if (isSetupComplete()) {
     const xplanePath = dataManager.getXPlanePath();
     logger.main.info(`X-Plane: ${xplanePath}`);
