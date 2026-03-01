@@ -1028,7 +1028,18 @@ app.whenReady().then(async () => {
     const dbFile = getDbPath();
     if (fs.existsSync(dbFile)) fs.unlinkSync(dbFile);
     if (fs.existsSync(dbFile + '.version')) fs.unlinkSync(dbFile + '.version');
-    await initDb();
+    try {
+      await initDb();
+    } catch (retryErr) {
+      logger.main.error('Database init failed on retry:', retryErr);
+      dialog.showErrorBox(
+        'X-Dispatch — Fatal Error',
+        'Failed to initialize the database. Please restart the app or reinstall.\n\n' +
+          String(retryErr)
+      );
+      app.quit();
+      return;
+    }
   }
 
   dataManager = getXPlaneDataManager();
