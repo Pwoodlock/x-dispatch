@@ -19,6 +19,15 @@ export default defineConfig((env) => {
     build: {
       outDir: `.vite/renderer/${name}`,
       sourcemap: 'hidden',
+      target: 'es2022',
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        target: 'es2022',
+      },
+    },
+    esbuild: {
+      target: 'es2022',
     },
     plugins: [
       react(),
