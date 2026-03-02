@@ -13,6 +13,9 @@ export async function isXPlaneProcessRunning(): Promise<boolean> {
       const { stdout } = await execAsync('tasklist /FI "IMAGENAME eq X-Plane.exe" /NH');
       return stdout.toLowerCase().includes('x-plane.exe');
     } else if (platform === 'darwin') {
+      // TODO: pgrep -x "X-Plane" gives false positives — it matches zombie/hung
+      // processes from --version, -v, --help calls. Need to filter by args or
+      // use a different detection method (e.g. check if process has a window).
       const { stdout } = await execAsync('pgrep -x "X-Plane"');
       return stdout.trim().length > 0;
     } else {
