@@ -17,6 +17,8 @@ interface FreeflightPrf {
   globals: Map<string, string>;
   /** Per-item settings (P-prefixed lines): key = "P _type identifier", value = rest of line */
   perItem: Map<string, string>;
+  /** Lines the parser didn't recognize — preserved verbatim to avoid data loss */
+  unknownLines: string[];
 }
 
 interface StartPositionConfig {
@@ -47,6 +49,7 @@ interface FuelConfig {
 function parseFreeflightPrf(content: string): FreeflightPrf {
   const globals = new Map<string, string>();
   const perItem = new Map<string, string>();
+  const unknownLines: string[] = [];
 
   const lines = content.split('\n');
 
@@ -87,10 +90,13 @@ function parseFreeflightPrf(content: string): FreeflightPrf {
         // Key with no value
         globals.set(trimmed, '');
       }
+    } else {
+      // Unrecognized line format — preserve verbatim
+      unknownLines.push(trimmed);
     }
   }
 
-  return { globals, perItem };
+  return { globals, perItem, unknownLines };
 }
 
 /**
@@ -108,7 +114,7 @@ function readExistingPrf(xplanePath: string): FreeflightPrf {
     }
   }
 
-  return { globals: new Map(), perItem: new Map() };
+  return { globals: new Map(), perItem: new Map(), unknownLines: [] };
 }
 
 // ============================================================================
@@ -164,6 +170,14 @@ function serializeFreeflightPrf(prf: FreeflightPrf): string {
     }
   }
 
+  // Preserve any unrecognized lines from the original file
+  if (prf.unknownLines.length > 0) {
+    lines.push('');
+    for (const line of prf.unknownLines) {
+      lines.push(line);
+    }
+  }
+
   return lines.join('\n');
 }
 
@@ -205,7 +219,7 @@ function updatePrfWithConfig(
   }
   perItem.set(`P _rwy_or_ramp ${icao}`, String(config.startPosition.xplaneIndex));
 
-  return { globals, perItem };
+  return { globals, perItem, unknownLines: prf.unknownLines };
 }
 
 // ============================================================================
@@ -271,7 +285,7 @@ export function generateFreeflightPrf(config: LaunchConfig, xplanePath?: string)
   // Read existing preferences or start fresh
   const existingPrf = xplanePath
     ? readExistingPrf(xplanePath)
-    : { globals: new Map(), perItem: new Map() };
+    : { globals: new Map(), perItem: new Map(), unknownLines: [] };
 
   // Update with new config
   const updatedPrf = updatePrfWithConfig(existingPrf, config, aircraftKey);
