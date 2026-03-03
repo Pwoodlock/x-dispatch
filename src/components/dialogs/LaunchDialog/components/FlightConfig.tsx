@@ -14,6 +14,7 @@ import {
   Power,
   PowerOff,
   Radio,
+  Settings2,
   Sun,
   Weight,
 } from 'lucide-react';
@@ -28,7 +29,9 @@ import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { StartPosition } from '../types';
 import { WEATHER_OPTIONS } from '../types';
+import { getWeatherSummary } from '../weatherTypes';
 import { SunArc } from './SunArc';
+import { WeatherDialog } from './WeatherDialog';
 import { WeightBalanceDialog } from './WeightBalanceDialog';
 
 interface FlightConfigProps {
@@ -88,7 +91,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
   const timeOfDay = useLaunchStore((s) => s.timeOfDay);
   const useRealWorldTime = useLaunchStore((s) => s.useRealWorldTime);
   const coldAndDark = useLaunchStore((s) => s.coldAndDark);
-  const selectedWeather = useLaunchStore((s) => s.selectedWeather);
+  const weatherConfig = useLaunchStore((s) => s.weatherConfig);
   const isLaunching = useLaunchStore((s) => s.isLaunching);
   const launchError = useLaunchStore((s) => s.launchError);
 
@@ -96,9 +99,10 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
   const setTimeOfDay = useLaunchStore((s) => s.setTimeOfDay);
   const setUseRealWorldTime = useLaunchStore((s) => s.setUseRealWorldTime);
   const setColdAndDark = useLaunchStore((s) => s.setColdAndDark);
-  const setSelectedWeather = useLaunchStore((s) => s.setSelectedWeather);
+  const setWeatherPreset = useLaunchStore((s) => s.setWeatherPreset);
 
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
+  const [weatherDialogOpen, setWeatherDialogOpen] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
@@ -234,12 +238,17 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
           <div className="grid grid-cols-3 gap-1.5">
             {WEATHER_OPTIONS.map((weather) => {
               const Icon = WEATHER_ICONS[weather] || Cloud;
-              const isActive = selectedWeather === weather;
+              const isActive =
+                (weather === 'real' && weatherConfig.mode === 'real') ||
+                (weather !== 'real' &&
+                  weatherConfig.mode !== 'real' &&
+                  weatherConfig.preset === weather &&
+                  weatherConfig.mode === 'preset');
               return (
                 <button
                   key={weather}
                   type="button"
-                  onClick={() => setSelectedWeather(weather)}
+                  onClick={() => setWeatherPreset(weather)}
                   className={cn(
                     'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                     isActive
@@ -253,6 +262,29 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
               );
             })}
           </div>
+          {/* Customize button */}
+          <Button
+            variant="outline"
+            onClick={() => setWeatherDialogOpen(true)}
+            className="group h-auto w-full justify-between px-3 py-2"
+          >
+            <div className="min-w-0 text-left">
+              <div className="text-sm font-medium text-foreground">
+                {weatherConfig.mode === 'custom' ? (
+                  <span className="text-primary">Customized</span>
+                ) : weatherConfig.mode === 'real' ? (
+                  'Real Weather'
+                ) : (
+                  t(`launcher.weather.${weatherConfig.preset}`)
+                )}
+              </div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                {getWeatherSummary(weatherConfig)}
+              </div>
+            </div>
+            <Settings2 className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:rotate-45" />
+          </Button>
+          <WeatherDialog open={weatherDialogOpen} onClose={() => setWeatherDialogOpen(false)} />
         </div>
 
         {/* Weight & Fuel */}
