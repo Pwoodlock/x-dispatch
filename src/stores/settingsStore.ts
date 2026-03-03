@@ -84,11 +84,9 @@ interface SettingsState {
   map: MapSettings;
   simbrief: SimBriefSettings;
   appearance: AppearanceSettings;
-  addonManagerEnabled: boolean;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
   setFontSize: (size: FontSize) => void;
-  setAddonManagerEnabled: (enabled: boolean) => void;
   resetToDefaults: () => void;
 }
 
@@ -115,7 +113,6 @@ export const useSettingsStore = create<SettingsState>()(
       map: DEFAULT_MAP_SETTINGS,
       simbrief: DEFAULT_SIMBRIEF_SETTINGS,
       appearance: DEFAULT_APPEARANCE_SETTINGS,
-      addonManagerEnabled: false,
 
       updateMapSettings: (settings) =>
         set((state) => ({
@@ -132,15 +129,12 @@ export const useSettingsStore = create<SettingsState>()(
         set({ appearance: { fontSize: size } });
       },
 
-      setAddonManagerEnabled: (enabled) => set({ addonManagerEnabled: enabled }),
-
       resetToDefaults: () => {
         applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
         set({
           map: DEFAULT_MAP_SETTINGS,
           simbrief: DEFAULT_SIMBRIEF_SETTINGS,
           appearance: DEFAULT_APPEARANCE_SETTINGS,
-          addonManagerEnabled: false,
         });
       },
     }),
@@ -180,14 +174,6 @@ export const useSettingsStore = create<SettingsState>()(
           return {
             ...state,
             appearance: DEFAULT_APPEARANCE_SETTINGS,
-          };
-        }
-        if (version < 10) {
-          // Addon manager disabled by default
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            addonManagerEnabled: false,
           };
         }
         return persistedState as SettingsState;
