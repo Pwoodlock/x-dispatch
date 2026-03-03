@@ -1,5 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  type CloudLayer,
+  type CustomWeatherState,
+  DEFAULT_CLOUD_LAYER,
+  type WeatherConfig,
+  createDefaultWeatherConfig,
+  getPresetDefaults,
+} from '@/components/dialogs/LaunchDialog/weatherTypes';
 import type { Aircraft } from '@/types/aircraft';
 
 interface LaunchState {
@@ -13,7 +21,7 @@ interface LaunchState {
   timeOfDay: number;
   useRealWorldTime: boolean;
   coldAndDark: boolean;
-  selectedWeather: string;
+  weatherConfig: WeatherConfig;
 
   // Favorites (persisted to localStorage)
   favorites: string[];
@@ -31,7 +39,12 @@ interface LaunchState {
   setTimeOfDay: (value: number) => void;
   setUseRealWorldTime: (value: boolean) => void;
   setColdAndDark: (value: boolean) => void;
-  setSelectedWeather: (value: string) => void;
+  setWeatherMode: (mode: WeatherConfig['mode']) => void;
+  setWeatherPreset: (preset: string) => void;
+  updateCustomWeather: (partial: Partial<CustomWeatherState>) => void;
+  addCloudLayer: () => void;
+  removeCloudLayer: (index: number) => void;
+  updateCloudLayer: (index: number, data: Partial<CloudLayer>) => void;
   toggleFavorite: (path: string) => void;
   setIsLaunching: (value: boolean) => void;
   setLaunchError: (error: string | null) => void;
@@ -46,7 +59,7 @@ const DEFAULT_CONFIG = {
   timeOfDay: 12,
   useRealWorldTime: false,
   coldAndDark: false,
-  selectedWeather: 'clear',
+  weatherConfig: createDefaultWeatherConfig(),
   isLaunching: false,
   launchError: null,
 };
@@ -95,7 +108,71 @@ export const useLaunchStore = create<LaunchState>()(
 
       setColdAndDark: (value) => set({ coldAndDark: value }),
 
-      setSelectedWeather: (value) => set({ selectedWeather: value }),
+      setWeatherMode: (mode) =>
+        set((state) => ({
+          weatherConfig: { ...state.weatherConfig, mode },
+        })),
+
+      setWeatherPreset: (preset) => {
+        const defaults = getPresetDefaults(preset);
+        set({
+          weatherConfig: {
+            mode: preset === 'real' ? 'real' : 'preset',
+            preset,
+            custom: { ...defaults, clouds: defaults.clouds.map((c) => ({ ...c })) },
+          },
+        });
+      },
+
+      updateCustomWeather: (partial) =>
+        set((state) => ({
+          weatherConfig: {
+            ...state.weatherConfig,
+            mode: 'custom',
+            custom: { ...state.weatherConfig.custom, ...partial },
+          },
+        })),
+
+      addCloudLayer: () =>
+        set((state) => {
+          if (state.weatherConfig.custom.clouds.length >= 3) return state;
+          return {
+            weatherConfig: {
+              ...state.weatherConfig,
+              mode: 'custom',
+              custom: {
+                ...state.weatherConfig.custom,
+                clouds: [...state.weatherConfig.custom.clouds, { ...DEFAULT_CLOUD_LAYER }],
+              },
+            },
+          };
+        }),
+
+      removeCloudLayer: (index) =>
+        set((state) => ({
+          weatherConfig: {
+            ...state.weatherConfig,
+            mode: 'custom',
+            custom: {
+              ...state.weatherConfig.custom,
+              clouds: state.weatherConfig.custom.clouds.filter((_, i) => i !== index),
+            },
+          },
+        })),
+
+      updateCloudLayer: (index, data) =>
+        set((state) => {
+          const clouds = state.weatherConfig.custom.clouds.map((c, i) =>
+            i === index ? { ...c, ...data } : c
+          );
+          return {
+            weatherConfig: {
+              ...state.weatherConfig,
+              mode: 'custom',
+              custom: { ...state.weatherConfig.custom, clouds },
+            },
+          };
+        }),
 
       toggleFavorite: (path) =>
         set((state) => ({
@@ -121,22 +198,40 @@ export const useLaunchStore = create<LaunchState>()(
         timeOfDay: state.timeOfDay,
         useRealWorldTime: state.useRealWorldTime,
         coldAndDark: state.coldAndDark,
-        selectedWeather: state.selectedWeather,
+        weatherConfig: state.weatherConfig,
       }),
-      // Migrate old fuelPercentage to tankPercentages
-      migrate: (persisted: unknown) => {
+      migrate: (persisted: unknown, version: number) => {
         const state = persisted as Record<string, unknown>;
-        if ('fuelPercentage' in state && !('tankPercentages' in state)) {
-          const pct = (state.fuelPercentage as number) ?? 50;
-          const aircraft = state.selectedAircraft as Aircraft | null;
-          const tankCount = aircraft?.tankNames.length || 0;
-          state.tankPercentages = new Array(tankCount).fill(pct);
-          state.payloadWeights = new Array(aircraft?.payloadStations?.length || 0).fill(0);
-          delete state.fuelPercentage;
+
+        // v0 → v1: fuelPercentage → tankPercentages
+        if (version < 1) {
+          if ('fuelPercentage' in state && !('tankPercentages' in state)) {
+            const pct = (state.fuelPercentage as number) ?? 50;
+            const aircraft = state.selectedAircraft as Aircraft | null;
+            const tankCount = aircraft?.tankNames.length || 0;
+            state.tankPercentages = new Array(tankCount).fill(pct);
+            state.payloadWeights = new Array(aircraft?.payloadStations?.length || 0).fill(0);
+            delete state.fuelPercentage;
+          }
         }
+
+        // v1 → v2: selectedWeather → weatherConfig
+        if (version < 2) {
+          if ('selectedWeather' in state && !('weatherConfig' in state)) {
+            const weather = (state.selectedWeather as string) || 'clear';
+            const defaults = getPresetDefaults(weather);
+            state.weatherConfig = {
+              mode: weather === 'real' ? 'real' : 'preset',
+              preset: weather,
+              custom: { ...defaults, clouds: defaults.clouds.map((c) => ({ ...c })) },
+            } satisfies WeatherConfig;
+            delete state.selectedWeather;
+          }
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 1,
+      version: 2,
     }
   )
 );

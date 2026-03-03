@@ -17,6 +17,8 @@ import {
 import { useLaunchStore } from '@/stores/launchStore';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
 import type { StartPosition } from './types';
+import type { WeatherConfig } from './weatherTypes';
+import { TERRAIN_STATE_MAP } from './weatherTypes';
 
 interface LaunchPanelProps {
   open: boolean;
@@ -45,7 +47,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   const timeOfDay = useLaunchStore((s) => s.timeOfDay);
   const useRealWorldTime = useLaunchStore((s) => s.useRealWorldTime);
   const coldAndDark = useLaunchStore((s) => s.coldAndDark);
-  const selectedWeather = useLaunchStore((s) => s.selectedWeather);
+  const weatherConfig = useLaunchStore((s) => s.weatherConfig);
 
   // Zustand store actions
   const setIsLaunching = useLaunchStore((s) => s.setIsLaunching);
@@ -126,7 +128,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         aircraft: selectedAircraft,
         livery: selectedLivery,
         startPosition,
-        weather: selectedWeather,
+        weatherConfig,
         useRealWorldTime,
         dayOfYear,
         timeOfDay: timeInHours,
@@ -168,7 +170,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     aircraft: NonNullable<typeof selectedAircraft>;
     livery: string;
     startPosition: StartPosition;
-    weather: string;
+    weatherConfig: WeatherConfig;
     useRealWorldTime: boolean;
     dayOfYear: number;
     timeOfDay: number;
@@ -221,70 +223,142 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     }
 
     // Weather
-    if (params.weather === 'real') {
-      payload.weather = 'use_real_weather';
-    } else {
-      type WeatherDefinition = NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>>;
-      const weatherDefinitions: Record<string, WeatherDefinition> = {
-        clear: {
-          definition: 'vfr_few_clouds',
-          vertical_speed_in_thermal_in_feet_per_minute: 0,
-          wave_height_in_meters: 1,
-          wave_direction_in_degrees: 270,
-          terrain_state: 'dry',
-          variation_across_region_percentage: 0,
-          evolution_over_time_enum: 'static',
-        },
-        cloudy: {
-          definition: 'vfr_broken',
-          vertical_speed_in_thermal_in_feet_per_minute: 0,
-          wave_height_in_meters: 2,
-          wave_direction_in_degrees: 270,
-          terrain_state: 'dry',
-          variation_across_region_percentage: 50,
-          evolution_over_time_enum: 'static',
-        },
-        rainy: {
-          definition: 'ifr_non_precision',
-          vertical_speed_in_thermal_in_feet_per_minute: 0,
-          wave_height_in_meters: 4,
-          wave_direction_in_degrees: 200,
-          terrain_state: 'medium_wet',
-          variation_across_region_percentage: 50,
-          evolution_over_time_enum: 'gradually_deteriorating',
-        },
-        stormy: {
-          definition: 'large_cell_thunderstorm',
-          vertical_speed_in_thermal_in_feet_per_minute: 500,
-          wave_height_in_meters: 8,
-          wave_direction_in_degrees: 180,
-          terrain_state: 'very_wet',
-          variation_across_region_percentage: 100,
-          evolution_over_time_enum: 'rapidly_deteriorating',
-        },
-        snowy: {
-          definition: 'ifr_precision',
-          vertical_speed_in_thermal_in_feet_per_minute: 0,
-          wave_height_in_meters: 2,
-          wave_direction_in_degrees: 320,
-          terrain_state: 'medium_snowy',
-          variation_across_region_percentage: 30,
-          evolution_over_time_enum: 'static',
-        },
-        foggy: {
-          definition: 'ifr_precision',
-          vertical_speed_in_thermal_in_feet_per_minute: 0,
-          wave_height_in_meters: 1,
-          wave_direction_in_degrees: 270,
-          terrain_state: 'lightly_wet',
-          variation_across_region_percentage: 0,
-          evolution_over_time_enum: 'static',
-        },
-      };
-      payload.weather = weatherDefinitions[params.weather] || weatherDefinitions.clear;
-    }
+    payload.weather = buildWeatherPayload(params.weatherConfig, params.startPosition);
 
     return payload;
+  }
+
+  // Hardcoded preset weather definitions — identical to the working values from commit 03b81ff.
+  // These use X-Plane preset definition strings which are guaranteed to work with --new_flight_json.
+  function getPresetWeatherDefinition(
+    preset: string
+  ): NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>> {
+    type WeatherDefinition = NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>>;
+    const definitions: Record<string, WeatherDefinition> = {
+      clear: {
+        definition: 'vfr_few_clouds',
+        vertical_speed_in_thermal_in_feet_per_minute: 0,
+        wave_height_in_meters: 1,
+        wave_direction_in_degrees: 270,
+        terrain_state: 'dry',
+        variation_across_region_percentage: 0,
+        evolution_over_time_enum: 'static',
+      },
+      cloudy: {
+        definition: 'vfr_broken',
+        vertical_speed_in_thermal_in_feet_per_minute: 0,
+        wave_height_in_meters: 2,
+        wave_direction_in_degrees: 270,
+        terrain_state: 'dry',
+        variation_across_region_percentage: 50,
+        evolution_over_time_enum: 'static',
+      },
+      rainy: {
+        definition: 'ifr_non_precision',
+        vertical_speed_in_thermal_in_feet_per_minute: 0,
+        wave_height_in_meters: 4,
+        wave_direction_in_degrees: 200,
+        terrain_state: 'medium_wet',
+        variation_across_region_percentage: 50,
+        evolution_over_time_enum: 'gradually_deteriorating',
+      },
+      stormy: {
+        definition: 'large_cell_thunderstorm',
+        vertical_speed_in_thermal_in_feet_per_minute: 500,
+        wave_height_in_meters: 8,
+        wave_direction_in_degrees: 180,
+        terrain_state: 'very_wet',
+        variation_across_region_percentage: 100,
+        evolution_over_time_enum: 'rapidly_deteriorating',
+      },
+      snowy: {
+        definition: 'ifr_precision',
+        vertical_speed_in_thermal_in_feet_per_minute: 0,
+        wave_height_in_meters: 2,
+        wave_direction_in_degrees: 320,
+        terrain_state: 'medium_snowy',
+        variation_across_region_percentage: 30,
+        evolution_over_time_enum: 'static',
+      },
+      foggy: {
+        definition: 'ifr_precision',
+        vertical_speed_in_thermal_in_feet_per_minute: 0,
+        wave_height_in_meters: 1,
+        wave_direction_in_degrees: 270,
+        terrain_state: 'lightly_wet',
+        variation_across_region_percentage: 0,
+        evolution_over_time_enum: 'static',
+      },
+    };
+    return definitions[preset] || definitions.clear;
+  }
+
+  function buildWeatherPayload(config: WeatherConfig, pos: StartPosition): FlightInit['weather'] {
+    // Real weather — let X-Plane fetch live data
+    if (config.mode === 'real') return 'use_real_weather';
+
+    // Preset mode — use exact hardcoded definitions (proven working with --new_flight_json)
+    if (config.mode === 'preset') {
+      return getPresetWeatherDefinition(config.preset);
+    }
+
+    // Custom mode — build full definition object
+    type WeatherDefinition = NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>>;
+    const c = config.custom;
+    const hasCb = c.clouds.some((l) => l.type === 'cumulonimbus');
+
+    // Build cloud layers (max 3) — X-Plane spells cumulonimbus as 'cumulunimbus'
+    const clouds = c.clouds.map((layer) => ({
+      type: (layer.type === 'cumulonimbus' ? 'cumulunimbus' : layer.type) as
+        | 'cirrus'
+        | 'stratus'
+        | 'cumulus'
+        | 'cumulunimbus',
+      cover_ratio: layer.cover,
+      bases_in_feet_msl: layer.base_ft,
+      tops_in_feet_msl: layer.tops_ft,
+    }));
+
+    // Build wind layers — surface + auto-generated upper layers
+    const wind = [
+      {
+        altitude_in_feet_msl: 0,
+        speed_in_knots: c.wind_speed_kts,
+        direction_in_degrees_true: c.wind_direction_deg,
+        ...(c.wind_gust_kts > 0 && { gust_increase_in_knots: c.wind_gust_kts }),
+      },
+      {
+        altitude_in_feet_msl: 10000,
+        speed_in_knots: Math.round(c.wind_speed_kts * 1.5),
+        direction_in_degrees_true: (c.wind_direction_deg + 10) % 360,
+      },
+      {
+        altitude_in_feet_msl: 25000,
+        speed_in_knots: Math.round(c.wind_speed_kts * 2),
+        direction_in_degrees_true: (c.wind_direction_deg + 20) % 360,
+      },
+    ];
+
+    return {
+      definition: {
+        latitude_in_degrees: pos.latitude,
+        longitude_in_degrees: pos.longitude,
+        elevation_in_meters: 0,
+        visibility_in_kilometers: c.visibility_km,
+        precipitation_ratio: c.precipitation,
+        ...(c.temperature_offset_c !== 0 && {
+          temperature_in_degrees_celsius: 15 + c.temperature_offset_c,
+        }),
+        ...(clouds.length > 0 && { clouds }),
+        wind,
+      },
+      vertical_speed_in_thermal_in_feet_per_minute: hasCb ? 500 : 0,
+      wave_height_in_meters: Math.max(0.5, c.wind_speed_kts * 0.15),
+      wave_direction_in_degrees: c.wind_direction_deg,
+      terrain_state: TERRAIN_STATE_MAP[c.terrain_state],
+      variation_across_region_percentage: c.precipitation * 100,
+      evolution_over_time_enum: 'static',
+    } satisfies WeatherDefinition;
   }
 
   return (
