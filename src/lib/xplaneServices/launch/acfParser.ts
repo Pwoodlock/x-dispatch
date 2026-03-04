@@ -10,11 +10,13 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
 
     const props: Record<string, string> = {};
 
-    for (const line of lines) {
-      if (line.startsWith('P acf/')) {
-        const match = line.match(/^P (acf\/[^\s]+)\s+(.*)$/);
+    for (let line of lines) {
+      line = line.trimEnd(); // Handle CRLF line endings
+      // Parse both `P acf/` and `P _cgpt/` properties
+      if (line.startsWith('P acf/') || line.startsWith('P _cgpt/')) {
+        const match = line.match(/^P ([^\s]+)\s+(.*)$/);
         if (match) {
-          props[match[1]] = match[2].trim();
+          props[match[1]] = match[2];
         }
       }
     }
@@ -31,6 +33,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     const liveries = scanLiveries(acfDir);
 
     // Parse fuel tank names and ratios
+    // Primary: acf/_tank_name properties. Fallback: _cgpt entries (indices 1-9 are fuel tanks)
     const tankNames: string[] = [];
     const tankRatios: number[] = [];
     for (let i = 0; i < 9; i++) {
@@ -38,6 +41,19 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
       if (tankName) {
         tankNames.push(tankName);
         tankRatios.push(parseFloat(props[`acf/_tank_rat/${i}`]) || 0);
+      }
+    }
+    // Fallback: use _cgpt fuel tank entries when acf/_tank_name is missing
+    if (tankNames.length === 0) {
+      for (let i = 0; i < 9; i++) {
+        const cgptIdx = i + 1; // _cgpt/0 is empty craft, 1-9 are fuel tanks
+        const cgptName = props[`_cgpt/${cgptIdx}/_name`];
+        const maxWeight = parseFloat(props[`_cgpt/${cgptIdx}/_w_max`]) || 0;
+        const ratio = parseFloat(props[`acf/_tank_rat/${i}`]) || 0;
+        if (cgptName && maxWeight > 0 && ratio > 0) {
+          tankNames.push(cgptName);
+          tankRatios.push(ratio);
+        }
       }
     }
 
