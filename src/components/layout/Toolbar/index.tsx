@@ -312,6 +312,9 @@ export default function Toolbar({
             >
               <Package className="h-4 w-4" />
               <span className="text-sm font-medium">Addons</span>
+              <span className="rounded-sm bg-warning/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none text-warning">
+                alpha
+              </span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>

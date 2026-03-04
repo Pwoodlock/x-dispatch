@@ -12,7 +12,9 @@ import path from 'node:path';
 
 const config: ForgeConfig = {
   packagerConfig: {
-    asar: true,
+    asar: {
+      unpackDir: 'node_modules/7zip-bin',
+    },
     icon: './assets/icon',
     executableName: 'x-dispatch',
     extraResource: ['./assets'],
@@ -89,6 +91,8 @@ const config: ForgeConfig = {
         'ws',
         'bufferutil',
         'utf-8-validate',
+        '7zip-bin',
+        'node-7z',
       ];
 
       const sourceNodeModulesPath = path.resolve(__dirname, 'node_modules');

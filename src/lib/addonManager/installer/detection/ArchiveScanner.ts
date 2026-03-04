@@ -109,7 +109,8 @@ async function listSevenZipEntries(
   archivePath: string
 ): Promise<Result<ArchiveEntry[], InstallerError>> {
   // Dynamic import to avoid issues if 7zip-bin not available
-  const { list } = await import('node-7z');
+  const node7z = await import('node-7z');
+  const list = node7z.default?.list ?? node7z.list;
   const pathTo7zip = await get7zipPath();
 
   return new Promise((resolve) => {
