@@ -14,6 +14,8 @@ export const external = [
   'bufferutil',
   'utf-8-validate',
   'electron-squirrel-startup',
+  '7zip-bin',
+  'node-7z',
 ];
 
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {

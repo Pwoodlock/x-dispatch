@@ -51,7 +51,8 @@ export async function extractSevenZip(
 ): Promise<Result<ExtractResult, InstallerError>> {
   const { archivePath, targetDir, internalRoot, password, onProgress } = options;
 
-  const { extractFull } = await import('node-7z');
+  const node7z = await import('node-7z');
+  const extractFull = node7z.default?.extractFull ?? node7z.extractFull;
   const pathTo7zip = await get7zipPath();
 
   return new Promise((resolve) => {
