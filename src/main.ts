@@ -228,6 +228,8 @@ function registerIpcHandlers() {
     status: dataManager.getStatus(),
   }));
 
+  ipcMain.handle('app:getXPlaneVersion', () => dataManager.getXPlaneVersion());
+
   ipcMain.handle('app:clearCache', () => {
     logger.main.info('Clearing cache via IPC');
     dataManager.clearCache();
@@ -258,6 +260,9 @@ function registerIpcHandlers() {
       // Detect data sources first (Navigraph vs X-Plane default)
       dataManager.detectDataSources(xplanePath);
 
+      // Detect X-Plane version concurrently with first data load
+      const versionPromise = dataManager.detectAndStoreVersion(xplanePath).catch(() => {});
+
       sendLoadingProgress({ step: 'airports', status: 'loading', message: 'Loading airports...' });
       await dataManager.loadAirportsOnly(xplanePath);
       sendLoadingProgress({
@@ -266,6 +271,9 @@ function registerIpcHandlers() {
         message: 'Airports loaded',
         count: dataManager.getStatus().airports.count,
       });
+
+      // Ensure version is stored before loading completes
+      await versionPromise;
 
       sendLoadingProgress({
         step: 'navaids',

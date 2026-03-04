@@ -30,7 +30,12 @@ import {
   getDistinctCountries as getDistinctCountriesFromDb,
   loadAirports,
 } from './airports';
-import { getXPlanePath, setXPlanePath } from './config';
+import {
+  getStoredXPlaneVersion,
+  getXPlanePath,
+  setStoredXPlaneVersion,
+  setXPlanePath,
+} from './config';
 import { NavDataSources, detectAllDataSources } from './cycleInfo';
 import {
   loadATCData,
@@ -77,6 +82,7 @@ import {
   validateXPlanePath,
 } from './paths';
 import type { Airport, AirportSourceBreakdown, DataLoadStatus, LoadStatusFlags } from './types';
+import { type XPlaneVersionInfo, detectXPlaneVersion, parseVersionString } from './versionDetector';
 
 export type { Airport, AirportSourceBreakdown, DataLoadStatus } from './types';
 export type { AirwaySegmentWithCoords } from '@/types/navigation';
@@ -129,6 +135,9 @@ export class XPlaneDataManager {
       logger.data.info(
         `Data sources: ${this.dataSources.global.source}${this.dataSources.global.cycle ? ` (AIRAC ${this.dataSources.global.cycle})` : ''}`
       );
+
+      // Refresh X-Plane version in background (catches updates between sessions)
+      this.detectAndStoreVersion(xplanePath).catch(() => {});
     }
 
     // Check cache status for load flags (all data queried from SQLite on-demand)
@@ -211,6 +220,33 @@ export class XPlaneDataManager {
   detectDataSources(xplanePath: string): void {
     this.xplanePath = xplanePath;
     this.dataSources = detectAllDataSources(xplanePath);
+  }
+
+  /**
+   * Detect X-Plane version and store it in config.
+   * Non-blocking — logs warnings but never throws.
+   */
+  async detectAndStoreVersion(xplanePath: string): Promise<void> {
+    try {
+      const info = await detectXPlaneVersion(xplanePath);
+      if (info) {
+        setStoredXPlaneVersion(info);
+        logger.data.info(`X-Plane version: ${info.raw}${info.isSteam ? ' (Steam)' : ''}`);
+      }
+    } catch (err) {
+      logger.data.warn('Failed to detect X-Plane version', err);
+    }
+  }
+
+  /**
+   * Get the stored X-Plane version info (from config.json)
+   */
+  getXPlaneVersion(): XPlaneVersionInfo | null {
+    const stored = getStoredXPlaneVersion();
+    if (!stored) return null;
+    const parsed = parseVersionString(stored.version);
+    if (!parsed) return null;
+    return { ...parsed, isSteam: stored.isSteam };
   }
 
   /**

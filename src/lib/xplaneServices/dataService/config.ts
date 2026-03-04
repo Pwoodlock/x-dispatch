@@ -2,6 +2,7 @@ import { app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { validateXPlanePath } from './paths';
+import type { XPlaneVersionInfo } from './versionDetector';
 
 interface XPlaneConfig {
   xplanePath: string;
@@ -9,6 +10,10 @@ interface XPlaneConfig {
   lastUpdated: string;
   /** Whether to send crash reports to Sentry (opt-in, default false) */
   sendCrashReports?: boolean;
+  /** Detected X-Plane version string, e.g. "12.4.0-r2-9b69b91a" */
+  xplaneVersion?: string;
+  /** Whether the X-Plane install is from Steam */
+  xplaneIsSteam?: boolean;
 }
 
 const CONFIG_VERSION = 1;
@@ -74,6 +79,8 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
       version: CONFIG_VERSION,
       lastUpdated: new Date().toISOString(),
       sendCrashReports: config.sendCrashReports ?? existing?.sendCrashReports ?? true,
+      xplaneVersion: config.xplaneVersion ?? existing?.xplaneVersion,
+      xplaneIsSteam: config.xplaneIsSteam ?? existing?.xplaneIsSteam,
     };
 
     fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf-8');
@@ -128,4 +135,20 @@ export function getSendCrashReports(): boolean {
  */
 export function setSendCrashReports(enabled: boolean): boolean {
   return saveConfig({ sendCrashReports: enabled });
+}
+
+/**
+ * Get stored X-Plane version info
+ */
+export function getStoredXPlaneVersion(): { version: string; isSteam: boolean } | null {
+  const config = loadConfig();
+  if (!config?.xplaneVersion) return null;
+  return { version: config.xplaneVersion, isSteam: config.xplaneIsSteam ?? false };
+}
+
+/**
+ * Store X-Plane version info
+ */
+export function setStoredXPlaneVersion(info: XPlaneVersionInfo): boolean {
+  return saveConfig({ xplaneVersion: info.raw, xplaneIsSteam: info.isSteam });
 }

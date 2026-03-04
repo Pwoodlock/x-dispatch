@@ -241,6 +241,9 @@
       "current": "Current",
       "atcFrequencies": "ATC Frequencies",
       "holdingPatterns": "Holdings",
+      "version": "Version",
+      "steam": "Steam",
+      "versionUnknown": "Unknown version",
       "airportMetadata": "Airport Metadata",
       "moraGrid": "MORA Grid",
       "msaSectors": "MSA Sectors"
