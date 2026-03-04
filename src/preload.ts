@@ -97,6 +97,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   openExternal: (url: string) => ipcRenderer.invoke('app:openExternal', url),
   getSendCrashReports: () => ipcRenderer.invoke('app:getSendCrashReports'),
   setSendCrashReports: (enabled: boolean) => ipcRenderer.invoke('app:setSendCrashReports', enabled),
+  getXPlaneVersion: () => ipcRenderer.invoke('app:getXPlaneVersion'),
 });
 
 contextBridge.exposeInMainWorld('xplaneAPI', {
@@ -322,6 +323,16 @@ declare global {
       openExternal: (url: string) => Promise<{ success: boolean; error?: string }>;
       getSendCrashReports: () => Promise<boolean>;
       setSendCrashReports: (enabled: boolean) => Promise<boolean>;
+      getXPlaneVersion: () => Promise<{
+        raw: string;
+        major: number;
+        minor: number;
+        patch: number;
+        channel: 'release' | 'beta' | 'ec' | 'unknown';
+        channelBuild: number;
+        commit: string;
+        isSteam: boolean;
+      } | null>;
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;

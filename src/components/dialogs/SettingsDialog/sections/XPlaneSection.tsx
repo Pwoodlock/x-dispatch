@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Check, FolderOpen, Loader2, Plane } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
@@ -13,6 +14,16 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
   const { data: xplanePath } = useXPlanePath();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [versionInfo, setVersionInfo] = useState<{
+    raw: string;
+    isSteam: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    window.appAPI.getXPlaneVersion().then((info) => {
+      if (info) setVersionInfo({ raw: info.raw, isSteam: info.isSteam });
+    });
+  }, [xplanePath]);
 
   const handleBrowse = async () => {
     setLoading(true);
@@ -72,6 +83,18 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
             <span className="text-sm font-medium">
               {xplanePath.split('/').pop() || xplanePath.split('\\').pop()}
             </span>
+            {versionInfo && (
+              <>
+                <Badge variant="secondary" className="text-xs">
+                  {versionInfo.raw}
+                </Badge>
+                {versionInfo.isSteam && (
+                  <Badge variant="outline" className="text-xs">
+                    {t('settings.xplane.steam')}
+                  </Badge>
+                )}
+              </>
+            )}
           </div>
           <p className="truncate font-mono text-sm text-muted-foreground">{xplanePath}</p>
         </div>
