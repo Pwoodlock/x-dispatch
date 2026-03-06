@@ -78,6 +78,7 @@ const TileImage = React.forwardRef<HTMLImageElement, TileImageProps>(
             'flex items-center justify-center bg-muted text-muted-foreground',
             className
           )}
+          {...props}
         >
           {fallback}
         </div>
