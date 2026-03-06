@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils/helpers';
 import {
   formatDistance,
@@ -49,7 +50,6 @@ export default function FlightInfoPanel() {
   const clearFlightPlan = useFlightPlanStore((s) => s.clearFlightPlan);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   if (!simbriefData) {
     return null;
@@ -172,34 +172,37 @@ export default function FlightInfoPanel() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className={cn('flex border-b border-border/30', isCollapsed && 'opacity-0')}>
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex flex-1 items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors',
-                activeTab === tab.id
-                  ? 'border-b-2 border-foreground text-foreground'
-                  : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
-        </div>
+        {/* Tab Navigation + Content */}
+        <Tabs
+          defaultValue="overview"
+          className={cn('flex min-h-0 flex-1 flex-col', isCollapsed && 'opacity-0')}
+        >
+          <TabsList variant="line" className="border-border/30">
+            {TABS.map((tab) => (
+              <TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-1 text-[10px]">
+                {tab.icon}
+                <span className="hidden sm:inline">{tab.label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {/* Tab Content */}
-        <ScrollArea className={cn('flex-1', isCollapsed && 'opacity-0')}>
-          <div className="p-3">
-            {activeTab === 'overview' && <OverviewTab data={simbriefData} apiUnit={apiUnit} />}
-            {activeTab === 'fuel' && <FuelTab data={simbriefData} apiUnit={apiUnit} />}
-            {activeTab === 'weights' && <WeightsTab data={simbriefData} apiUnit={apiUnit} />}
-            {activeTab === 'weather' && <WeatherTab data={simbriefData} />}
-          </div>
-        </ScrollArea>
+          <ScrollArea className="flex-1">
+            <div className="p-3">
+              <TabsContent value="overview" className="mt-0">
+                <OverviewTab data={simbriefData} apiUnit={apiUnit} />
+              </TabsContent>
+              <TabsContent value="fuel" className="mt-0">
+                <FuelTab data={simbriefData} apiUnit={apiUnit} />
+              </TabsContent>
+              <TabsContent value="weights" className="mt-0">
+                <WeightsTab data={simbriefData} apiUnit={apiUnit} />
+              </TabsContent>
+              <TabsContent value="weather" className="mt-0">
+                <WeatherTab data={simbriefData} />
+              </TabsContent>
+            </div>
+          </ScrollArea>
+        </Tabs>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import type { WeatherRadarControls } from '../hooks/useWeatherRadar';
 
@@ -40,29 +41,35 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
           'backdrop-blur-xl'
         )}
       >
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={stepBack}
-          className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          className="h-7 w-7 text-white/60 hover:bg-white/10 hover:text-white"
           aria-label="Previous frame"
         >
           <ChevronLeft className="h-4 w-4" />
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={isPlaying ? pause : play}
-          className="rounded p-1 text-primary transition-colors hover:bg-white/10 hover:text-xp-cyan-light"
+          className="h-7 w-7 text-primary hover:bg-white/10 hover:text-xp-cyan-light"
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={stepForward}
-          className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          className="h-7 w-7 text-white/60 hover:bg-white/10 hover:text-white"
           aria-label="Next frame"
         >
           <ChevronRight className="h-4 w-4" />
-        </button>
+        </Button>
 
         <div className="flex items-center gap-1.5 border-l border-border/50 pl-2">
           <span className="font-mono text-xs font-medium tabular-nums text-primary">

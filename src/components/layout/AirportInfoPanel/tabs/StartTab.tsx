@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
@@ -38,8 +41,8 @@ export default function StartTab({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Clear search when switching tabs
-  const handleTabChange = (tab: ViewType) => {
-    setViewType(tab);
+  const handleTabChange = (value: string) => {
+    setViewType(value as ViewType);
     setSearchQuery('');
   };
 
@@ -67,43 +70,38 @@ export default function StartTab({
     <div className="space-y-3">
       {/* View toggle - only show if multiple categories */}
       {tabs.length > 1 && (
-        <div className="flex gap-3 border-b border-border/30">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={cn(
-                '-mb-px pb-2 text-sm font-medium transition-colors',
-                viewType === tab.id
-                  ? 'border-b-2 border-foreground text-foreground'
-                  : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {t(tab.labelKey)}
-              <span className="ml-1.5 text-muted-foreground/50">{tab.count}</span>
-            </button>
-          ))}
-        </div>
+        <Tabs value={viewType} onValueChange={handleTabChange}>
+          <TabsList variant="line" className="gap-3 border-border/30">
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab.id} value={tab.id} className="px-0 text-sm">
+                {t(tab.labelKey)}
+                <span className="ml-1.5 text-muted-foreground/50">{tab.count}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       )}
 
       {/* Search input - only show for lists > 8 items */}
       {showSearch && (
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             placeholder={t('airportInfo.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 w-full rounded-md border border-border/50 bg-muted/30 pl-8 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+            className="h-8 border-border/50 bg-muted/30 pl-8 pr-8"
           />
           {searchQuery && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -237,8 +235,9 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
         const hasBadges = sizeConfig || opConfig;
 
         return (
-          <button
+          <Button
             key={originalIndex}
+            variant="ghost"
             onClick={() =>
               onSelect?.({
                 latitude: gate.latitude,
@@ -250,9 +249,9 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
               })
             }
             className={cn(
-              'flex w-full flex-col rounded px-2.5 py-2 text-left transition-colors',
+              'h-auto w-full flex-col items-stretch rounded px-2.5 py-2 text-left',
               isSelected
-                ? 'bg-emerald-500/10 text-emerald-400'
+                ? 'bg-cat-emerald/10 text-cat-emerald'
                 : 'text-foreground/80 hover:bg-muted/50'
             )}
           >
@@ -287,7 +286,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
                 )}
               </div>
             )}
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -353,7 +352,7 @@ function RunwayList({
             {/* Runway header */}
             <button
               onClick={() => onSelectRunway?.(runway)}
-              className="mb-1.5 flex w-full items-baseline justify-between text-left"
+              className="mb-1.5 flex h-auto w-full items-baseline justify-between rounded px-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <span className="font-mono text-sm font-semibold text-foreground">
                 {e1.name}/{e2.name}
@@ -370,8 +369,9 @@ function RunwayList({
                 const isSelected = selectedIndex === globalEndIndex;
 
                 return (
-                  <button
+                  <Button
                     key={end.name}
+                    variant="ghost"
                     onClick={() =>
                       onSelectEnd?.({
                         name: end.name,
@@ -382,15 +382,15 @@ function RunwayList({
                       })
                     }
                     className={cn(
-                      'flex flex-1 items-center justify-center gap-1.5 rounded py-2 font-mono text-sm transition-colors',
+                      'h-auto flex-1 gap-1.5 rounded py-2 font-mono text-sm',
                       isSelected
-                        ? 'bg-emerald-500/10 text-emerald-400'
+                        ? 'bg-cat-emerald/10 text-cat-emerald'
                         : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                     )}
                   >
                     {end.name}
                     {isSelected && <Check className="h-3 w-3" />}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -445,8 +445,9 @@ function HelipadList({
         const xplaneIndex = `${runwayCount + originalIndex}_0`;
 
         return (
-          <button
+          <Button
             key={originalIndex}
+            variant="ghost"
             onClick={() =>
               onSelect?.({
                 latitude: helipad.latitude,
@@ -458,9 +459,9 @@ function HelipadList({
               })
             }
             className={cn(
-              'flex w-full items-center justify-between rounded px-2.5 py-2 text-left transition-colors',
+              'h-auto w-full justify-between rounded px-2.5 py-2 text-left',
               isSelected
-                ? 'bg-emerald-500/10 text-emerald-400'
+                ? 'bg-cat-emerald/10 text-cat-emerald'
                 : 'text-foreground/80 hover:bg-muted/50'
             )}
           >
@@ -469,7 +470,7 @@ function HelipadList({
               <span className="text-[10px] text-muted-foreground/50">{sizeFt}</span>
               {isSelected && <Check className="h-3.5 w-3.5" />}
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>

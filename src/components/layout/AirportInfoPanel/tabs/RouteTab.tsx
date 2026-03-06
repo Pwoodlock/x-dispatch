@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Procedure } from '@/lib/parsers/nav/cifpParser';
 import { cn } from '@/lib/utils/helpers';
 import { useAirportProcedures } from '@/queries';
@@ -60,10 +62,15 @@ export default function RouteTab() {
     selectProcedure(proc as Parameters<typeof selectProcedure>[0]);
   };
 
+  const handleTypeChange = (value: string) => {
+    setActiveType(value as ProcedureType);
+    setExpandedProcedure(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
       </div>
     );
   }
@@ -77,26 +84,16 @@ export default function RouteTab() {
   return (
     <div>
       {/* Type toggle */}
-      <div className="mb-6 flex gap-4 border-b border-border/30">
-        {(['SID', 'STAR', 'APP'] as ProcedureType[]).map((type) => (
-          <button
-            key={type}
-            onClick={() => {
-              setActiveType(type);
-              setExpandedProcedure(null);
-            }}
-            className={cn(
-              '-mb-px pb-3 text-sm font-medium transition-colors',
-              activeType === type
-                ? 'border-b-2 border-foreground text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {type === 'APP' ? 'Approach' : type}
-            <span className="ml-2 text-muted-foreground/50">{counts[type]}</span>
-          </button>
-        ))}
-      </div>
+      <Tabs value={activeType} onValueChange={handleTypeChange} className="mb-6">
+        <TabsList variant="line" className="gap-4 border-border/30">
+          {(['SID', 'STAR', 'APP'] as ProcedureType[]).map((type) => (
+            <TabsTrigger key={type} value={type} className="px-0 text-sm">
+              {type === 'APP' ? 'Approach' : type}
+              <span className="ml-2 text-muted-foreground/50">{counts[type]}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Procedure list */}
       {grouped.length === 0 ? (
@@ -131,11 +128,12 @@ export default function RouteTab() {
                   : null;
 
               return (
-                <button
+                <Button
                   key={group.name}
+                  variant="ghost"
                   onClick={() => handleSelect(proc)}
                   className={cn(
-                    'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition-colors',
+                    'h-auto w-full justify-between px-3 py-2.5 text-left',
                     isSelected
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground/80 hover:bg-muted/50'
@@ -148,7 +146,7 @@ export default function RouteTab() {
                     )}
                     {isSelected && <Check className="h-4 w-4" />}
                   </div>
-                </button>
+                </Button>
               );
             }
 
@@ -171,10 +169,11 @@ export default function RouteTab() {
 
             return (
               <div key={group.name}>
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setExpandedProcedure(isExpanded ? null : group.name)}
                   className={cn(
-                    'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition-colors',
+                    'h-auto w-full justify-between px-3 py-2.5 text-left',
                     isAnyVariantSelected
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground/80 hover:bg-muted/50'
@@ -190,7 +189,7 @@ export default function RouteTab() {
                       isExpanded && 'rotate-90'
                     )}
                   />
-                </button>
+                </Button>
 
                 {/* Variants: transitions for approaches, runways for SID/STAR */}
                 {isExpanded && (
@@ -212,11 +211,12 @@ export default function RouteTab() {
                       }
 
                       return (
-                        <button
+                        <Button
                           key={`${proc.runway}-${proc.transition}-${idx}`}
+                          variant="ghost"
                           onClick={() => handleSelect(proc)}
                           className={cn(
-                            'flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors',
+                            'h-auto w-full justify-between px-3 py-2 text-left',
                             isSelected
                               ? 'bg-primary/10 text-primary'
                               : 'text-foreground/70 hover:bg-muted/50'
@@ -224,7 +224,7 @@ export default function RouteTab() {
                         >
                           <span className="text-sm">{displayLabel}</span>
                           {isSelected && <Check className="h-3.5 w-3.5" />}
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>

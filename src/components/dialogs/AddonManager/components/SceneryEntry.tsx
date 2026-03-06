@@ -64,18 +64,20 @@ export function SortableSceneryEntry({
       </div>
 
       {/* Drag handle */}
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         {...attributes}
         {...listeners}
         className={cn(
-          'flex h-7 w-7 cursor-grab items-center justify-center rounded-md transition-colors',
+          'h-7 w-7 cursor-grab',
           'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
           isDragging && 'cursor-grabbing text-primary'
         )}
         disabled={disabled}
       >
         <GripVertical className="h-4 w-4" />
-      </button>
+      </Button>
 
       {/* Enable/disable toggle */}
       <div className="flex items-center">

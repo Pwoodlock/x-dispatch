@@ -86,10 +86,11 @@ function AircraftListItem({
       </div>
 
       {/* Favorite Button */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon"
         className={cn(
-          'flex h-7 w-7 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
+          'h-7 w-7',
           isFavorite ? 'text-warning' : 'text-muted-foreground/30 hover:text-muted-foreground'
         )}
         onClick={(e) => {
@@ -99,7 +100,7 @@ function AircraftListItem({
         aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       >
         <Star className={cn('h-4 w-4', isFavorite && 'fill-current')} />
-      </button>
+      </Button>
     </div>
   );
 }

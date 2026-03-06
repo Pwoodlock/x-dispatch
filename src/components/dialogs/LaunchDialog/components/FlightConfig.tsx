@@ -22,6 +22,7 @@ import tzLookup from 'tz-lookup';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatWeight } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
@@ -169,6 +170,14 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
     : 0;
   const isOverweight = selectedAircraft ? totalWeight > selectedAircraft.maxWeight : false;
 
+  // Derive weather toggle value
+  const weatherValue =
+    weatherConfig.mode === 'real'
+      ? 'real'
+      : weatherConfig.mode === 'preset'
+        ? weatherConfig.preset
+        : '';
+
   return (
     <div className="flex w-64 min-w-[240px] flex-col border-l border-border/50 bg-card lg:w-72">
       <div className="flex-shrink-0 px-4 py-3">
@@ -183,20 +192,24 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
             {t('launcher.config.timeOfDay')}
           </Label>
 
-          <div className="grid grid-cols-2 gap-1.5">
-            <ToggleButton
-              active={useRealWorldTime}
-              onClick={() => setUseRealWorldTime(true)}
-              icon={Radio}
-              label={t('launcher.time.live')}
-            />
-            <ToggleButton
-              active={!useRealWorldTime}
-              onClick={() => setUseRealWorldTime(false)}
-              icon={Clock}
-              label={t('launcher.time.set')}
-            />
-          </div>
+          <ToggleGroup
+            type="single"
+            variant="subtle"
+            value={useRealWorldTime ? 'live' : 'set'}
+            onValueChange={(v) => {
+              if (v) setUseRealWorldTime(v === 'live');
+            }}
+            className="grid grid-cols-2 gap-1.5"
+          >
+            <ToggleGroupItem value="live" className="h-auto gap-1.5 px-2 py-2 text-sm">
+              <Radio className="h-4 w-4" />
+              <span>{t('launcher.time.live')}</span>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="set" className="h-auto gap-1.5 px-2 py-2 text-sm">
+              <Clock className="h-4 w-4" />
+              <span>{t('launcher.time.set')}</span>
+            </ToggleGroupItem>
+          </ToggleGroup>
 
           {useRealWorldTime && airportTimeInfo && (
             <div className="text-center font-mono text-lg text-foreground">
@@ -222,39 +235,35 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
             {t('launcher.config.weather')}
           </Label>
 
-          <div className="grid grid-cols-4 gap-1">
+          <ToggleGroup
+            type="single"
+            variant="subtle"
+            value={weatherValue}
+            onValueChange={(v) => {
+              if (v) setWeatherPreset(v);
+            }}
+            className="grid grid-cols-4 gap-1"
+          >
             {WEATHER_OPTIONS.map((weather) => {
               const Icon = WEATHER_ICONS[weather] || Cloud;
-              const isActive =
-                (weather === 'real' && weatherConfig.mode === 'real') ||
-                (weather !== 'real' &&
-                  weatherConfig.mode !== 'real' &&
-                  weatherConfig.preset === weather &&
-                  weatherConfig.mode === 'preset');
               return (
-                <button
+                <ToggleGroupItem
                   key={weather}
-                  type="button"
-                  onClick={() => setWeatherPreset(weather)}
-                  className={cn(
-                    'flex flex-col items-center gap-1 rounded-md px-1.5 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                    isActive
-                      ? 'bg-primary/10 text-primary ring-1 ring-primary'
-                      : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
-                  )}
+                  value={weather}
+                  className="h-auto flex-col gap-1 px-1.5 py-2 text-sm"
                 >
                   <Icon className="h-4 w-4" />
                   <span>{t(`launcher.weather.${weather}`)}</span>
-                </button>
+                </ToggleGroupItem>
               );
             })}
-          </div>
+          </ToggleGroup>
 
           {/* Customize / summary card */}
-          <button
-            type="button"
+          <Button
+            variant="outline"
             onClick={() => setWeatherDialogOpen(true)}
-            className="group flex w-full items-center justify-between rounded-md border border-border/50 px-2.5 py-1.5 text-left transition-colors hover:bg-secondary/60"
+            className="group h-auto w-full justify-between border-border/50 px-2.5 py-1.5 text-left hover:bg-secondary/60"
           >
             <div className="min-w-0">
               <span
@@ -275,8 +284,8 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
                 </span>
               )}
             </div>
-            <Settings2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:rotate-45" />
-          </button>
+            <Settings2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:rotate-45" />
+          </Button>
         </section>
 
         {/* ── Weight & Fuel ──────────────────────────────── */}
@@ -332,20 +341,24 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
             <Power className="h-4 w-4" />
             {t('launcher.config.startState')}
           </Label>
-          <div className="grid grid-cols-2 gap-1.5">
-            <ToggleButton
-              active={!coldAndDark}
-              onClick={() => setColdAndDark(false)}
-              icon={Power}
-              label={t('launcher.startState.ready')}
-            />
-            <ToggleButton
-              active={coldAndDark}
-              onClick={() => setColdAndDark(true)}
-              icon={PowerOff}
-              label={t('launcher.startState.cold')}
-            />
-          </div>
+          <ToggleGroup
+            type="single"
+            variant="subtle"
+            value={coldAndDark ? 'cold' : 'ready'}
+            onValueChange={(v) => {
+              if (v) setColdAndDark(v === 'cold');
+            }}
+            className="grid grid-cols-2 gap-1.5"
+          >
+            <ToggleGroupItem value="ready" className="h-auto gap-1.5 px-2 py-2 text-sm">
+              <Power className="h-4 w-4" />
+              <span>{t('launcher.startState.ready')}</span>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="cold" className="h-auto gap-1.5 px-2 py-2 text-sm">
+              <PowerOff className="h-4 w-4" />
+              <span>{t('launcher.startState.cold')}</span>
+            </ToggleGroupItem>
+          </ToggleGroup>
         </section>
 
         {/* ── Flight Summary ─────────────────────────────── */}
@@ -409,35 +422,5 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
       <WeatherDialog open={weatherDialogOpen} onClose={() => setWeatherDialogOpen(false)} />
       <WeightBalanceDialog open={weightDialogOpen} onClose={() => setWeightDialogOpen(false)} />
     </div>
-  );
-}
-
-// ─── Shared toggle button for Time & Start State ─────────────────────────────
-
-function ToggleButton({
-  active,
-  onClick,
-  icon: Icon,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: typeof Sun;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        active
-          ? 'bg-primary/10 text-primary ring-1 ring-primary'
-          : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
-      )}
-    >
-      <Icon className="h-4 w-4" />
-      <span>{label}</span>
-    </button>
   );
 }
