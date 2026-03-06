@@ -88,11 +88,12 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
-                  <button
+                  <Button
                     key={item.id}
+                    variant="ghost"
                     onClick={() => setActiveTab(item.id)}
                     className={cn(
-                      'group flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-all',
+                      'group h-auto w-full items-start gap-3 px-3 py-2.5 text-left',
                       isActive
                         ? 'bg-primary/10 text-primary'
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -121,7 +122,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                     {isActive && (
                       <div className="absolute right-0 h-8 w-0.5 rounded-l-full bg-primary" />
                     )}
-                  </button>
+                  </Button>
                 );
               })}
             </div>

@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
 import { getFeaturedAirportsByCategory } from '@/components/layout/Toolbar/ExplorePanel/featured';
-import { cn } from '@/lib/utils/helpers';
+import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { FeaturedCategory } from '@/types/featured';
 import type { FeaturedTabProps } from './types';
 
@@ -26,29 +27,28 @@ export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: Fea
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <ToggleGroup
+        type="single"
+        value={category}
+        onValueChange={(v) => {
+          if (v) onCategoryChange(v as FeaturedCategory | 'all');
+        }}
+        className="flex flex-wrap gap-2"
+      >
         {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => onCategoryChange(cat)}
-            className={cn(
-              'rounded-full px-3 py-1 text-sm font-medium transition-colors',
-              category === cat
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            )}
-          >
+          <ToggleGroupItem key={cat} value={cat} className="h-auto rounded-full px-3 py-1 text-sm">
             {cat === 'all' ? t('explore.featured.all') : t(`explore.featured.${cat}`)}
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
 
       <div className="grid gap-2">
         {airports.map((airport) => (
-          <button
+          <Button
             key={airport.icao}
+            variant="ghost"
             onClick={() => onSelectAirport(airport.icao)}
-            className="flex items-start gap-3 rounded-lg border border-border bg-background p-3 text-left transition-colors hover:bg-muted"
+            className="h-auto w-full items-start gap-3 border border-border bg-background p-3 text-left hover:bg-muted"
           >
             <span className="text-lg">
               {t(`explore.featured.icons.${CATEGORY_ICONS[airport.category]}`)}
@@ -63,7 +63,7 @@ export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: Fea
               </p>
             </div>
             <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          </button>
+          </Button>
         ))}
       </div>
     </div>

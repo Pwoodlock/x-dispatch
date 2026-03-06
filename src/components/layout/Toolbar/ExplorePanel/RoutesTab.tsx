@@ -1,5 +1,6 @@
 import { Plane } from 'lucide-react';
 import { FEATURED_ROUTES } from '@/components/layout/Toolbar/ExplorePanel/featured';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import type { RoutesTabProps } from './types';
 
@@ -18,11 +19,12 @@ export function RoutesTab({ selectedRoute, onSelectRoute }: RoutesTabProps) {
   return (
     <div className="grid gap-2">
       {FEATURED_ROUTES.map((route) => (
-        <button
+        <Button
           key={`${route.from}-${route.to}`}
+          variant="ghost"
           onClick={() => handleClick(route.from, route.to)}
           className={cn(
-            'flex items-start gap-3 rounded-lg border p-3 text-left transition-colors',
+            'h-auto w-full items-start gap-3 border p-3 text-left',
             isSelected(route.from, route.to)
               ? 'border-primary bg-primary/10'
               : 'border-border bg-background hover:bg-muted'
@@ -38,7 +40,7 @@ export function RoutesTab({ selectedRoute, onSelectRoute }: RoutesTabProps) {
             <div className="mt-1 text-sm text-foreground">{route.name}</div>
             <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{route.description}</p>
           </div>
-        </button>
+        </Button>
       ))}
     </div>
   );

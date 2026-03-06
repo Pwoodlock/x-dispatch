@@ -81,20 +81,22 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         <div className="space-y-3">
           <h3 className="xp-section-heading">{t('settings.about.links')}</h3>
           <div className="space-y-1">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => handleOpenExternal(GITHUB_REPO)}
-              className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-secondary"
+              className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
             >
               <span>{t('settings.about.sourceCode')}</span>
               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => handleOpenExternal(GITHUB_ISSUES)}
-              className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-secondary"
+              className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
             >
               <span>{t('settings.about.reportIssue')}</span>
               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

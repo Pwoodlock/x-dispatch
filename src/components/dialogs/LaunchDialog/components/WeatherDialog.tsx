@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils/helpers';
 import { useLaunchStore } from '@/stores/launchStore';
 import { WEATHER_OPTIONS } from '../types';
@@ -92,6 +93,9 @@ export function WeatherDialog({ open, onClose }: WeatherDialogProps) {
 
   const visibilityIndex = findClosestVisibilityIndex(custom.visibility_km);
 
+  // Derive weather toggle value
+  const weatherValue = mode === 'real' ? 'real' : mode === 'preset' ? preset : '';
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogPortal>
@@ -127,30 +131,29 @@ export function WeatherDialog({ open, onClose }: WeatherDialogProps) {
                     Presets
                   </span>
                 </div>
-                <div className="grid grid-cols-4 gap-1.5">
+                <ToggleGroup
+                  type="single"
+                  variant="subtle"
+                  value={weatherValue}
+                  onValueChange={(v) => {
+                    if (v) setWeatherPreset(v);
+                  }}
+                  className="grid grid-cols-4 gap-1.5"
+                >
                   {WEATHER_OPTIONS.map((w) => {
                     const Icon = WEATHER_ICONS[w] || Cloud;
-                    const isActive =
-                      (w === 'real' && mode === 'real') ||
-                      (w !== 'real' && mode === 'preset' && preset === w);
                     return (
-                      <button
+                      <ToggleGroupItem
                         key={w}
-                        type="button"
-                        onClick={() => setWeatherPreset(w)}
-                        className={cn(
-                          'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                          isActive
-                            ? 'bg-primary/10 text-primary ring-2 ring-primary'
-                            : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
-                        )}
+                        value={w}
+                        className="h-auto flex-col gap-1 px-2 py-2"
                       >
                         <Icon className="h-4 w-4" />
                         <span className="text-xs">{WEATHER_LABELS[w]}</span>
-                      </button>
+                      </ToggleGroupItem>
                     );
                   })}
-                </div>
+                </ToggleGroup>
                 {mode === 'custom' && (
                   <p className="mt-2 text-xs text-primary">Customized (based on {preset})</p>
                 )}
@@ -227,23 +230,28 @@ export function WeatherDialog({ open, onClose }: WeatherDialogProps) {
                       <Trees className="h-3 w-3" />
                       Terrain
                     </span>
-                    <div className="grid grid-cols-4 gap-1">
+                    <ToggleGroup
+                      type="single"
+                      variant="subtle"
+                      value={custom.terrain_state}
+                      onValueChange={(v) => {
+                        if (v)
+                          updateCustomWeather({
+                            terrain_state: v as 'dry' | 'wet' | 'snowy' | 'icy',
+                          });
+                      }}
+                      className="grid grid-cols-4 gap-1"
+                    >
                       {TERRAIN_OPTIONS.map((opt) => (
-                        <button
+                        <ToggleGroupItem
                           key={opt.value}
-                          type="button"
-                          onClick={() => updateCustomWeather({ terrain_state: opt.value })}
-                          className={cn(
-                            'rounded-md px-2 py-1.5 text-xs transition-all',
-                            custom.terrain_state === opt.value
-                              ? 'bg-primary/10 text-primary ring-1 ring-primary'
-                              : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
-                          )}
+                          value={opt.value}
+                          className="h-auto px-2 py-1.5 text-xs"
                         >
                           {opt.label}
-                        </button>
+                        </ToggleGroupItem>
                       ))}
-                    </div>
+                    </ToggleGroup>
                   </div>
                 </div>
               </section>

@@ -57,12 +57,12 @@ function LiveryCard({
   const displayImage = liveryImage || (livery.name === 'Default' ? fallbackImage : undefined);
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
       onClick={onClick}
       title={livery.displayName}
       className={cn(
-        'group flex h-20 flex-col overflow-hidden rounded-lg border transition-all',
+        'group h-20 flex-col overflow-hidden border p-0',
         isSelected
           ? 'border-primary bg-primary/5'
           : 'border-transparent bg-secondary hover:border-border hover:bg-accent'
@@ -87,7 +87,7 @@ function LiveryCard({
           {livery.displayName}
         </span>
       </div>
-    </button>
+    </Button>
   );
 }
 

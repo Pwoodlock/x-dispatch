@@ -60,10 +60,11 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
           </h4>
           <div className="space-y-1">
             {busiestAirports.map((airport, index) => (
-              <button
+              <Button
                 key={airport.icao}
+                variant="ghost"
                 onClick={() => onSelectAirport(airport.icao)}
-                className="flex w-full items-center justify-between rounded-lg border border-border bg-background p-2 text-left transition-colors hover:bg-muted"
+                className="h-auto w-full justify-between border border-border bg-background p-2 text-left hover:bg-muted"
               >
                 <div className="flex items-center gap-2">
                   <span className="w-4 text-sm text-muted-foreground">{index + 1}.</span>
@@ -74,7 +75,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                   <span className="text-warning">↘ {airport.arrivals}</span>
                   <MapPin className="h-3 w-3 text-muted-foreground" />
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         </div>

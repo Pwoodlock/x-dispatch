@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils/helpers';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
 import { FeaturedTab } from './FeaturedTab';
@@ -40,46 +40,34 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
       id="explore-panel"
       className="absolute left-4 top-28 z-10 w-[340px] rounded-lg border border-border bg-card"
     >
-      <div role="tablist" aria-label={t('explore.title')} className="flex border-b border-border">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            role="tab"
-            aria-selected={explore.activeTab === tab}
-            aria-controls={`explore-tabpanel-${tab}`}
-            onClick={() => setExploreTab(tab)}
-            className={cn(
-              'flex-1 px-4 py-2.5 text-xs font-medium uppercase tracking-wide transition-colors',
-              explore.activeTab === tab
-                ? 'border-b-2 border-primary text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {t(`explore.tabs.${tab}`)}
-          </button>
-        ))}
-      </div>
-
-      <div
-        role="tabpanel"
-        id={`explore-tabpanel-${explore.activeTab}`}
-        aria-labelledby={explore.activeTab}
-        className="max-h-96 overflow-y-auto overflow-x-hidden p-4"
+      <Tabs
+        value={explore.activeTab}
+        onValueChange={(v) => setExploreTab(v as (typeof TABS)[number])}
       >
-        {explore.activeTab === 'featured' && (
-          <FeaturedTab
-            category={explore.featuredCategory}
-            onCategoryChange={setFeaturedCategory}
-            onSelectAirport={handleSelectAirport}
-          />
-        )}
-        {explore.activeTab === 'routes' && (
-          <RoutesTab selectedRoute={explore.selectedRoute} onSelectRoute={setSelectedRoute} />
-        )}
-        {explore.activeTab === 'vatsim' && (
-          <VatsimEventsTab onSelectAirport={handleSelectAirport} />
-        )}
-      </div>
+        <TabsList variant="line">
+          {TABS.map((tab) => (
+            <TabsTrigger key={tab} value={tab} className="flex-1 text-xs uppercase tracking-wide">
+              {t(`explore.tabs.${tab}`)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <div className="max-h-96 overflow-y-auto overflow-x-hidden p-4">
+          <TabsContent value="featured" className="mt-0">
+            <FeaturedTab
+              category={explore.featuredCategory}
+              onCategoryChange={setFeaturedCategory}
+              onSelectAirport={handleSelectAirport}
+            />
+          </TabsContent>
+          <TabsContent value="routes" className="mt-0">
+            <RoutesTab selectedRoute={explore.selectedRoute} onSelectRoute={setSelectedRoute} />
+          </TabsContent>
+          <TabsContent value="vatsim" className="mt-0">
+            <VatsimEventsTab onSelectAirport={handleSelectAirport} />
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 }

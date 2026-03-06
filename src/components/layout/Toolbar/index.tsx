@@ -565,12 +565,13 @@ export default function Toolbar({
                 </div>
 
                 {filtersActive && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={resetAirportFilters}
-                    className="w-full px-2 py-1.5 text-center text-sm text-muted-foreground hover:text-foreground"
+                    className="h-auto w-full rounded-none px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground"
                   >
                     {t('airportFilters.reset')}
-                  </button>
+                  </Button>
                 )}
 
                 <DropdownMenuSeparator />
@@ -707,29 +708,35 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
 
   return (
     <div className="flex h-9 items-center gap-0.5 rounded-md border border-primary/50 bg-primary/10 px-1.5 duration-200 animate-in fade-in slide-in-from-left-2">
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={stepBack}
-        className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+        className="h-6 w-6 text-white/60 hover:bg-white/10 hover:text-white"
         aria-label="Previous frame"
       >
         <ChevronLeft className="h-3.5 w-3.5" />
-      </button>
+      </Button>
 
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={isPlaying ? pause : play}
-        className="rounded p-1 text-primary transition-colors hover:bg-white/10 hover:text-xp-cyan-light"
+        className="h-6 w-6 text-primary hover:bg-white/10 hover:text-xp-cyan-light"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-      </button>
+      </Button>
 
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={stepForward}
-        className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+        className="h-6 w-6 text-white/60 hover:bg-white/10 hover:text-white"
         aria-label="Next frame"
       >
         <ChevronRight className="h-3.5 w-3.5" />
-      </button>
+      </Button>
 
       <span className="ml-1 font-mono text-xs tabular-nums text-primary">{timeDisplay}</span>
       <span className="ml-0.5 mr-1 text-[10px] text-white/40">

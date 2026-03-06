@@ -5,6 +5,7 @@ import { CloudQuantity, Descriptive, DistanceUnit, Intensity, Phenomenon } from 
 // Formatters for metar-taf-parser types
 import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { formatFrequency } from '@/lib/utils/format';
 import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -145,9 +146,10 @@ export default function InfoTab() {
     <div className="space-y-4">
       {/* Gateway Update */}
       {gatewayUpdate && (
-        <button
+        <Button
+          variant="ghost"
           onClick={() => window.appAPI.openExternal(gatewayUpdate.gatewayUrl)}
-          className="group flex w-full items-center gap-3 rounded-lg border border-primary/15 bg-primary/5 p-3 text-left transition-colors hover:bg-primary/10"
+          className="group h-auto w-full gap-3 border border-primary/15 bg-primary/5 p-3 text-left hover:bg-primary/10"
         >
           <img
             src={gatewayLogo}
@@ -171,8 +173,8 @@ export default function InfoTab() {
               </p>
             )}
           </div>
-          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-primary/30 transition-colors group-hover:text-primary/60" />
-        </button>
+          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-primary/30 group-hover:text-primary/60" />
+        </Button>
       )}
 
       {/* VATSIM Live Section */}
@@ -337,10 +339,11 @@ export default function InfoTab() {
           </div>
           <div className="grid grid-cols-2 gap-1">
             {frequencies.map((freq, i) => (
-              <button
+              <Button
                 key={i}
+                variant="ghost"
                 onClick={() => handleCopy(formatFrequency(freq.frequency))}
-                className="group flex items-center justify-between rounded bg-muted/20 px-2.5 py-1.5 transition-colors hover:bg-muted/40"
+                className="group h-auto justify-between rounded bg-muted/20 px-2.5 py-1.5 hover:bg-muted/40"
               >
                 <span className="text-[10px] text-muted-foreground">
                   {FREQ_LABELS[freq.type] || freq.type}
@@ -349,9 +352,9 @@ export default function InfoTab() {
                   <span className="font-mono text-sm text-foreground">
                     {formatFrequency(freq.frequency)}
                   </span>
-                  <Copy className="h-2.5 w-2.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                  <Copy className="h-2.5 w-2.5 text-muted-foreground opacity-0 group-hover:opacity-100" />
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         </div>

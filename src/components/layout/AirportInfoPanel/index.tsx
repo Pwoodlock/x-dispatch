@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Compass, Info, PlaneTakeoff } from 'lucide-r
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
@@ -51,7 +52,6 @@ export default function AirportInfoPanel({
   const flightCategory = vatsimMetarData?.flightCategory ?? null;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>('info');
 
   if (!airport) return null;
 
@@ -155,48 +155,44 @@ export default function AirportInfoPanel({
 
         {/* Selected position indicator */}
         {selectedStartPosition && (
-          <div className="flex items-center justify-between border-b border-border/30 bg-emerald-500/5 px-4 py-2">
-            <span className="text-xs text-emerald-400/70">{t('airportInfo.tabs.start')}</span>
-            <span className="font-mono text-sm font-medium text-emerald-400">
+          <div className="flex items-center justify-between border-b border-border/30 bg-cat-emerald/5 px-4 py-2">
+            <span className="text-xs text-cat-emerald/70">{t('airportInfo.tabs.start')}</span>
+            <span className="font-mono text-sm font-medium text-cat-emerald">
               {selectedStartPosition.name}
             </span>
           </div>
         )}
 
-        {/* Tab Navigation - Compact */}
-        <div className="flex border-b border-border/30">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors',
-                activeTab === tab.id
-                  ? 'border-b-2 border-foreground text-foreground'
-                  : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {tab.icon}
-              <span>{t(tab.labelKey)}</span>
-            </button>
-          ))}
-        </div>
+        {/* Tab Navigation + Content */}
+        <Tabs defaultValue="info" className="flex min-h-0 flex-1 flex-col">
+          <TabsList variant="line" className="border-border/30">
+            {TABS.map((tab) => (
+              <TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-1.5 text-xs">
+                {tab.icon}
+                <span>{t(tab.labelKey)}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {/* Tab Content */}
-        <ScrollArea className="flex-1">
-          <div className="p-4">
-            {activeTab === 'info' && <InfoTab />}
-            {activeTab === 'start' && (
-              <StartTab
-                onSelectGate={onSelectGateAsStart}
-                onSelectRunwayEnd={onSelectRunwayEndAsStart}
-                onSelectRunway={onSelectRunway}
-                onSelectHelipad={onSelectHelipadAsStart}
-              />
-            )}
-            {activeTab === 'proc' && <RouteTab />}
-          </div>
-        </ScrollArea>
+          <ScrollArea className="flex-1">
+            <div className="p-4">
+              <TabsContent value="info" className="mt-0">
+                <InfoTab />
+              </TabsContent>
+              <TabsContent value="start" className="mt-0">
+                <StartTab
+                  onSelectGate={onSelectGateAsStart}
+                  onSelectRunwayEnd={onSelectRunwayEndAsStart}
+                  onSelectRunway={onSelectRunway}
+                  onSelectHelipad={onSelectHelipadAsStart}
+                />
+              </TabsContent>
+              <TabsContent value="proc" className="mt-0">
+                <RouteTab />
+              </TabsContent>
+            </div>
+          </ScrollArea>
+        </Tabs>
       </div>
     </div>
   );

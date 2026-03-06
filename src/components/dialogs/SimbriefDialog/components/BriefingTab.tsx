@@ -14,6 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -335,12 +336,13 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
             {hasMore && !isExpanded && '...'}
           </p>
           {hasMore && (
-            <button
+            <Button
+              variant="link"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-1 text-[10px] text-primary hover:underline"
+              className="mt-1 h-auto p-0 text-[10px]"
             >
               {isExpanded ? 'Show less' : 'Show more'}
-            </button>
+            </Button>
           )}
         </div>
       </div>
