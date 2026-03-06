@@ -72,11 +72,14 @@ export abstract class BaseLayerRenderer implements LayerRenderer {
    * Helper to safely add a source if it doesn't exist
    */
   protected addSource(map: maplibregl.Map, data: GeoJSON.FeatureCollection): void {
-    if (!map.getSource(this.sourceId)) {
+    const existing = map.getSource(this.sourceId);
+    if (!existing) {
       map.addSource(this.sourceId, {
         type: 'geojson',
         data,
       });
+    } else if ('setData' in existing) {
+      (existing as maplibregl.GeoJSONSource).setData(data);
     }
   }
 
