@@ -7,8 +7,16 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 import { PublisherGithub } from '@electron-forge/publisher-github';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
-import { cp, mkdir } from 'node:fs/promises';
+import { cp, mkdir, rename } from 'node:fs/promises';
 import path from 'node:path';
+
+function getPlatformLabel(platform: string, arch: string): string {
+  if (platform === 'win32') return 'windows';
+  if (platform === 'darwin') return arch === 'arm64' ? 'mac-apple-silicon' : 'mac-intel';
+  return 'linux';
+}
+
+const RENAME_EXTENSIONS = new Set(['.exe', '.dmg', '.deb', '.rpm']);
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -22,6 +30,7 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
+      name: 'XDispatch',
       setupIcon: './assets/icon.ico',
       loadingGif: './assets/transparent.gif',
     }),
@@ -84,6 +93,27 @@ const config: ForgeConfig = {
     }),
   ],
   hooks: {
+    async postMake(_forgeConfig, makeResults) {
+      const pkg = JSON.parse(require('node:fs').readFileSync('./package.json', 'utf-8'));
+      for (const result of makeResults) {
+        const label = getPlatformLabel(result.platform, result.arch);
+        const renamed: string[] = [];
+        for (const artifact of result.artifacts) {
+          const ext = path.extname(artifact);
+          if (RENAME_EXTENSIONS.has(ext)) {
+            const newName = `X-Dispatch-${pkg.version}-${label}${ext}`;
+            const newPath = path.join(path.dirname(artifact), newName);
+            await rename(artifact, newPath);
+            renamed.push(newPath);
+          } else {
+            renamed.push(artifact);
+          }
+        }
+        result.artifacts = renamed;
+      }
+      return makeResults;
+    },
+
     async packageAfterCopy(_forgeConfig, buildPath) {
       const requiredPackages = [
         'sql.js',

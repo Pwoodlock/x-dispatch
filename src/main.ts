@@ -21,6 +21,10 @@ import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/data
 import { getSendCrashReports, setSendCrashReports } from './lib/xplaneServices/dataService/config';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
+// Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- must run synchronously before any other code
+if (require('electron-squirrel-startup')) app.quit();
+
 // TODO: Memory optimization - consider lazy nav data loading, reduce sql.js footprint, limit MapLibre tile cache
 
 // This reads config.json directly since getSendCrashReports() uses app.getPath which works before ready
