@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { AircraftType, EngineType } from '@/components/dialogs/LaunchDialog/types';
 import {
   type CloudLayer,
   type CustomWeatherState,
@@ -24,6 +25,14 @@ interface LaunchState {
   useRealWorldTime: boolean;
   coldAndDark: boolean;
   weatherConfig: WeatherConfig;
+
+  // Aircraft filters (persisted)
+  searchQuery: string;
+  filterCategory: string;
+  filterManufacturer: string;
+  filterAircraftType: AircraftType;
+  filterEngineType: EngineType;
+  showFavoritesOnly: boolean;
 
   // Favorites (persisted to localStorage)
   favorites: string[];
@@ -50,6 +59,12 @@ interface LaunchState {
   addWindLayer: () => void;
   removeWindLayer: (index: number) => void;
   updateWindLayer: (index: number, data: Partial<WindLayer>) => void;
+  setSearchQuery: (value: string) => void;
+  setFilterCategory: (value: string) => void;
+  setFilterManufacturer: (value: string) => void;
+  setFilterAircraftType: (value: AircraftType) => void;
+  setFilterEngineType: (value: EngineType) => void;
+  setShowFavoritesOnly: (value: boolean) => void;
   toggleFavorite: (path: string) => void;
   setIsLaunching: (value: boolean) => void;
   setLaunchError: (error: string | null) => void;
@@ -65,6 +80,12 @@ const DEFAULT_CONFIG = {
   useRealWorldTime: false,
   coldAndDark: false,
   weatherConfig: createDefaultWeatherConfig(),
+  searchQuery: '',
+  filterCategory: 'all',
+  filterManufacturer: 'all',
+  filterAircraftType: 'all' as AircraftType,
+  filterEngineType: 'all' as EngineType,
+  showFavoritesOnly: false,
   isLaunching: false,
   launchError: null,
 };
@@ -233,6 +254,13 @@ export const useLaunchStore = create<LaunchState>()(
           };
         }),
 
+      setSearchQuery: (value) => set({ searchQuery: value }),
+      setFilterCategory: (value) => set({ filterCategory: value }),
+      setFilterManufacturer: (value) => set({ filterManufacturer: value }),
+      setFilterAircraftType: (value) => set({ filterAircraftType: value }),
+      setFilterEngineType: (value) => set({ filterEngineType: value }),
+      setShowFavoritesOnly: (value) => set({ showFavoritesOnly: value }),
+
       toggleFavorite: (path) =>
         set((state) => ({
           favorites: state.favorites.includes(path)
@@ -258,6 +286,12 @@ export const useLaunchStore = create<LaunchState>()(
         useRealWorldTime: state.useRealWorldTime,
         coldAndDark: state.coldAndDark,
         weatherConfig: state.weatherConfig,
+        searchQuery: state.searchQuery,
+        filterCategory: state.filterCategory,
+        filterManufacturer: state.filterManufacturer,
+        filterAircraftType: state.filterAircraftType,
+        filterEngineType: state.filterEngineType,
+        showFavoritesOnly: state.showFavoritesOnly,
       }),
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as Record<string, unknown>;
@@ -352,9 +386,19 @@ export const useLaunchStore = create<LaunchState>()(
           }
         }
 
+        // v4 → v5: add aircraft list filter fields
+        if (version < 5) {
+          if (!('searchQuery' in state)) state.searchQuery = '';
+          if (!('filterCategory' in state)) state.filterCategory = 'all';
+          if (!('filterManufacturer' in state)) state.filterManufacturer = 'all';
+          if (!('filterAircraftType' in state)) state.filterAircraftType = 'all';
+          if (!('filterEngineType' in state)) state.filterEngineType = 'all';
+          if (!('showFavoritesOnly' in state)) state.showFavoritesOnly = false;
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 4,
+      version: 5,
     }
   )
 );
