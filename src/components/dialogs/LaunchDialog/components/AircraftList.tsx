@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plane, Search, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -109,15 +109,19 @@ function AircraftListItem({
 export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
   const { t } = useTranslation();
 
-  // Local filter state (only this component uses it)
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterManufacturer, setFilterManufacturer] = useState('all');
-  const [filterAircraftType, setFilterAircraftType] = useState<AircraftType>('all');
-  const [filterEngineType, setFilterEngineType] = useState<EngineType>('all');
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-
-  // Shared state from Zustand
+  // All state from Zustand (persisted)
+  const searchQuery = useLaunchStore((s) => s.searchQuery);
+  const setSearchQuery = useLaunchStore((s) => s.setSearchQuery);
+  const filterCategory = useLaunchStore((s) => s.filterCategory);
+  const setFilterCategory = useLaunchStore((s) => s.setFilterCategory);
+  const filterManufacturer = useLaunchStore((s) => s.filterManufacturer);
+  const setFilterManufacturer = useLaunchStore((s) => s.setFilterManufacturer);
+  const filterAircraftType = useLaunchStore((s) => s.filterAircraftType);
+  const setFilterAircraftType = useLaunchStore((s) => s.setFilterAircraftType);
+  const filterEngineType = useLaunchStore((s) => s.filterEngineType);
+  const setFilterEngineType = useLaunchStore((s) => s.setFilterEngineType);
+  const showFavoritesOnly = useLaunchStore((s) => s.showFavoritesOnly);
+  const setShowFavoritesOnly = useLaunchStore((s) => s.setShowFavoritesOnly);
   const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
   const favorites = useLaunchStore((s) => s.favorites);
   const selectAircraft = useLaunchStore((s) => s.selectAircraft);
