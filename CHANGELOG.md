@@ -1,6 +1,53 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.5.0 - 2026-03-12
+
+### Bug Fixes
+
+- add forwardRef to Badge component ([063c025](https://github.com/lyestarzalt/x-dispatch/commit/063c025ba2c9331102ec9671af64e5f2bf3c9dba))
+- correct ref types and add missing forwardRef in shadcn components ([2875eeb](https://github.com/lyestarzalt/x-dispatch/commit/2875eebb265e995b506e452de330beb47d84553e))
+- derive fuel tank ratios from _cgpt capacity for third-party helicopters ([754b3b0](https://github.com/lyestarzalt/x-dispatch/commit/754b3b0a99762ec35bf3c686cc6b54b6dec3a981))
+- skip --version on Windows Steam to avoid launch dialog ([05fba79](https://github.com/lyestarzalt/x-dispatch/commit/05fba7943a994adad41750bd9b754def4eda8191))
+- correct fuel tank count for third-party aircraft ([640d1ad](https://github.com/lyestarzalt/x-dispatch/commit/640d1adace251928138dd8d01d7522b1d243463b))
+- improve fuel parsing and add payload fallback for third-party aircraft ([710cc82](https://github.com/lyestarzalt/x-dispatch/commit/710cc82cd8070f3682d9812a5bbfa245dbca3940))
+- adjust sun arc horizon line based on day length ([66c7560](https://github.com/lyestarzalt/x-dispatch/commit/66c756067fc1c57578db75b21d947437c700a7ef))
+- persist aircraft path instead of full object to prevent stale livery/config ([ee2a562](https://github.com/lyestarzalt/x-dispatch/commit/ee2a562b8e6ab1071d986bc0a944fe7f98d8c6e4))
+- clear selected procedure when flight plan is removed ([45caaf6](https://github.com/lyestarzalt/x-dispatch/commit/45caaf6e594e36e6014f2b934d779944b7f72341))
+- replace deferred layer removal with synchronous getStyle guard ([9166bb2](https://github.com/lyestarzalt/x-dispatch/commit/9166bb283e080201ccc5a6e29d43708eabffa4b3))
+- invalidate launcher aircraft cache after addon mutations ([e0666fd](https://github.com/lyestarzalt/x-dispatch/commit/e0666fdab09591ece1f61177c6c173d0f5d8ac95))
+
+### Documentation
+
+- update CHANGELOG.md for v1.4.1 ([b94c99a](https://github.com/lyestarzalt/x-dispatch/commit/b94c99a09897740e88a158038561371198da1b8d))
+
+### Features
+
+- redesign WeatherDialog with interactive altitude diagram ([746b0f3](https://github.com/lyestarzalt/x-dispatch/commit/746b0f3772203dc04109563334428a2e16bb9daa))
+- add environment controls, i18n, and fix dialog sizing ([b1be774](https://github.com/lyestarzalt/x-dispatch/commit/b1be774a833e3705bed99c11573e8e078b54db7f))
+- add day/night terminator overlay ([92c68e7](https://github.com/lyestarzalt/x-dispatch/commit/92c68e7b0948fa096481b03b0978d55b80e5f5eb))
+- add range rings layer for aircraft category reach visualization ([3281880](https://github.com/lyestarzalt/x-dispatch/commit/32818802ba4a970a9f7c743b14dcb9f37950e468))
+- add pin-drop custom start location ([b40174a](https://github.com/lyestarzalt/x-dispatch/commit/b40174a77304f1ca02434dc213b1ca249ece2eda))
+- persist aircraft list filters across sessions ([349ba19](https://github.com/lyestarzalt/x-dispatch/commit/349ba19a42628f0ee3aeb3c887a7e044a4092f4e))
+- render aircraft silhouettes for VATSIM/IVAO traffic ([8787439](https://github.com/lyestarzalt/x-dispatch/commit/8787439289ba336c77edfd427736842e7f97cbc7))
+- redesign player aircraft icon with canvas-based rendering ([1269e92](https://github.com/lyestarzalt/x-dispatch/commit/1269e92d914e49015ea8be4246ff5a6ae5225c60))
+- detect aircraft category from X-Plane metadata datarefs ([090546c](https://github.com/lyestarzalt/x-dispatch/commit/090546c83d49276dd064e60515d5cbff77e76605))
+- redesign with grouped layout, color-coded values, drag-to-reposition & new datarefs ([72b7156](https://github.com/lyestarzalt/x-dispatch/commit/72b7156016723f4f64093d1f7575e1f89a12f514))
+- save last 10 launches with browse & restore ([37dee95](https://github.com/lyestarzalt/x-dispatch/commit/37dee95297cdf841515058e22cbef6b69aebe9de))
+
+### Miscellaneous
+
+- add separate mac arm64/x64 builds and rename artifacts ([32f7722](https://github.com/lyestarzalt/x-dispatch/commit/32f772237bd0e5f8835618584a87e16f4a63dc4b))
+
+### Refactor
+
+- clean up LoadingScreen design system usage and dead code ([ed1873f](https://github.com/lyestarzalt/x-dispatch/commit/ed1873fec11da2122a5f0075cd6f85b05dee5b7b))
+- add categorical color tokens to design system ([7dc7628](https://github.com/lyestarzalt/x-dispatch/commit/7dc7628ea96b5e9c13c633eafc81b3bb57999059))
+- convert remaining hardcoded colors to design system tokens ([6c908b8](https://github.com/lyestarzalt/x-dispatch/commit/6c908b828ca9f40888527ec22d33beafc0954609))
+- use correct shadcn/ui components for tabs, toggles, and buttons ([4e31591](https://github.com/lyestarzalt/x-dispatch/commit/4e31591116a4a27c4aff1056cd82d4b8dfba6162))
+- centralize Badge variants, Button tooltips, and Spinner component ([019a4fd](https://github.com/lyestarzalt/x-dispatch/commit/019a4fdc363bb61da6c800f0a1c0ba970c6a7f61))
+- add Input icon slots, improve FlightConfig layout and token usage ([315d102](https://github.com/lyestarzalt/x-dispatch/commit/315d1024b41a3770de46960cd2e918081e95d08d))
+- replace ad-hoc reconnect with state machine, backoff & keepalive ([38faca3](https://github.com/lyestarzalt/x-dispatch/commit/38faca3839c3763bc7288d8b754ab52d444dda39))
 ## v1.4.1 - 2026-03-06
 
 ### Bug Fixes
