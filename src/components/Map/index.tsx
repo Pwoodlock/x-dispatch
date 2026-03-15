@@ -41,6 +41,7 @@ import {
   useProcedureRouteSync,
   useRangeRingsSync,
   useRouteLineSync,
+  useTerrainShading,
   useTrackControl,
   useVatsimSync,
 } from './hooks';
@@ -98,6 +99,7 @@ export default function Map({ airports }: MapProps) {
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const setWeatherRadarEnabled = useMapStore((s) => s.setWeatherRadarEnabled);
   const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
+  const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const followPlane = useMapStore((s) => s.followPlane);
   const setFollowPlane = useMapStore((s) => s.setFollowPlane);
@@ -342,6 +344,9 @@ export default function Map({ airports }: MapProps) {
 
   // Day/night terminator overlay
   useDayNightLayer(mapRef, dayNightEnabled);
+
+  // Terrain shading (hillshade + contour lines)
+  useTerrainShading(mapRef, terrainShadingEnabled, styleVersion);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
