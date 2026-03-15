@@ -787,12 +787,12 @@
     "openXPlaneFolder": "Open X-Plane Folder",
     "tabs": {
       "scenery": "Scenery Order",
-      "installed": "Installed",
+      "installed": "Addons",
       "installer": "Installer"
     },
     "nav": {
-      "sceneryDesc": "Manage scenery load order",
-      "installedDesc": "Aircraft and plugins",
+      "sceneryDesc": "scenery_packs.ini",
+      "installedDesc": "Aircraft & plugins",
       "installerDesc": "Install new addons"
     },
     "installed": {
@@ -875,7 +875,7 @@
       "unsafeMode": "Unsafe",
       "safeModeOn": "Drag restricted to same category. Turn off to freely reorder (advanced).",
       "safeModeOff": "Free reorder enabled. Items can be dragged across categories - use with caution!",
-      "priorityHint": "Lower numbers load first and have lower priority. Higher numbers override lower ones.",
+      "priorityHint": "Entries at the top override those below. Drag to reorder or use Auto Sort.",
       "dragHintSafe": "Drag to reorder within the same category. Changes are saved when you click Save Order.",
       "dragHintUnsafe": "Safe mode OFF - You can drag items across categories. This may cause scenery issues if done incorrectly.",
       "saveOrder": "Save",

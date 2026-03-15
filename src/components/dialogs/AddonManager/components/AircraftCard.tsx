@@ -41,7 +41,7 @@ export function AircraftCard({
   return (
     <Card
       className={cn(
-        'overflow-hidden transition-all hover:shadow-md',
+        'overflow-hidden bg-muted/30 transition-all hover:shadow-md',
         !aircraft.enabled && 'opacity-60',
         aircraft.locked && 'ring-1 ring-warning'
       )}
@@ -49,7 +49,7 @@ export function AircraftCard({
       {/* Thumbnail */}
       <div
         className={cn(
-          'flex h-24 items-center justify-center bg-muted',
+          'flex aspect-video items-center justify-center bg-muted',
           !aircraft.enabled && 'grayscale'
         )}
       >

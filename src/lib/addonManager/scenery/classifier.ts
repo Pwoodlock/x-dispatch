@@ -1,16 +1,19 @@
 // src/lib/addonManager/scenery/classifier.ts
 import { type SceneryClassification, SceneryPriority } from '../core/types';
 
+// Prefixes that, combined with "sam", indicate a SAM-related library
+const SAM_PREFIXES = ['open', 'my', 'custom', 'new'];
+
 /**
  * Classify a scenery folder based on its scan results.
  * Uses decision tree - first match wins.
  *
- * Priority order (per plan Step 5):
+ * Priority order:
  * 1. Has apt.dat → Airport
- * 2. No apt.dat, but worldeditor → Airport (WorldEditor = airport scenery)
- * 3. DSF sim/overlay == "1" → Overlay
- * 4. Has library.txt, NO Earth nav data → check for SAM → FixedHighPriority or Library
- * 5. Has Earth nav data, no apt.dat, not overlay → Mesh
+ * 2. WorldEditor agent → Airport
+ * 3. DSF sim/overlay → Overlay
+ * 4. Has library.txt → check SAM → FixedHighPriority or Library
+ * 5. Has Earth nav data → Mesh
  * 6. DSF has terrain refs → Mesh
  * 7. Plugins only → Other
  * 8. Nothing recognized → Unrecognized
@@ -31,9 +34,8 @@ export function classifyScenery(folderName: string, scan: SceneryClassification)
     return SceneryPriority.Overlay;
   }
 
-  // 4. Has library.txt, NO Earth nav data → Library (or SAM)
-  if (scan.hasLibraryTxt && !scan.hasEarthNavData) {
-    // Check if it's SAM library (needs to be at top)
+  // 4. Has library.txt → Library (or SAM)
+  if (scan.hasLibraryTxt) {
     if (isSamLibrary(folderName)) {
       return SceneryPriority.FixedHighPriority;
     }
@@ -55,28 +57,38 @@ export function classifyScenery(folderName: string, scan: SceneryClassification)
     return SceneryPriority.Other;
   }
 
-  // 8. Has library.txt with Earth nav data (scenery + library combo)
-  if (scan.hasLibraryTxt) {
-    return SceneryPriority.Library;
-  }
-
-  // 9. Nothing recognized → Unrecognized
+  // 8. Nothing recognized → Unrecognized
   return SceneryPriority.Unrecognized;
 }
 
 /**
  * Check if folder name indicates SAM (Scenery Animation Manager) library.
  * SAM needs to be loaded first (FixedHighPriority).
+ *
+ * Uses word-boundary algorithm:
+ * - Split folder name by non-alphanumeric chars into tokens
+ * - Match if any token == "sam" exactly
+ * - Match if any token ends with "sam" and the prefix is in SAM_PREFIXES
+ *
+ * Examples: "SAM_Library" ✅, "openSAM" ✅, "mySAM_v2" ✅, "sample" ❌, "amsterdam" ❌
  */
 function isSamLibrary(folderName: string): boolean {
-  const lower = folderName.toLowerCase();
-  return (
-    lower.includes('sam_') ||
-    lower.includes('_sam') ||
-    lower === 'sam' ||
-    lower.includes('sam_library') ||
-    lower.includes('sam_seasons')
-  );
+  const tokens = folderName.toLowerCase().split(/[^a-z0-9]+/);
+
+  for (const token of tokens) {
+    if (!token) continue;
+
+    // Exact match: token is just "sam"
+    if (token === 'sam') return true;
+
+    // Compound match: token ends with "sam" and prefix is known
+    if (token.endsWith('sam') && token.length > 3) {
+      const prefix = token.slice(0, -3);
+      if (SAM_PREFIXES.includes(prefix)) return true;
+    }
+  }
+
+  return false;
 }
 
 /**

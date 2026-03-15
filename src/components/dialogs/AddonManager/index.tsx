@@ -62,7 +62,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed left-[50%] top-[50%] z-50 flex h-[85vh] w-[90vw] max-w-5xl translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
+          className="fixed inset-6 z-50 flex overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
@@ -107,10 +107,10 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                       )}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium">{t(item.labelKey)}</div>
+                      <div className="truncate text-sm font-medium">{t(item.labelKey)}</div>
                       <div
                         className={cn(
-                          'mt-0.5 text-sm transition-colors',
+                          'mt-0.5 truncate text-xs transition-colors',
                           isActive ? 'text-primary/70' : 'text-muted-foreground/70'
                         )}
                       >

@@ -767,11 +767,11 @@
     "openXPlaneFolder": "打开 X-Plane 文件夹",
     "tabs": {
       "scenery": "场景顺序",
-      "installed": "已安装",
+      "installed": "附加组件",
       "installer": "安装器"
     },
     "nav": {
-      "sceneryDesc": "管理场景加载顺序",
+      "sceneryDesc": "scenery_packs.ini",
       "installedDesc": "飞机和插件",
       "installerDesc": "安装新插件"
     },
@@ -847,7 +847,7 @@
       "unsafeMode": "不安全",
       "safeModeOn": "拖动限制在同一类别内。关闭可自由排序（高级）。",
       "safeModeOff": "已启用自由排序。可跨类别拖动项目 - 请谨慎使用！",
-      "priorityHint": "较小的数字先加载，优先级较低。较大的数字会覆盖较小的数字。",
+      "priorityHint": "顶部条目覆盖下方条目。拖动排序或使用自动排序。",
       "dragHintSafe": "拖动可在同一类别内重新排序。点击保存顺序后更改才会生效。",
       "dragHintUnsafe": "安全模式已关闭 - 您可以跨类别拖动项目。操作不当可能导致场景问题。",
       "saveOrder": "保存",

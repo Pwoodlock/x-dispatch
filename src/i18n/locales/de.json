@@ -686,12 +686,12 @@
     "openXPlaneFolder": "X-Plane Ordner öffnen",
     "tabs": {
       "scenery": "Szenerie-Reihenfolge",
-      "installed": "Installiert",
+      "installed": "Addons",
       "installer": "Installer"
     },
     "nav": {
-      "sceneryDesc": "Szenerie-Ladereihenfolge verwalten",
-      "installedDesc": "Flugzeuge und Plugins",
+      "sceneryDesc": "scenery_packs.ini",
+      "installedDesc": "Flugzeuge & Plugins",
       "installerDesc": "Neue Addons installieren"
     },
     "installed": {
@@ -766,7 +766,7 @@
       "unsafeMode": "Unsicher",
       "safeModeOn": "Ziehen nur innerhalb der gleichen Kategorie. Ausschalten für freies Sortieren (Fortgeschritten).",
       "safeModeOff": "Freies Sortieren aktiviert. Elemente können zwischen Kategorien gezogen werden - Vorsicht!",
-      "priorityHint": "Niedrigere Nummern laden zuerst und haben niedrigere Priorität. Höhere Nummern überschreiben niedrigere.",
+      "priorityHint": "Einträge oben überschreiben die darunter. Ziehen zum Sortieren oder Auto-Sortierung verwenden.",
       "dragHintSafe": "Ziehen zum Sortieren innerhalb der gleichen Kategorie. Änderungen werden beim Klicken auf Speichern übernommen.",
       "dragHintUnsafe": "Sicherer Modus AUS - Sie können Elemente zwischen Kategorien ziehen. Bei falscher Handhabung können Szenerie-Probleme auftreten.",
       "saveOrder": "Speichern",
