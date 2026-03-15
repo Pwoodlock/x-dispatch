@@ -1,5 +1,6 @@
 import mlcontour from 'maplibre-contour';
 import maplibregl from 'maplibre-gl';
+import { useMapStore } from '@/stores/mapStore';
 
 const TERRAIN_SOURCE_ID = 'terrain-dem';
 const TERRAIN_TILES_URL = 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp';
@@ -52,6 +53,12 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
     }
   });
 }
+
+export const TERRAIN_SHADING_LAYER_IDS = [
+  HILLSHADE_LAYER_ID,
+  CONTOUR_LINE_LAYER_ID,
+  CONTOUR_LABEL_LAYER_ID,
+];
 
 export function setup3DTerrain(map: maplibregl.Map): void {
   if (map.getSource(TERRAIN_SOURCE_ID)) return;
@@ -146,6 +153,21 @@ export function setup3DTerrain(map: maplibregl.Map): void {
       'text-halo-width': 1,
     },
   });
+
+  // Apply persisted visibility (layers default to visible, hide if user toggled off)
+  const { terrainShadingEnabled } = useMapStore.getState();
+  if (!terrainShadingEnabled) {
+    setTerrainShadingVisibility(map, false);
+  }
+}
+
+export function setTerrainShadingVisibility(map: maplibregl.Map, visible: boolean): void {
+  const visibility = visible ? 'visible' : 'none';
+  for (const id of TERRAIN_SHADING_LAYER_IDS) {
+    if (map.getLayer(id)) {
+      map.setLayoutProperty(id, 'visibility', visibility);
+    }
+  }
 }
 
 /** Find the first symbol layer to insert raster/line layers below labels. */

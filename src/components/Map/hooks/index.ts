@@ -17,3 +17,4 @@ export { useRangeRingsSync } from './useRangeRingsSync';
 export { usePinDrop } from './usePinDrop';
 export { useTrackControl } from './useTrackControl';
 export { useIdleOrbit } from './useIdleOrbit';
+export { useTerrainShading } from './useTerrainShading';

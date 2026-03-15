@@ -83,6 +83,7 @@ interface MapState {
   rangeRingsDuration: number;
   rangeRingsCategories: RangeRingCategory[];
   flightStripPosition: { x: number; y: number } | null;
+  terrainShadingEnabled: boolean;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -116,6 +117,7 @@ interface MapState {
   setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
   incrementStyleVersion: () => void;
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
+  setTerrainShadingEnabled: (enabled: boolean) => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -152,6 +154,7 @@ export const useMapStore = create<MapState>()(
       rangeRingsDuration: DEFAULT_RANGE_RINGS_DURATION,
       rangeRingsCategories: ['jet', 'turboprop', 'prop'] as RangeRingCategory[],
       flightStripPosition: null as { x: number; y: number } | null,
+      terrainShadingEnabled: true,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -243,10 +246,11 @@ export const useMapStore = create<MapState>()(
         set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
       incrementStyleVersion: () => set((state) => ({ styleVersion: state.styleVersion + 1 })),
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
+      setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
     }),
     {
       name: 'xplane-viz-map',
-      version: 8,
+      version: 9,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
@@ -257,6 +261,7 @@ export const useMapStore = create<MapState>()(
         rangeRingsDuration: state.rangeRingsDuration,
         rangeRingsCategories: state.rangeRingsCategories,
         flightStripPosition: state.flightStripPosition,
+        terrainShadingEnabled: state.terrainShadingEnabled,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
@@ -307,6 +312,10 @@ export const useMapStore = create<MapState>()(
         // Migration to v8: add flight strip position
         if (version < 8) {
           if (state.flightStripPosition === undefined) state.flightStripPosition = null;
+        }
+        // Migration to v9: add terrain shading toggle
+        if (version < 9) {
+          if (state.terrainShadingEnabled === undefined) state.terrainShadingEnabled = true;
         }
         return state;
       },
