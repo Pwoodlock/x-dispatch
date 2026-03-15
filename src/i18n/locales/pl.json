@@ -767,11 +767,11 @@
     "openXPlaneFolder": "Otwórz folder X-Plane",
     "tabs": {
       "scenery": "Kolejność scenerii",
-      "installed": "Zainstalowane",
+      "installed": "Dodatki",
       "installer": "Instalator"
     },
     "nav": {
-      "sceneryDesc": "Zarządzaj kolejnością ładowania scenerii",
+      "sceneryDesc": "scenery_packs.ini",
       "installedDesc": "Samoloty i wtyczki",
       "installerDesc": "Zainstaluj nowe dodatki"
     },
@@ -847,7 +847,7 @@
       "unsafeMode": "Niebezpieczny",
       "safeModeOn": "Przeciąganie ograniczone do tej samej kategorii. Wyłącz, aby swobodnie zmieniać kolejność (zaawansowane).",
       "safeModeOff": "Włączono swobodne sortowanie. Elementy można przeciągać między kategoriami - ostrożnie!",
-      "priorityHint": "Niższe numery ładują się najpierw i mają niższy priorytet. Wyższe numery nadpisują niższe.",
+      "priorityHint": "Wpisy na górze nadpisują te poniżej. Przeciągnij, aby zmienić kolejność lub użyj automatycznego sortowania.",
       "dragHintSafe": "Przeciągnij, aby zmienić kolejność w tej samej kategorii. Zmiany są zapisywane po kliknięciu Zapisz.",
       "dragHintUnsafe": "Tryb bezpieczny WYŁĄCZONY - Możesz przeciągać elementy między kategoriami. Może to powodować problemy ze scenerią.",
       "saveOrder": "Zapisz",

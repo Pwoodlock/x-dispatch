@@ -767,12 +767,12 @@
     "openXPlaneFolder": "Apri cartella X-Plane",
     "tabs": {
       "scenery": "Ordine scenari",
-      "installed": "Installati",
+      "installed": "Componenti",
       "installer": "Installatore"
     },
     "nav": {
-      "sceneryDesc": "Gestisci ordine di caricamento scenari",
-      "installedDesc": "Aerei e plugin",
+      "sceneryDesc": "scenery_packs.ini",
+      "installedDesc": "Aeromobili e plugin",
       "installerDesc": "Installa nuovi addon"
     },
     "installed": {
@@ -847,7 +847,7 @@
       "unsafeMode": "Non sicuro",
       "safeModeOn": "Trascinamento limitato alla stessa categoria. Disattiva per riordinare liberamente (avanzato).",
       "safeModeOff": "Riordinamento libero attivato. Gli elementi possono essere trascinati tra categorie - attenzione!",
-      "priorityHint": "I numeri più bassi si caricano prima e hanno priorità inferiore. I numeri più alti sovrascrivono quelli più bassi.",
+      "priorityHint": "Le voci in alto sovrascrivono quelle sottostanti. Trascina per riordinare o usa l'ordinamento automatico.",
       "dragHintSafe": "Trascina per riordinare nella stessa categoria. Le modifiche vengono salvate cliccando Salva.",
       "dragHintUnsafe": "Modalità sicura DISATTIVATA - Puoi trascinare elementi tra categorie. Ciò può causare problemi se fatto in modo errato.",
       "saveOrder": "Salva",

@@ -686,12 +686,12 @@
     "openXPlaneFolder": "Ouvrir le dossier X-Plane",
     "tabs": {
       "scenery": "Ordre des scènes",
-      "installed": "Installés",
+      "installed": "Extensions",
       "installer": "Installateur"
     },
     "nav": {
-      "sceneryDesc": "Gérer l'ordre de chargement des scènes",
-      "installedDesc": "Aéronefs et plugins",
+      "sceneryDesc": "scenery_packs.ini",
+      "installedDesc": "Avions et plugins",
       "installerDesc": "Installer de nouveaux addons"
     },
     "installed": {
@@ -766,7 +766,7 @@
       "unsafeMode": "Non sécurisé",
       "safeModeOn": "Glissement limité à la même catégorie. Désactivez pour réorganiser librement (avancé).",
       "safeModeOff": "Réorganisation libre activée. Les éléments peuvent être glissés entre catégories - prudence !",
-      "priorityHint": "Les numéros inférieurs se chargent en premier et ont une priorité plus basse. Les numéros supérieurs remplacent les inférieurs.",
+      "priorityHint": "Les entrées en haut remplacent celles en dessous. Glissez pour réorganiser ou utilisez le tri automatique.",
       "dragHintSafe": "Glissez pour réorganiser dans la même catégorie. Les modifications sont enregistrées en cliquant sur Sauvegarder.",
       "dragHintUnsafe": "Mode sécurisé DÉSACTIVÉ - Vous pouvez glisser les éléments entre catégories. Cela peut causer des problèmes de scènes si mal fait.",
       "saveOrder": "Sauvegarder",

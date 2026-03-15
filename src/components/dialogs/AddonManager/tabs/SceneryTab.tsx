@@ -250,14 +250,8 @@ export function SceneryTab() {
       </div>
 
       {/* Order info */}
-      <div className="flex items-center gap-2 border-b border-border bg-muted/20 px-4 py-2">
-        <span className="rounded bg-success/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-success">
-          Order preserved
-        </span>
-        <p className="text-xs text-muted-foreground">
-          {t('addonManager.scenery.priorityHint')} Auto-ordering is off — drag to reorder manually
-          or use Auto Sort.
-        </p>
+      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
+        <p className="text-sm text-muted-foreground">{t('addonManager.scenery.priorityHint')}</p>
       </div>
 
       {/* Scenery list - flat, no groups */}

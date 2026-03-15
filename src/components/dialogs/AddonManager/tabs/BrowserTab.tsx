@@ -206,7 +206,7 @@ export function BrowserTab() {
       <Tabs
         value={subTab}
         onValueChange={(v) => setSubTab(v as SubTab)}
-        className="flex flex-1 flex-col"
+        className="flex min-h-0 flex-1 flex-col"
       >
         <div className="px-4">
           <TabsList variant="line">
@@ -258,7 +258,10 @@ export function BrowserTab() {
         </div>
 
         {/* Plugins Tab Content */}
-        <TabsContent value="plugins" className="mt-0 flex-1 data-[state=inactive]:hidden">
+        <TabsContent
+          value="plugins"
+          className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+        >
           {pluginsLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
               <Spinner className="size-8 text-violet" />
@@ -282,7 +285,7 @@ export function BrowserTab() {
                 : t('addonManager.installed.notFound', { type: 'plugins' })}
             </p>
           ) : (
-            <ScrollArea className="h-[calc(100vh-340px)]">
+            <ScrollArea className="h-full">
               <div className="flex flex-col gap-2 p-4">
                 {filteredPlugins.map((plugin) => (
                   <PluginEntry
@@ -306,7 +309,10 @@ export function BrowserTab() {
         </TabsContent>
 
         {/* Aircraft Tab Content */}
-        <TabsContent value="aircraft" className="mt-0 flex-1 data-[state=inactive]:hidden">
+        <TabsContent
+          value="aircraft"
+          className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+        >
           {aircraftLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
               <Spinner className="size-8 text-cat-sky" />
@@ -330,7 +336,7 @@ export function BrowserTab() {
                 : t('addonManager.installed.notFound', { type: 'aircraft' })}
             </p>
           ) : (
-            <ScrollArea className="h-[calc(100vh-340px)]">
+            <ScrollArea className="h-full">
               <div className="grid grid-cols-2 gap-3 p-4 lg:grid-cols-3">
                 {filteredAircraft.map((ac) => (
                   <AircraftCard

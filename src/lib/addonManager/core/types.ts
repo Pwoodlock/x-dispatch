@@ -50,6 +50,9 @@ export interface SceneryClassification {
   hasPlugins: boolean;
   hasDsf: boolean;
   dsfInfo: DsfInfo;
+  dsfCount: number;
+  dsfFilenames: string[];
+  libraryExports: string[];
 }
 
 /**
@@ -98,6 +101,9 @@ export function createDefaultClassification(): SceneryClassification {
     hasPlugins: false,
     hasDsf: false,
     dsfInfo: { parsed: false },
+    dsfCount: 0,
+    dsfFilenames: [],
+    libraryExports: [],
   };
 }
 

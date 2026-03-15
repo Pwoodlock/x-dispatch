@@ -767,11 +767,11 @@
     "openXPlaneFolder": "Abrir pasta X-Plane",
     "tabs": {
       "scenery": "Ordem de Cenários",
-      "installed": "Instalados",
+      "installed": "Complementos",
       "installer": "Instalador"
     },
     "nav": {
-      "sceneryDesc": "Gerenciar ordem de carregamento de cenários",
+      "sceneryDesc": "scenery_packs.ini",
       "installedDesc": "Aeronaves e plugins",
       "installerDesc": "Instalar novos addons"
     },
@@ -847,7 +847,7 @@
       "unsafeMode": "Inseguro",
       "safeModeOn": "Arraste limitado à mesma categoria. Desative para reordenar livremente (avançado).",
       "safeModeOff": "Reordenação livre ativada. Itens podem ser arrastados entre categorias - cuidado!",
-      "priorityHint": "Números menores carregam primeiro e têm menor prioridade. Números maiores substituem os menores.",
+      "priorityHint": "Entradas no topo substituem as abaixo. Arraste para reordenar ou use a ordenação automática.",
       "dragHintSafe": "Arraste para reordenar na mesma categoria. As alterações são salvas ao clicar em Salvar.",
       "dragHintUnsafe": "Modo seguro DESATIVADO - Você pode arrastar itens entre categorias. Isso pode causar problemas se feito incorretamente.",
       "saveOrder": "Salvar",

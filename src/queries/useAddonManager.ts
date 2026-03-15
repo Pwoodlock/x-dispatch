@@ -39,7 +39,7 @@ export function useSceneryList(enabled = true) {
       return result.value;
     },
     enabled,
-    staleTime: 30_000, // 30 seconds
+    staleTime: 0,
   });
 }
 
