@@ -1,8 +1,15 @@
 import { app } from 'electron';
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { validateXPlanePath } from './paths';
 import type { XPlaneVersionInfo } from './versionDetector';
+
+export interface XPlaneInstallation {
+  id: string;
+  name: string;
+  path: string;
+}
 
 interface XPlaneConfig {
   xplanePath: string;
@@ -14,6 +21,10 @@ interface XPlaneConfig {
   xplaneVersion?: string;
   /** Whether the X-Plane install is from Steam */
   xplaneIsSteam?: boolean;
+  /** Named X-Plane installations */
+  installations?: XPlaneInstallation[];
+  /** ID of the currently active installation */
+  activeInstallationId?: string;
 }
 
 const CONFIG_VERSION = 1;
@@ -63,6 +74,19 @@ function loadConfig(): XPlaneConfig | null {
       return null;
     }
 
+    // Migrate: create installations array from existing xplanePath
+    if (!config.installations && config.xplanePath) {
+      const id = crypto.randomUUID();
+      config.installations = [{ id, name: 'Main', path: config.xplanePath }];
+      config.activeInstallationId = id;
+      // Write back the migration
+      try {
+        fs.writeFileSync(getConfigPath(), JSON.stringify(config, null, 2), 'utf-8');
+      } catch {
+        // Non-fatal: migration will retry next load
+      }
+    }
+
     return config;
   } catch {
     return null;
@@ -81,6 +105,8 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
       sendCrashReports: config.sendCrashReports ?? existing?.sendCrashReports ?? true,
       xplaneVersion: config.xplaneVersion ?? existing?.xplaneVersion,
       xplaneIsSteam: config.xplaneIsSteam ?? existing?.xplaneIsSteam,
+      installations: config.installations ?? existing?.installations,
+      activeInstallationId: config.activeInstallationId ?? existing?.activeInstallationId,
     };
 
     fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf-8');
@@ -151,4 +177,67 @@ export function getStoredXPlaneVersion(): { version: string; isSteam: boolean } 
  */
 export function setStoredXPlaneVersion(info: XPlaneVersionInfo): boolean {
   return saveConfig({ xplaneVersion: info.raw, xplaneIsSteam: info.isSteam });
+}
+
+// --- Multi-installation management ---
+
+export function getInstallations(): XPlaneInstallation[] {
+  const config = loadConfig();
+  return config?.installations ?? [];
+}
+
+export function getActiveInstallation(): XPlaneInstallation | null {
+  const config = loadConfig();
+  if (!config?.installations || !config.activeInstallationId) return null;
+  return config.installations.find((i) => i.id === config.activeInstallationId) ?? null;
+}
+
+export function getActiveInstallationName(): string {
+  return getActiveInstallation()?.name ?? 'Main';
+}
+
+export function addInstallation(name: string, installPath: string): XPlaneInstallation {
+  const id = crypto.randomUUID();
+  const installation: XPlaneInstallation = { id, name, path: installPath };
+  const config = loadConfig();
+  const installations = config?.installations ?? [];
+  installations.push(installation);
+  saveConfig({ installations });
+  return installation;
+}
+
+export function removeInstallation(id: string): boolean {
+  const config = loadConfig();
+  if (!config?.installations) return false;
+  if (config.activeInstallationId === id) return false;
+  const filtered = config.installations.filter((i) => i.id !== id);
+  if (filtered.length === config.installations.length) return false;
+  saveConfig({ installations: filtered });
+  return true;
+}
+
+export function renameInstallation(id: string, name: string): boolean {
+  const config = loadConfig();
+  if (!config?.installations) return false;
+  const installation = config.installations.find((i) => i.id === id);
+  if (!installation) return false;
+  installation.name = name;
+  saveConfig({ installations: config.installations });
+  return true;
+}
+
+export function setActiveInstallation(id: string): boolean {
+  const config = loadConfig();
+  if (!config?.installations) return false;
+  const installation = config.installations.find((i) => i.id === id);
+  if (!installation) return false;
+  // Update activeInstallationId and sync xplanePath
+  saveConfig({
+    activeInstallationId: id,
+    xplanePath: installation.path,
+    // Clear version info since we're switching installs
+    xplaneVersion: undefined,
+    xplaneIsSteam: undefined,
+  });
+  return true;
 }

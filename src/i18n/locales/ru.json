@@ -247,7 +247,17 @@
       "moraGrid": "Сетка MORA",
       "msaSectors": "Секторы MSA",
       "closeOnLaunch": "Закрыть после запуска",
-      "closeOnLaunchDescription": "Автоматически закрывать X-Dispatch при запуске X-Plane"
+      "closeOnLaunchDescription": "Автоматически закрывать X-Dispatch при запуске X-Plane",
+      "installations": "Установки",
+      "addInstallation": "Добавить установку",
+      "addAndSwitch": "Добавить и переключить",
+      "add": "Добавить",
+      "cancel": "Отмена",
+      "switch": "Переключить",
+      "remove": "Удалить",
+      "name": "Название",
+      "namePlaceholder": "напр. Бета, Чистая установка, С модами",
+      "nameRequired": "Обязательно"
     },
     "appearance": {
       "title": "Внешний вид",

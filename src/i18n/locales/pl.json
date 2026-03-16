@@ -247,7 +247,17 @@
       "moraGrid": "Siatka MORA",
       "msaSectors": "Sektory MSA",
       "closeOnLaunch": "Zamknij po uruchomieniu",
-      "closeOnLaunchDescription": "Automatycznie zamknij X-Dispatch po uruchomieniu X-Plane"
+      "closeOnLaunchDescription": "Automatycznie zamknij X-Dispatch po uruchomieniu X-Plane",
+      "installations": "Instalacje",
+      "addInstallation": "Dodaj instalację",
+      "addAndSwitch": "Dodaj i przełącz",
+      "add": "Dodaj",
+      "cancel": "Anuluj",
+      "switch": "Przełącz",
+      "remove": "Usuń",
+      "name": "Nazwa",
+      "namePlaceholder": "np. Beta, Czysta instalacja, Zmodowana",
+      "nameRequired": "Wymagane"
     },
     "appearance": {
       "title": "Wygląd",

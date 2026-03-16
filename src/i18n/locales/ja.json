@@ -247,7 +247,17 @@
       "moraGrid": "MORAグリッド",
       "msaSectors": "MSAセクター",
       "closeOnLaunch": "起動後に閉じる",
-      "closeOnLaunchDescription": "X-Plane 起動時に X-Dispatch を自動的に閉じる"
+      "closeOnLaunchDescription": "X-Plane 起動時に X-Dispatch を自動的に閉じる",
+      "installations": "インストール",
+      "addInstallation": "インストールを追加",
+      "addAndSwitch": "追加して切替",
+      "add": "追加",
+      "cancel": "キャンセル",
+      "switch": "切替",
+      "remove": "削除",
+      "name": "名前",
+      "namePlaceholder": "例: ベータ、クリーンインストール、MOD入り",
+      "nameRequired": "必須"
     },
     "appearance": {
       "title": "外観",

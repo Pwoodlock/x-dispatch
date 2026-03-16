@@ -247,7 +247,17 @@
       "moraGrid": "Grade MORA",
       "msaSectors": "Setores MSA",
       "closeOnLaunch": "Fechar após o lançamento",
-      "closeOnLaunchDescription": "Fechar o X-Dispatch automaticamente quando o X-Plane iniciar"
+      "closeOnLaunchDescription": "Fechar o X-Dispatch automaticamente quando o X-Plane iniciar",
+      "installations": "Instalações",
+      "addInstallation": "Adicionar instalação",
+      "addAndSwitch": "Adicionar e trocar",
+      "add": "Adicionar",
+      "cancel": "Cancelar",
+      "switch": "Trocar",
+      "remove": "Remover",
+      "name": "Nome",
+      "namePlaceholder": "ex. Beta, Instalação limpa, Modded",
+      "nameRequired": "Obrigatório"
     },
     "appearance": {
       "title": "Aparência",

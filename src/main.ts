@@ -25,7 +25,17 @@ import {
   validateCoordinates,
 } from './lib/utils/validation';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
-import { getSendCrashReports, setSendCrashReports } from './lib/xplaneServices/dataService/config';
+import {
+  addInstallation,
+  getActiveInstallation,
+  getActiveInstallationName,
+  getInstallations,
+  getSendCrashReports,
+  removeInstallation,
+  renameInstallation,
+  setActiveInstallation,
+  setSendCrashReports,
+} from './lib/xplaneServices/dataService/config';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
@@ -134,7 +144,7 @@ function createWindow(): BrowserWindow {
   });
 
   const window = new BrowserWindow({
-    title: `${app.getName()} v${app.getVersion()}`,
+    title: `${app.getName()} v${app.getVersion()} — ${getActiveInstallationName()}`,
     x: windowState.x,
     y: windowState.y,
     width: windowState.width,
@@ -533,6 +543,53 @@ function registerIpcHandlers() {
       logger.main.error(`browseForPath: dialog failed - ${errorMsg}`, err);
       throw new Error(`Failed to open folder picker: ${errorMsg}`);
     }
+  });
+
+  // --- Multi-installation management ---
+  ipcMain.handle('xplane:getInstallations', () => getInstallations());
+  ipcMain.handle('xplane:getActiveInstallation', () => getActiveInstallation());
+  ipcMain.handle('xplane:addInstallation', (_, name: string, installPath: string) => {
+    if (typeof name !== 'string' || name.length === 0 || name.length > 100) {
+      throw new Error('Invalid installation name');
+    }
+    if (typeof installPath !== 'string' || installPath.length === 0 || installPath.length > 1000) {
+      throw new Error('Invalid path');
+    }
+    const validation = dataManager.validatePath(installPath);
+    if (!validation.valid) {
+      return { success: false, errors: validation.errors };
+    }
+    const installation = addInstallation(name, installPath);
+    return { success: true, installation };
+  });
+  ipcMain.handle('xplane:removeInstallation', (_, id: string) => {
+    if (typeof id !== 'string') throw new Error('Invalid id');
+    return removeInstallation(id);
+  });
+  ipcMain.handle('xplane:renameInstallation', (_, id: string, name: string) => {
+    if (
+      typeof id !== 'string' ||
+      typeof name !== 'string' ||
+      name.length === 0 ||
+      name.length > 100
+    ) {
+      throw new Error('Invalid parameters');
+    }
+    return renameInstallation(id, name);
+  });
+  ipcMain.handle('xplane:switchInstallation', (_, id: string) => {
+    if (typeof id !== 'string') throw new Error('Invalid id');
+    const success = setActiveInstallation(id);
+    if (!success) return false;
+    // Clear cached data and reload
+    dataManager.clear();
+    const installName = getActiveInstallationName();
+    logger.main.info(`Switched to installation: ${installName}`);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setTitle(`${app.getName()} v${app.getVersion()} — ${installName}`);
+      mainWindow.webContents.reload();
+    }
+    return true;
   });
 
   ipcMain.handle('get-airports', () => dataManager.getAllAirports());

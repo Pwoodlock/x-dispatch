@@ -9,6 +9,8 @@ export const appKeys = {
   loadingStatus: ['app', 'loadingStatus'] as const,
   logPath: ['app', 'logPath'] as const,
   configPath: ['app', 'configPath'] as const,
+  installations: ['app', 'installations'] as const,
+  activeInstallation: ['app', 'activeInstallation'] as const,
   airportMetadata: (icao: string) => ['app', 'airportMetadata', icao] as const,
   atcControllers: (icao: string) => ['app', 'atcControllers', icao] as const,
   procedures: (icao: string) => ['app', 'procedures', icao] as const,
@@ -90,6 +92,22 @@ export function useAirportProcedures(icao: string | null) {
     },
     enabled: !!icao,
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useInstallations() {
+  return useQuery({
+    queryKey: appKeys.installations,
+    queryFn: () => window.xplaneAPI.getInstallations(),
+    staleTime: Infinity,
+  });
+}
+
+export function useActiveInstallation() {
+  return useQuery({
+    queryKey: appKeys.activeInstallation,
+    queryFn: () => window.xplaneAPI.getActiveInstallation(),
+    staleTime: Infinity,
   });
 }
 

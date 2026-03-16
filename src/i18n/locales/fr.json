@@ -191,7 +191,17 @@
       "active": "Actif",
       "custom": "Personnalisé",
       "closeOnLaunch": "Fermer après le lancement",
-      "closeOnLaunchDescription": "Fermer automatiquement X-Dispatch lorsque X-Plane démarre"
+      "closeOnLaunchDescription": "Fermer automatiquement X-Dispatch lorsque X-Plane démarre",
+      "installations": "Installations",
+      "addInstallation": "Ajouter une installation",
+      "addAndSwitch": "Ajouter et activer",
+      "add": "Ajouter",
+      "cancel": "Annuler",
+      "switch": "Activer",
+      "remove": "Supprimer",
+      "name": "Nom",
+      "namePlaceholder": "ex. Bêta, Installation propre, Moddé",
+      "nameRequired": "Obligatoire"
     },
     "appearance": {
       "title": "Apparence",
