@@ -81,14 +81,11 @@ export function setup3DTerrain(map: maplibregl.Map): void {
   if (map.getSource(TERRAIN_SOURCE_ID)) return;
 
   // Terrain DEM source — used for 3D terrain extrusion (enabled only in mercator mode)
-  // minzoom matches GLOBE_TO_MERCATOR_ZOOM — no point fetching DEM tiles in globe mode
-  // where terrain is disabled and many low-zoom tiles 404
   map.addSource(TERRAIN_SOURCE_ID, {
     type: 'raster-dem',
     encoding: 'terrarium',
     tiles: [TERRAIN_TILES_URL],
     tileSize: 256,
-    minzoom: GLOBE_TO_MERCATOR_ZOOM,
     maxzoom: 10,
   });
 
@@ -99,7 +96,6 @@ export function setup3DTerrain(map: maplibregl.Map): void {
     encoding: 'terrarium',
     tiles: [TERRAIN_TILES_URL],
     tileSize: 256,
-    minzoom: GLOBE_TO_MERCATOR_ZOOM,
     maxzoom: 10,
   });
 
