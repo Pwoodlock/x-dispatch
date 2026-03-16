@@ -247,7 +247,17 @@
       "moraGrid": "MORA 网格",
       "msaSectors": "MSA 扇区",
       "closeOnLaunch": "启动后关闭",
-      "closeOnLaunchDescription": "X-Plane 启动时自动关闭 X-Dispatch"
+      "closeOnLaunchDescription": "X-Plane 启动时自动关闭 X-Dispatch",
+      "installations": "安装",
+      "addInstallation": "添加安装",
+      "addAndSwitch": "添加并切换",
+      "add": "添加",
+      "cancel": "取消",
+      "switch": "切换",
+      "remove": "删除",
+      "name": "名称",
+      "namePlaceholder": "例如 测试版、干净安装、模组版",
+      "nameRequired": "必填"
     },
     "appearance": {
       "title": "外观",

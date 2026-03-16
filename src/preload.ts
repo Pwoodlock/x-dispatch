@@ -111,6 +111,15 @@ contextBridge.exposeInMainWorld('xplaneAPI', {
   validatePath: (path: string) => ipcRenderer.invoke('xplane:validatePath', path),
   detectInstallations: () => ipcRenderer.invoke('xplane:detectInstallations'),
   browseForPath: () => ipcRenderer.invoke('xplane:browseForPath'),
+  // Multi-installation management
+  getInstallations: () => ipcRenderer.invoke('xplane:getInstallations'),
+  getActiveInstallation: () => ipcRenderer.invoke('xplane:getActiveInstallation'),
+  addInstallation: (name: string, path: string) =>
+    ipcRenderer.invoke('xplane:addInstallation', name, path),
+  removeInstallation: (id: string) => ipcRenderer.invoke('xplane:removeInstallation', id),
+  renameInstallation: (id: string, name: string) =>
+    ipcRenderer.invoke('xplane:renameInstallation', id, name),
+  switchInstallation: (id: string) => ipcRenderer.invoke('xplane:switchInstallation', id),
 });
 
 contextBridge.exposeInMainWorld('navAPI', {
@@ -310,6 +319,12 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
 });
 
 declare global {
+  interface XPlaneInstallation {
+    id: string;
+    name: string;
+    path: string;
+  }
+
   interface Window {
     appAPI: {
       isSetupComplete: () => Promise<boolean>;
@@ -370,6 +385,15 @@ declare global {
       validatePath: (path: string) => Promise<PathValidation>;
       detectInstallations: () => Promise<string[]>;
       browseForPath: () => Promise<BrowseResult | null>;
+      getInstallations: () => Promise<XPlaneInstallation[]>;
+      getActiveInstallation: () => Promise<XPlaneInstallation | null>;
+      addInstallation: (
+        name: string,
+        path: string
+      ) => Promise<{ success: boolean; installation?: XPlaneInstallation; errors?: string[] }>;
+      removeInstallation: (id: string) => Promise<boolean>;
+      renameInstallation: (id: string, name: string) => Promise<boolean>;
+      switchInstallation: (id: string) => Promise<boolean>;
     };
     navAPI: {
       loadDatabase: (xplanePath?: string) => Promise<NavLoadResult>;

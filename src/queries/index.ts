@@ -31,6 +31,8 @@ export {
   useAirportMetadata,
   useATCControllers,
   useAirportProcedures,
+  useInstallations,
+  useActiveInstallation,
   useLogPath,
   useConfigPath,
   appKeys,

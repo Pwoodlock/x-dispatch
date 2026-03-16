@@ -1107,6 +1107,9 @@ export class XPlaneDataManager {
    * Clear all loaded data
    */
   clear(): void {
+    // Reset cached path so it's re-read from config on next access
+    this.xplanePath = null;
+
     // Clear in-memory data (small datasets only)
     this.atcControllers = [];
     this.holdingPatterns = [];
