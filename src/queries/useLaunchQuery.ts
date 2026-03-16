@@ -16,7 +16,7 @@ export function useAircraftList(enabled: boolean = true) {
       return result.success ? result.aircraft : [];
     },
     enabled,
-    staleTime: Infinity,
+    staleTime: 0,
   });
 }
 
