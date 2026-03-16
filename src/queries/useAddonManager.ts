@@ -194,7 +194,7 @@ export function useAircraftList(enabled = true) {
       return result.value;
     },
     enabled,
-    staleTime: 30_000,
+    staleTime: 0,
   });
 }
 
@@ -266,7 +266,7 @@ export function usePluginList(enabled = true) {
       return result.value;
     },
     enabled,
-    staleTime: 30_000,
+    staleTime: 0,
   });
 }
 
@@ -319,7 +319,7 @@ export function useLiveryList(aircraftFolder: string, enabled = true) {
       return result.value;
     },
     enabled: enabled && !!aircraftFolder,
-    staleTime: 30_000,
+    staleTime: 0,
   });
 }
 
@@ -361,7 +361,7 @@ export function useLuaScriptList(enabled = true) {
       return result.value;
     },
     enabled,
-    staleTime: 30_000,
+    staleTime: 0,
   });
 }
 
