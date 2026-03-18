@@ -102,9 +102,10 @@ jobs:
         uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
-          args: --latest --strip header
+          args: --tag ${{ needs.version.outputs.tag }} --strip header
         env:
           GITHUB_REPO: ${{ github.repository }}
+          OUTPUT: release-notes.md
 
       - name: Update CHANGELOG.md
         uses: orhun/git-cliff-action@v4
@@ -123,34 +124,34 @@ jobs:
           git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for ${{ needs.version.outputs.tag }}"
           git push
 
-      - name: Write release body
-        env:
-          CHANGELOG: ${{ steps.changelog.outputs.content }}
+      - name: Append footer to release notes
         run: |
-          {
-            printf '%s\n' "$CHANGELOG"
-            echo ""
-            echo "---"
-            echo ""
-            echo "If you find this useful, consider giving it a :star:, it helps others discover the project."
-            echo ""
-            echo "> :apple: **macOS Users:** Please read the [installation instructions](https://github.com/${{ github.repository }}#readme) before opening the app."
-          } > release-body.md
+          cat >> release-notes.md << 'EOF'
+
+          ---
+
+          If you find this useful, consider giving it a :star:, it helps others discover the project.
+
+          > :apple: **macOS Users:** Please read the [installation instructions](https://github.com/${{ github.repository }}#readme) before opening the app.
+          EOF
 
       - name: Update release with changelog
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.version.outputs.tag }}
           draft: false
-          body_path: release-body.md
+          body_path: release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify Discord
+        continue-on-error: true
+        env:
+          NOTES: ${{ steps.changelog.outputs.content }}
         uses: tsickert/discord-webhook@v7.0.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed-title: "X-Dispatch ${{ needs.version.outputs.tag }} Released"
           embed-url: "https://github.com/${{ github.repository }}/releases/tag/${{ needs.version.outputs.tag }}"
-          embed-description: ${{ steps.changelog.outputs.content }}
+          embed-description: ${{ env.NOTES }}
           embed-color: 3447003
