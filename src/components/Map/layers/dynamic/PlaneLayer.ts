@@ -200,10 +200,7 @@ function createPlayerIcon(config: IconConfig): StyleImageInterface {
 const activeCategory = new WeakMap<maplibregl.Map, string | null>();
 
 export function addPlaneLayer(map: maplibregl.Map, position: PlanePosition | null): void {
-  if (!map.isStyleLoaded()) {
-    map.once('style.load', () => addPlaneLayer(map, position));
-    return;
-  }
+  if (!map.getStyle()) return;
 
   removePlaneLayer(map);
 
@@ -255,7 +252,7 @@ export function updatePlaneLayer(
   map: maplibregl.Map | null | undefined,
   position: PlanePosition | null
 ): void {
-  if (!map || !map.isStyleLoaded()) return;
+  if (!map || !map.getStyle()) return;
   try {
     const currentCat = position?.aircraftCategory ?? null;
     if (activeCategory.get(map) !== currentCat && map.getSource(SOURCE_ID)) {

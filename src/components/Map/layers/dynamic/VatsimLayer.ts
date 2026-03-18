@@ -83,10 +83,7 @@ export async function addVatsimPilotLayer(
   map: maplibregl.Map,
   pilots: VatsimPilot[]
 ): Promise<void> {
-  if (!map.isStyleLoaded()) {
-    map.once('style.load', () => addVatsimPilotLayer(map, pilots));
-    return;
-  }
+  if (!map.getStyle()) return;
 
   removeVatsimPilotLayer(map);
   if (pilots.length === 0) return;
@@ -107,11 +104,8 @@ export async function addVatsimPilotLayer(
   await ensureFallbackIcon(map);
   await ensureAircraftIcons(map, uniqueIcaos);
 
-  // Re-check style after async icon loading
-  if (!map.isStyleLoaded()) {
-    map.once('style.load', () => addVatsimPilotLayer(map, pilots));
-    return;
-  }
+  // Bail if map was destroyed during async icon loading
+  if (!map.getStyle()) return;
 
   map.addSource(TRAIL_SOURCE_ID, { type: 'geojson', data: trailGeoJSON });
   map.addLayer({
