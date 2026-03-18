@@ -147,13 +147,9 @@ function loadImage(map: maplibregl.Map, id: string, svg: string): void {
 // ============================================================================
 
 export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightPlan): void {
-  // Wait for style to load before adding layers
-  if (!map.isStyleLoaded()) {
-    map.once('style.load', () => {
-      addFlightPlanLayer(map, fmsData);
-    });
-    return;
-  }
+  // Style is always loaded by the time this is called from the map useEffect.
+  // With transformStyle, layers survive basemap changes — no re-add needed.
+  if (!map.getStyle()) return;
 
   removeFlightPlanLayer(map);
 

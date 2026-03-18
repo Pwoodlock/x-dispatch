@@ -91,10 +91,7 @@ function createTrailGeoJSON(pilots: IvaoPilot[]): GeoJSON.FeatureCollection {
 }
 
 export async function addIvaoPilotLayer(map: maplibregl.Map, pilots: IvaoPilot[]): Promise<void> {
-  if (!map.isStyleLoaded()) {
-    map.once('style.load', () => addIvaoPilotLayer(map, pilots));
-    return;
-  }
+  if (!map.getStyle()) return;
 
   removeIvaoPilotLayer(map);
   if (pilots.length === 0) return;
@@ -113,11 +110,8 @@ export async function addIvaoPilotLayer(map: maplibregl.Map, pilots: IvaoPilot[]
   await ensureFallbackIcon(map);
   await ensureAircraftIcons(map, uniqueIcaos);
 
-  // Re-check style after async icon loading
-  if (!map.isStyleLoaded()) {
-    map.once('style.load', () => addIvaoPilotLayer(map, pilots));
-    return;
-  }
+  // Bail if map was destroyed during async icon loading
+  if (!map.getStyle()) return;
 
   map.addSource(TRAIL_SOURCE_ID, { type: 'geojson', data: trailGeoJSON });
   map.addLayer({

@@ -135,11 +135,7 @@ function removeMarkers(): void {
 // ============================================================================
 
 export function addRangeRingsLayer(map: maplibregl.Map, config: RangeRingsConfig): void {
-  // Guard: wait for style before touching sources/layers
-  if (!map.isStyleLoaded()) {
-    map.once('style.load', () => addRangeRingsLayer(map, config));
-    return;
-  }
+  if (!map.getStyle()) return;
 
   removeRangeRingsLayer(map);
   if (config.categories.length === 0) return;
