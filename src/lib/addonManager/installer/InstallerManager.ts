@@ -243,7 +243,17 @@ export class InstallerManager {
           // Merge if target exists (shouldn't happen for clean, but be safe)
           this.copyMerge(tempDir, task.targetPath);
         } else {
-          fs.renameSync(tempDir, task.targetPath);
+          try {
+            fs.renameSync(tempDir, task.targetPath);
+          } catch (err: unknown) {
+            // EXDEV: rename fails across different drives (e.g., temp on C:, X-Plane on D:)
+            if ((err as NodeJS.ErrnoException).code === 'EXDEV') {
+              fs.cpSync(tempDir, task.targetPath, { recursive: true });
+              fs.rmSync(tempDir, { recursive: true, force: true });
+            } else {
+              throw err;
+            }
+          }
         }
       }
 
