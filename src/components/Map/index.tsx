@@ -331,7 +331,8 @@ export default function Map({ airports }: MapProps) {
   useRangeRingsSync({ mapRef, navDataLocation });
 
   // Pin-drop custom start location
-  const { placeAtCenter: handlePinDrop } = usePinDrop({ mapRef });
+  const { placeAtCenter: handlePinDrop, placeAtCoordinates: handlePinDropAtCoordinates } =
+    usePinDrop({ mapRef });
 
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
@@ -696,6 +697,7 @@ export default function Map({ airports }: MapProps) {
           weatherRadarControls={weatherRadarControls}
           onNavToggle={handleNavLayerToggle}
           onPinDrop={handlePinDrop}
+          onPinDropAtCoordinates={handlePinDropAtCoordinates}
         />
         <FlightPlanBar onWaypointClick={handleWaypointClick} />
       </div>
