@@ -66,6 +66,98 @@ import {
   RANGE_RING_SPEEDS,
 } from '@/types/layers';
 
+function PinCoordinatePopover({
+  isCustomPin,
+  onSubmit,
+}: {
+  isCustomPin: boolean;
+  onSubmit: (lat: number, lon: number) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [lat, setLat] = useState('');
+  const [lon, setLon] = useState('');
+
+  const parsedLat = parseFloat(lat);
+  const parsedLon = parseFloat(lon);
+  const isValid =
+    Number.isFinite(parsedLat) &&
+    Number.isFinite(parsedLon) &&
+    parsedLat >= -90 &&
+    parsedLat <= 90 &&
+    parsedLon >= -180 &&
+    parsedLon <= 180;
+
+  const handleSubmit = () => {
+    if (!isValid) return;
+    onSubmit(parsedLat, parsedLon);
+    setOpen(false);
+    setLat('');
+    setLon('');
+  };
+
+  // Pre-fill with current pin coordinates when opening
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      const pos = useAppStore.getState().startPosition;
+      if (pos?.type === 'custom' && pos.latitude && pos.longitude) {
+        setLat(pos.latitude.toFixed(4));
+        setLon(pos.longitude.toFixed(4));
+      }
+    }
+    setOpen(nextOpen);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            'h-9 rounded-l-none px-1.5',
+            isCustomPin && 'border-success/50 text-success'
+          )}
+          aria-label={t('toolbar.pinCoordinates')}
+        >
+          <ChevronDown className="h-3 w-3" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 space-y-3 p-3" align="end">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <label className="w-8 text-xs text-muted-foreground">{t('toolbar.pinLat')}</label>
+            <Input
+              type="text"
+              inputMode="decimal"
+              placeholder="43.6585"
+              value={lat}
+              onChange={(e) => setLat(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              className="h-8 font-mono text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="w-8 text-xs text-muted-foreground">{t('toolbar.pinLon')}</label>
+            <Input
+              type="text"
+              inputMode="decimal"
+              placeholder="7.2156"
+              value={lon}
+              onChange={(e) => setLon(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              className="h-8 font-mono text-sm"
+            />
+          </div>
+        </div>
+        <Button size="sm" className="w-full" disabled={!isValid} onClick={handleSubmit}>
+          <MapPin className="mr-1 h-3.5 w-3.5" />
+          {t('toolbar.pinDropAndFly')}
+        </Button>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 interface ToolbarProps {
   airports: Airport[];
   onSelectAirport: (airport: Airport) => void;
@@ -75,6 +167,7 @@ interface ToolbarProps {
   weatherRadarControls: WeatherRadarControls;
   onNavToggle: (layer: keyof NavLayerVisibility) => void;
   onPinDrop: () => void;
+  onPinDropAtCoordinates: (lat: number, lon: number) => void;
 }
 
 export default function Toolbar({
@@ -86,6 +179,7 @@ export default function Toolbar({
   weatherRadarControls,
   onNavToggle,
   onPinDrop,
+  onPinDropAtCoordinates,
 }: ToolbarProps) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -670,16 +764,22 @@ export default function Toolbar({
         {/* Weather playback controls (inline, no toggle) */}
         {weatherRadarEnabled && <WeatherRadarPlayback controls={weatherRadarControls} />}
 
-        {/* Pin Drop — place aircraft on map */}
-        <Button
-          variant="outline"
-          onClick={onPinDrop}
-          className={cn('h-9 gap-2 px-3', isCustomPin && 'border-success/50 text-success')}
-          tooltip={t('toolbar.tooltips.pin')}
-        >
-          <MapPin className="h-4 w-4" />
-          <span className="min-w-0 truncate text-sm font-medium">{t('toolbar.pin')}</span>
-        </Button>
+        {/* Pin Drop — split button: click = drop at center, chevron = coordinate input */}
+        <div className="flex">
+          <Button
+            variant="outline"
+            onClick={onPinDrop}
+            className={cn(
+              'h-9 gap-2 rounded-r-none border-r-0 px-3',
+              isCustomPin && 'border-success/50 text-success'
+            )}
+            tooltip={t('toolbar.tooltips.pin')}
+          >
+            <MapPin className="h-4 w-4" />
+            <span className="min-w-0 truncate text-sm font-medium">{t('toolbar.pin')}</span>
+          </Button>
+          <PinCoordinatePopover isCustomPin={isCustomPin} onSubmit={onPinDropAtCoordinates} />
+        </div>
 
         {/* Launch */}
         <Button

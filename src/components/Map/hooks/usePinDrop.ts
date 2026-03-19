@@ -444,7 +444,36 @@ export function usePinDrop({ mapRef }: UsePinDropOptions) {
     showHandleAt(map, center.lng, center.lat, heading);
   }, [mapRef, showHandleAt]);
 
-  return { placeAtCenter };
+  // Place pin at specific coordinates and fly to them
+  const placeAtCoordinates = useCallback(
+    async (lat: number, lon: number) => {
+      const map = mapRef.current;
+      if (!map) return;
+
+      // Remove existing pin if any (always replace, never toggle)
+      if (pinRef.current) {
+        clearPin(map, pinRef, handleMarkerRef);
+      }
+
+      const heading = 0;
+      pinRef.current = { lng: lon, lat, heading };
+
+      await ensureImage(map);
+      ensureSourceAndLayer(map, lon, lat, heading);
+      updateSource(map, lon, lat, heading);
+      setStartPositionFromPin(lon, lat, heading);
+      showHandleAt(map, lon, lat, heading);
+
+      map.flyTo({
+        center: [lon, lat],
+        zoom: Math.max(map.getZoom(), 14),
+        duration: 1500,
+      });
+    },
+    [mapRef, showHandleAt]
+  );
+
+  return { placeAtCenter, placeAtCoordinates };
 }
 
 export const PINDROP_LAYER_ID = LAYER_ID;
