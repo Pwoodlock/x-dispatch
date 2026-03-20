@@ -105,6 +105,11 @@ contextBridge.exposeInMainWorld('appAPI', {
   setZoomFactor: (factor: number) => webFrame.setZoomFactor(factor),
   getZoomFactor: () => webFrame.getZoomFactor(),
   getFilePathForDrop: (file: File) => webUtils.getPathForFile(file),
+  onFocusSearch: (callback: () => void) => {
+    const handler = () => callback();
+    ipcRenderer.on('focus-search', handler);
+    return () => ipcRenderer.removeListener('focus-search', handler);
+  },
 });
 
 contextBridge.exposeInMainWorld('xplaneAPI', {
@@ -368,6 +373,7 @@ declare global {
       setZoomFactor: (factor: number) => void;
       getZoomFactor: () => number;
       getFilePathForDrop: (file: File) => string;
+      onFocusSearch: (callback: () => void) => () => void;
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;

@@ -1,4 +1,15 @@
-import { BrowserWindow, Menu, app, dialog, ipcMain, net, screen, session, shell } from 'electron';
+import {
+  BrowserWindow,
+  Menu,
+  app,
+  dialog,
+  globalShortcut,
+  ipcMain,
+  net,
+  screen,
+  session,
+  shell,
+} from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
@@ -1317,6 +1328,16 @@ app.whenReady().then(async () => {
 
   registerIpcHandlers();
   mainWindow = createWindow();
+
+  // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
+  mainWindow.on('focus', () => {
+    globalShortcut.register('CommandOrControl+F', () => {
+      mainWindow?.webContents.send('focus-search');
+    });
+  });
+  mainWindow.on('blur', () => {
+    globalShortcut.unregister('CommandOrControl+F');
+  });
 
   if (process.platform === 'darwin' && app.dock) {
     const iconPath = app.isPackaged
