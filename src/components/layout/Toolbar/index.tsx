@@ -339,6 +339,14 @@ export default function Toolbar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Ctrl+F / Cmd+F focuses the search input
+  useEffect(() => {
+    return window.appAPI.onFocusSearch(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    });
+  }, []);
+
   const handleLoadFlightPlan = useCallback(async () => {
     const result = await window.flightPlanAPI.openFile();
     if (result) {
