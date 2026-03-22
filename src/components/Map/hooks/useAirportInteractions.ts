@@ -154,6 +154,7 @@ export function useAirportInteractions({
             elevationFt: currentAirport.elevation,
             index: helipadIndex,
             xplaneIndex: `${row}_0`,
+            isHelipad: true,
           });
         } else {
           // Gates/ramps: xplaneIndex = position in alphabetically sorted list

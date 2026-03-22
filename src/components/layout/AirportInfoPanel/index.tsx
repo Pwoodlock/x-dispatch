@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Compass, Info, PlaneTakeoff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +52,18 @@ export default function AirportInfoPanel({
   const flightCategory = vatsimMetarData?.flightCategory ?? null;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('info');
+
+  // Auto-switch to Start tab when user clicks a gate/runway on the map
+  const prevPositionRef = useRef(selectedStartPosition);
+  useEffect(() => {
+    // Only react to NEW selections, not initial mount
+    if (selectedStartPosition && selectedStartPosition !== prevPositionRef.current) {
+      setActiveTab('start');
+      if (isCollapsed) setIsCollapsed(false);
+    }
+    prevPositionRef.current = selectedStartPosition;
+  }, [selectedStartPosition, isCollapsed]);
 
   if (!airport) return null;
 
@@ -162,7 +174,11 @@ export default function AirportInfoPanel({
         )}
 
         {/* Tab Navigation + Content */}
-        <Tabs defaultValue="info" className="flex min-h-0 flex-1 flex-col">
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as TabId)}
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <TabsList variant="line" className="border-border/30">
             {TABS.map((tab) => (
               <TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-1.5 text-xs">

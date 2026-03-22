@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +39,26 @@ export default function StartTab({
   const defaultView = gates.length > 0 ? 'gates' : runways.length > 0 ? 'runways' : 'helipads';
   const [viewType, setViewType] = useState<ViewType>(defaultView);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Auto-switch sub-tab and scroll to selected item when position changes
+  const prevPositionRef = useRef<typeof selectedStartPosition>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!selectedStartPosition || selectedStartPosition === prevPositionRef.current) return;
+    prevPositionRef.current = selectedStartPosition;
+
+    // Switch sub-tab based on position type
+    if (selectedStartPosition.type === 'ramp') setViewType('gates');
+    else if (selectedStartPosition.isHelipad) setViewType('helipads');
+    else if (selectedStartPosition.type === 'runway') setViewType('runways');
+
+    // Scroll to the selected item after sub-tab switch renders
+    setTimeout(() => {
+      const el = containerRef.current?.querySelector('[data-selected="true"]');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  }, [selectedStartPosition]);
 
   // Clear search when switching tabs
   const handleTabChange = (value: string) => {
@@ -107,36 +127,40 @@ export default function StartTab({
       )}
 
       {/* Content */}
-      {viewType === 'gates' && (
-        <GateList
-          gates={gates}
-          searchQuery={searchQuery}
-          onSelect={onSelectGate}
-          selectedIndex={
-            selectedStartPosition?.type === 'ramp' ? selectedStartPosition.index : undefined
-          }
-        />
-      )}
-      {viewType === 'runways' && (
-        <RunwayList
-          runways={runways}
-          searchQuery={searchQuery}
-          onSelectEnd={onSelectRunwayEnd}
-          onSelectRunway={onSelectRunway}
-          selectedIndex={
-            selectedStartPosition?.type === 'runway' ? selectedStartPosition.index : undefined
-          }
-        />
-      )}
-      {viewType === 'helipads' && (
-        <HelipadList
-          helipads={helipads}
-          searchQuery={searchQuery}
-          runwayCount={runways.length}
-          onSelect={onSelectHelipad}
-          selectedIndex={selectedStartPosition?.isHelipad ? selectedStartPosition.index : undefined}
-        />
-      )}
+      <div ref={containerRef}>
+        {viewType === 'gates' && (
+          <GateList
+            gates={gates}
+            searchQuery={searchQuery}
+            onSelect={onSelectGate}
+            selectedIndex={
+              selectedStartPosition?.type === 'ramp' ? selectedStartPosition.index : undefined
+            }
+          />
+        )}
+        {viewType === 'runways' && (
+          <RunwayList
+            runways={runways}
+            searchQuery={searchQuery}
+            onSelectEnd={onSelectRunwayEnd}
+            onSelectRunway={onSelectRunway}
+            selectedIndex={
+              selectedStartPosition?.type === 'runway' ? selectedStartPosition.index : undefined
+            }
+          />
+        )}
+        {viewType === 'helipads' && (
+          <HelipadList
+            helipads={helipads}
+            searchQuery={searchQuery}
+            runwayCount={runways.length}
+            onSelect={onSelectHelipad}
+            selectedIndex={
+              selectedStartPosition?.isHelipad ? selectedStartPosition.index : undefined
+            }
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -242,6 +266,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
         return (
           <Button
             key={originalIndex}
+            data-selected={isSelected || undefined}
             variant="ghost"
             onClick={() =>
               onSelect?.({
@@ -370,6 +395,7 @@ function RunwayList({
                 return (
                   <Button
                     key={end.name}
+                    data-selected={isSelected || undefined}
                     variant="ghost"
                     onClick={() =>
                       onSelectEnd?.({
@@ -446,6 +472,7 @@ function HelipadList({
         return (
           <Button
             key={originalIndex}
+            data-selected={isSelected || undefined}
             variant="ghost"
             onClick={() =>
               onSelect?.({
