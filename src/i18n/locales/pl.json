@@ -865,6 +865,11 @@
       "loadFailed": "Nie udało się załadować scenerii",
       "total": "pakietów",
       "globalAirports": "Domyślne lotniska (Global)",
+      "deleteTitle": "Usuń scenerię",
+      "deleteDescription": "Trwale usunąć \"{{name}}\" z dysku? Tej operacji nie można cofnąć.",
+      "deleteConfirm": "Usuń",
+      "deleted": "Usunięto {{name}}",
+      "deleteFailed": "Nie udało się usunąć",
       "packages": "{{count}} pakietów scenerii",
       "unsavedChanges": "Niezapisane",
       "safeMode": "Bezpieczny",
@@ -924,7 +929,8 @@
       "deletePlugin": "Usuń wtyczkę"
     },
     "sceneryEntry": {
-      "openFolder": "Otwórz folder"
+      "openFolder": "Otwórz folder",
+      "delete": "Usuń z dysku"
     },
     "addonTypes": {
       "Aircraft": "Samolot",

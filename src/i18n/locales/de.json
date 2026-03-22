@@ -784,6 +784,11 @@
       "loadFailed": "Laden der Szenerie fehlgeschlagen",
       "total": "Pakete",
       "globalAirports": "Standard-Flughäfen (Global)",
+      "deleteTitle": "Szenerie löschen",
+      "deleteDescription": "\"{{name}}\" dauerhaft von der Festplatte löschen? Dies kann nicht rückgängig gemacht werden.",
+      "deleteConfirm": "Löschen",
+      "deleted": "{{name}} gelöscht",
+      "deleteFailed": "Löschen fehlgeschlagen",
       "packages": "{{count}} Szenerie-Pakete",
       "unsavedChanges": "Ungespeichert",
       "safeMode": "Sicher",
@@ -843,7 +848,8 @@
       "deletePlugin": "Plugin löschen"
     },
     "sceneryEntry": {
-      "openFolder": "Ordner öffnen"
+      "openFolder": "Ordner öffnen",
+      "delete": "Von Festplatte löschen"
     },
     "addonTypes": {
       "Aircraft": "Flugzeug",

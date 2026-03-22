@@ -865,6 +865,11 @@
       "loadFailed": "Caricamento scenari fallito",
       "total": "pacchetti",
       "globalAirports": "Aeroporti predefiniti (Global)",
+      "deleteTitle": "Elimina scenario",
+      "deleteDescription": "Eliminare permanentemente \"{{name}}\" dal disco? Questa azione non può essere annullata.",
+      "deleteConfirm": "Elimina",
+      "deleted": "{{name}} eliminato",
+      "deleteFailed": "Eliminazione fallita",
       "packages": "{{count}} pacchetti scenari",
       "unsavedChanges": "Non salvato",
       "safeMode": "Sicuro",
@@ -924,7 +929,8 @@
       "deletePlugin": "Elimina plugin"
     },
     "sceneryEntry": {
-      "openFolder": "Apri cartella"
+      "openFolder": "Apri cartella",
+      "delete": "Elimina dal disco"
     },
     "addonTypes": {
       "Aircraft": "Aereo",

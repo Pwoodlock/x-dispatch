@@ -103,6 +103,23 @@ export function useSceneryToggle() {
   });
 }
 
+export function useSceneryDelete() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (folderName: string) => {
+      const result = await window.addonManagerAPI.scenery.deleteScenery(folderName);
+      if (!result.ok) {
+        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+      }
+      return result.value;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.sceneryList });
+    },
+  });
+}
+
 /**
  * Move scenery entry up or down within its tier.
  */

@@ -116,6 +116,25 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.toggle(folderName);
   });
 
+  ipcMain.handle('addon:scenery:delete', async (_event, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+
+    if (
+      typeof folderName !== 'string' ||
+      folderName.length === 0 ||
+      folderName.length > 500 ||
+      folderName.includes('..')
+    ) {
+      return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(folderName) } };
+    }
+
+    const manager = new SceneryManager(xplanePath);
+    return manager.deleteScenery(folderName);
+  });
+
   ipcMain.handle('addon:scenery:move', async (_event, folderName: unknown, direction: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {

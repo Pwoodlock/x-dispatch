@@ -865,6 +865,11 @@
       "loadFailed": "Error al cargar escenarios",
       "total": "paquetes",
       "globalAirports": "Aeropuertos predeterminados (Global)",
+      "deleteTitle": "Eliminar escenario",
+      "deleteDescription": "¿Eliminar permanentemente \"{{name}}\" del disco? Esta acción no se puede deshacer.",
+      "deleteConfirm": "Eliminar",
+      "deleted": "{{name}} eliminado",
+      "deleteFailed": "Error al eliminar",
       "packages": "{{count}} paquetes de escenario",
       "unsavedChanges": "Sin guardar",
       "safeMode": "Seguro",
@@ -924,7 +929,8 @@
       "deletePlugin": "Eliminar plugin"
     },
     "sceneryEntry": {
-      "openFolder": "Abrir carpeta"
+      "openFolder": "Abrir carpeta",
+      "delete": "Eliminar del disco"
     },
     "addonTypes": {
       "Aircraft": "Aeronave",

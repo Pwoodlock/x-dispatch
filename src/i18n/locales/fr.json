@@ -784,6 +784,11 @@
       "loadFailed": "Échec du chargement des scènes",
       "total": "packs",
       "globalAirports": "Aéroports par défaut (Global)",
+      "deleteTitle": "Supprimer le paysage",
+      "deleteDescription": "Supprimer définitivement \"{{name}}\" du disque ? Cette action est irréversible.",
+      "deleteConfirm": "Supprimer",
+      "deleted": "{{name}} supprimé",
+      "deleteFailed": "Échec de la suppression",
       "packages": "{{count}} packs de scènes",
       "unsavedChanges": "Non enregistré",
       "safeMode": "Sécurisé",
@@ -843,7 +848,8 @@
       "deletePlugin": "Supprimer le plugin"
     },
     "sceneryEntry": {
-      "openFolder": "Ouvrir le dossier"
+      "openFolder": "Ouvrir le dossier",
+      "delete": "Supprimer du disque"
     },
     "addonTypes": {
       "Aircraft": "Aéronef",

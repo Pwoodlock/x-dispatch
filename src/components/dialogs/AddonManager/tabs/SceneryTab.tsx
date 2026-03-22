@@ -48,6 +48,7 @@ import { cn } from '@/lib/utils/helpers';
 import {
   useScenarySaveOrder,
   useSceneryBackups,
+  useSceneryDelete,
   useSceneryList,
   useSceneryRestore,
   useScenerySort,
@@ -142,6 +143,7 @@ export function SceneryTab() {
   const sortMutation = useScenerySort();
   const saveOrderMutation = useScenarySaveOrder();
   const toggleMutation = useSceneryToggle();
+  const deleteMutation = useSceneryDelete();
   const { data: backups = [] } = useSceneryBackups();
   const restoreMutation = useSceneryRestore();
 
@@ -149,6 +151,7 @@ export function SceneryTab() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showBackups, setShowBackups] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Sync local state when remote data changes
   useEffect(() => {
@@ -212,6 +215,17 @@ export function SceneryTab() {
     setHasUnsavedChanges(false);
   };
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteMutation.mutateAsync(deleteTarget);
+      toast.success(t('addonManager.scenery.deleted', { name: deleteTarget }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('addonManager.scenery.deleteFailed'));
+    }
+    setDeleteTarget(null);
+  };
+
   const handleRestore = async (backupPath: string) => {
     await restoreMutation.mutateAsync(backupPath);
     setShowBackups(false);
@@ -252,6 +266,7 @@ export function SceneryTab() {
     sortMutation.isPending ||
     saveOrderMutation.isPending ||
     toggleMutation.isPending ||
+    deleteMutation.isPending ||
     restoreMutation.isPending;
 
   return (
@@ -376,6 +391,7 @@ export function SceneryTab() {
                     totalCount={stats.total}
                     onToggle={(name) => toggleMutation.mutate(name)}
                     onOpenFolder={handleOpenFolder}
+                    onDelete={(name) => setDeleteTarget(name)}
                     disabled={isPending}
                   />
                 )
@@ -425,6 +441,31 @@ export function SceneryTab() {
                 ))}
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('addonManager.scenery.deleteTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('addonManager.scenery.deleteDescription', { name: deleteTarget })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setDeleteTarget(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? <Spinner /> : t('addonManager.scenery.deleteConfirm')}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

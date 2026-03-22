@@ -2,7 +2,7 @@
 import { useTranslation } from 'react-i18next';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FolderOpen, GripVertical } from 'lucide-react';
+import { FolderOpen, GripVertical, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -16,6 +16,7 @@ interface SortableSceneryEntryProps {
   totalCount: number;
   onToggle: (folderName: string) => void;
   onOpenFolder: (fullPath: string) => void;
+  onDelete: (folderName: string) => void;
   disabled: boolean;
 }
 
@@ -25,6 +26,7 @@ export function SortableSceneryEntry({
   totalCount,
   onToggle,
   onOpenFolder,
+  onDelete,
   disabled,
 }: SortableSceneryEntryProps) {
   const { t } = useTranslation();
@@ -118,6 +120,22 @@ export function SortableSceneryEntry({
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left">{t('addonManager.sceneryEntry.openFolder')}</TooltipContent>
+      </Tooltip>
+
+      {/* Delete button */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+            onClick={() => onDelete(entry.folderName)}
+            disabled={disabled}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="left">{t('addonManager.sceneryEntry.delete')}</TooltipContent>
       </Tooltip>
     </div>
   );
