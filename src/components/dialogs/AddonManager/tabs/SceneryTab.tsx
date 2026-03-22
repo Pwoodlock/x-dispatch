@@ -152,6 +152,7 @@ export function SceneryTab() {
   const [showBackups, setShowBackups] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
   // Sync local state when remote data changes
   useEffect(() => {
@@ -324,37 +325,46 @@ export function SceneryTab() {
             variant="ghost"
             size="sm"
             onClick={async () => {
-              const before = entries.length;
-              const { data } = await refetchScenery();
-              const after = data?.length ?? before;
-              const sceneryDiff = after - before;
+              setIsScanning(true);
+              try {
+                const before = entries.length;
+                const { data } = await refetchScenery();
+                const after = data?.length ?? before;
+                const sceneryDiff = after - before;
 
-              // Also resync custom scenery airports (fast — no global re-parse)
-              const airportResult = await window.appAPI.resyncCustomAirports();
+                // Also resync custom scenery airports (fast — no global re-parse)
+                const airportResult = await window.appAPI.resyncCustomAirports();
 
-              const parts: string[] = [];
-              if (sceneryDiff > 0)
-                parts.push(t('addonManager.rescanFound', { count: sceneryDiff }));
-              else if (sceneryDiff < 0)
-                parts.push(t('addonManager.rescanRemoved', { count: Math.abs(sceneryDiff) }));
+                const parts: string[] = [];
+                if (sceneryDiff > 0)
+                  parts.push(t('addonManager.rescanFound', { count: sceneryDiff }));
+                else if (sceneryDiff < 0)
+                  parts.push(t('addonManager.rescanRemoved', { count: Math.abs(sceneryDiff) }));
 
-              if (airportResult.diff > 0)
-                parts.push(t('addonManager.rescanAirportsAdded', { count: airportResult.diff }));
-              else if (airportResult.diff < 0)
-                parts.push(
-                  t('addonManager.rescanAirportsRemoved', { count: Math.abs(airportResult.diff) })
-                );
+                if (airportResult.diff > 0)
+                  parts.push(t('addonManager.rescanAirportsAdded', { count: airportResult.diff }));
+                else if (airportResult.diff < 0)
+                  parts.push(
+                    t('addonManager.rescanAirportsRemoved', {
+                      count: Math.abs(airportResult.diff),
+                    })
+                  );
 
-              if (parts.length > 0) {
-                toast.success(parts.join(' · '));
-              } else {
-                toast(t('addonManager.rescanNoChanges'), { icon: <Check className="h-4 w-4" /> });
+                if (parts.length > 0) {
+                  toast.success(parts.join(' · '));
+                } else {
+                  toast(t('addonManager.rescanNoChanges'), {
+                    icon: <Check className="h-4 w-4" />,
+                  });
+                }
+              } finally {
+                setIsScanning(false);
               }
             }}
-            disabled={isFetching}
+            disabled={isScanning}
             className="gap-1.5 text-muted-foreground"
           >
-            <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
+            <RefreshCw className={cn('h-3.5 w-3.5', isScanning && 'animate-spin')} />
             {t('addonManager.rescan')}
           </Button>
 

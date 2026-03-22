@@ -788,6 +788,8 @@
     "rescanFound": "Znaleziono {{count}} nowych elementów",
     "rescanRemoved": "Usunięto {{count}} elementów",
     "rescanNoChanges": "Nie wykryto zmian",
+    "rescanAirportsAdded": "Dodano {{count}} lotnisk",
+    "rescanAirportsRemoved": "Usunięto {{count}} lotnisk",
     "tabs": {
       "scenery": "Scenerie",
       "installed": "Dodatki",

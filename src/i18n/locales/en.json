@@ -808,6 +808,8 @@
     "rescanFound": "Found {{count}} new item(s)",
     "rescanRemoved": "Removed {{count}} item(s)",
     "rescanNoChanges": "No changes detected",
+    "rescanAirportsAdded": "{{count}} airport(s) added",
+    "rescanAirportsRemoved": "{{count}} airport(s) removed",
     "tabs": {
       "scenery": "Scenery",
       "installed": "Addons",

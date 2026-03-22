@@ -707,6 +707,8 @@
     "rescanFound": "{{count}} nouvel(aux) élément(s) trouvé(s)",
     "rescanRemoved": "{{count}} élément(s) supprimé(s)",
     "rescanNoChanges": "Aucun changement détecté",
+    "rescanAirportsAdded": "{{count}} aéroport(s) ajouté(s)",
+    "rescanAirportsRemoved": "{{count}} aéroport(s) supprimé(s)",
     "tabs": {
       "scenery": "Paysages",
       "installed": "Extensions",
