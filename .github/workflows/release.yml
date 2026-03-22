@@ -81,9 +81,10 @@ jobs:
         run: npm run make ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          # Only upload source maps once (Linux) — same maps for all platforms
+          SENTRY_AUTH_TOKEN: ${{ matrix.os == 'ubuntu-latest' && secrets.SENTRY_AUTH_TOKEN || '' }}
+          SENTRY_ORG: ${{ matrix.os == 'ubuntu-latest' && secrets.SENTRY_ORG || '' }}
+          SENTRY_PROJECT: ${{ matrix.os == 'ubuntu-latest' && secrets.SENTRY_PROJECT || '' }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
