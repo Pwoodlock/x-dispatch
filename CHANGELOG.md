@@ -1,6 +1,49 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.5.4 - 2026-03-22
+
+### Bug Fixes
+
+- fix release notes not appearing on GitHub releases ([679b782](https://github.com/lyestarzalt/x-dispatch/commit/679b78202b59d00f29bea84a3d0454038140093f))
+- use file-based release notes and harden workflow ([978e639](https://github.com/lyestarzalt/x-dispatch/commit/978e639f0e91bf00f69d342587b8096def13cb3b))
+- handle cross-drive install when temp and X-Plane are on different drives ([51d0b53](https://github.com/lyestarzalt/x-dispatch/commit/51d0b53eb00f1d8a307954b0aeae49aab6ee9de3))
+- skip deleted scenery folders instead of showing ??? ([e991d28](https://github.com/lyestarzalt/x-dispatch/commit/e991d288db70a5a63acca8d79e3b7ccaac87bdb3))
+- remove stale scenery entries from scenery_packs.ini ([006b58a](https://github.com/lyestarzalt/x-dispatch/commit/006b58a73a88e4d1fa33248c1676d742b08cb024))
+- fix drag-and-drop not working in installer ([1e1e687](https://github.com/lyestarzalt/x-dispatch/commit/1e1e6873b586781b5fa00d7383527abebd3590c2))
+- sort new scenery into correct priority position in INI ([a505808](https://github.com/lyestarzalt/x-dispatch/commit/a5058080a6570ea2ab6d788667021fb4f576275a))
+- prevent multiple instances from running simultaneously ([c303804](https://github.com/lyestarzalt/x-dispatch/commit/c30380420a13a9757cb263327b9329abee6cccd3))
+- fix landmarks misclassified as Airport ([65eaa38](https://github.com/lyestarzalt/x-dispatch/commit/65eaa388f040a95cafe68339d32ac91a1ccdce1d))
+- clear old route and re-center when loading new file ([d636433](https://github.com/lyestarzalt/x-dispatch/commit/d636433e9c05c68fbdcafc359ee9a6722577d8fd))
+- move flight plan close button to the left side ([eac02b3](https://github.com/lyestarzalt/x-dispatch/commit/eac02b3e5bf827d0f196abe0a6e061d4288bcb4e))
+- fix rescan spinner and add missing i18n keys ([55d294e](https://github.com/lyestarzalt/x-dispatch/commit/55d294e3b7628daea45d06353cafc18112fd1319))
+
+### Documentation
+
+- update CHANGELOG.md for v1.5.3 ([2ca8ceb](https://github.com/lyestarzalt/x-dispatch/commit/2ca8ceb7e3d377363d74786d9bd37f0fbc80274b))
+- update README screenshots and add fuel, weather, terrain views ([70ab696](https://github.com/lyestarzalt/x-dispatch/commit/70ab696887e77297b0bdfbaf1333789168e449db))
+
+### Features
+
+- add coordinate input to pin drop with split button ([6d081d9](https://github.com/lyestarzalt/x-dispatch/commit/6d081d9c082887df0a58c1f596a968d6cbbfcf74))
+- add rescan button to scenery and browser tabs ([b204c6f](https://github.com/lyestarzalt/x-dispatch/commit/b204c6f36bd8e6d86a56aed6fd6bf9d9e4fa3f23))
+- detect manually added scenery and show rescan feedback ([441b47e](https://github.com/lyestarzalt/x-dispatch/commit/441b47ed3e230507388fb733f63b1868375fda6e))
+- interactive drag-to-resize range rings ([9f1b387](https://github.com/lyestarzalt/x-dispatch/commit/9f1b387769b307ffca051cbc30fde5d28cc594a6))
+- add Ctrl+F / Cmd+F shortcut to focus airport search ([b807752](https://github.com/lyestarzalt/x-dispatch/commit/b807752be24a79398a5e4e95696cb4813923c949))
+- show GLOBAL_AIRPORTS as draggable row with search bar ([054ff63](https://github.com/lyestarzalt/x-dispatch/commit/054ff63f3af9d9ab126902c68ca484fba6f4c3e0))
+- add delete scenery from disk with confirmation ([bc03060](https://github.com/lyestarzalt/x-dispatch/commit/bc030602819e544c99dd15e8bd75ecf14a260ee6))
+- add xdispatch:// deep link protocol for airport navigation ([b6edcef](https://github.com/lyestarzalt/x-dispatch/commit/b6edcef8a333c6747ca861afa7ccce0ca1be5102))
+- split airports into two tables for fast custom scenery resync ([6ae904a](https://github.com/lyestarzalt/x-dispatch/commit/6ae904a47991d11399bd9eaacf99e0e21b98cb92))
+- add starfield background behind globe view ([fe574d0](https://github.com/lyestarzalt/x-dispatch/commit/fe574d0cc8f5bbbb7ad40ece87ed11bb8a46e338))
+
+### Refactor
+
+- simplify scenery toolbar, remove safe mode toggle ([fde3f42](https://github.com/lyestarzalt/x-dispatch/commit/fde3f425a7b4b668b7dc1dc32c9b2cd648b3c104))
+- redesign range rings with inline labels along the ring ([5aab271](https://github.com/lyestarzalt/x-dispatch/commit/5aab27138b11a51cb010cb7e1211e99b2558d6f5))
+- redesign custom airport pin to match design system ([1affcb9](https://github.com/lyestarzalt/x-dispatch/commit/1affcb9a7d63ece99b51b76d6ef1f637edf82461))
+- polish scenery tab UI for consistency ([bba1609](https://github.com/lyestarzalt/x-dispatch/commit/bba1609be89e954cfd21abc60af8410300eac3ff))
+- align browser tab toolbar with scenery tab design ([f91a17d](https://github.com/lyestarzalt/x-dispatch/commit/f91a17d781d93f366f123580669be32112cea8f4))
+- remove check updates button and clean up browser tab ([db454af](https://github.com/lyestarzalt/x-dispatch/commit/db454af9141a816c38786881bb2168d32caa3516))
 ## v1.5.3 - 2026-03-18
 
 ### Bug Fixes
