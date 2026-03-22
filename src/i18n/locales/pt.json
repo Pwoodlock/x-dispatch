@@ -865,6 +865,11 @@
       "loadFailed": "Falha ao carregar cenários",
       "total": "pacotes",
       "globalAirports": "Aeroportos padrão (Global)",
+      "deleteTitle": "Excluir cenário",
+      "deleteDescription": "Excluir permanentemente \"{{name}}\" do disco? Esta ação não pode ser desfeita.",
+      "deleteConfirm": "Excluir",
+      "deleted": "{{name}} excluído",
+      "deleteFailed": "Falha ao excluir",
       "packages": "{{count}} pacotes de cenário",
       "unsavedChanges": "Não salvo",
       "safeMode": "Seguro",
@@ -924,7 +929,8 @@
       "deletePlugin": "Excluir plugin"
     },
     "sceneryEntry": {
-      "openFolder": "Abrir pasta"
+      "openFolder": "Abrir pasta",
+      "delete": "Excluir do disco"
     },
     "addonTypes": {
       "Aircraft": "Aeronave",

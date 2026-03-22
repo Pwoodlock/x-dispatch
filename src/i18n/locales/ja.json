@@ -865,6 +865,11 @@
       "loadFailed": "シーナリーの読み込みに失敗しました",
       "total": "パッケージ",
       "globalAirports": "デフォルト空港 (Global)",
+      "deleteTitle": "シーナリーを削除",
+      "deleteDescription": "\"{{name}}\"をディスクから完全に削除しますか？この操作は元に戻せません。",
+      "deleteConfirm": "削除",
+      "deleted": "{{name}}を削除しました",
+      "deleteFailed": "削除に失敗しました",
       "packages": "{{count}}個のシーナリーパッケージ",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
@@ -924,7 +929,8 @@
       "deletePlugin": "プラグインを削除"
     },
     "sceneryEntry": {
-      "openFolder": "フォルダを開く"
+      "openFolder": "フォルダを開く",
+      "delete": "ディスクから削除"
     },
     "addonTypes": {
       "Aircraft": "機体",

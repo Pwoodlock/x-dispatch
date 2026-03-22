@@ -228,6 +228,44 @@ export class SceneryManager {
   }
 
   /**
+   * Delete a scenery folder from disk and remove from INI.
+   * Symlinks are unlinked (target untouched), real folders are removed recursively.
+   * Returns whether the path was a symlink.
+   */
+  async deleteScenery(folderName: string): Promise<Result<{ wasSymlink: boolean }, SceneryError>> {
+    const analyzeResult = await this.analyze();
+    if (!analyzeResult.ok) {
+      return analyzeResult;
+    }
+
+    const entries = analyzeResult.value;
+    const entry = entries.find((e) => e.folderName === folderName);
+
+    if (!entry || entry.isGlobalAirports) {
+      return err({ code: 'FOLDER_NOT_FOUND', folderName });
+    }
+
+    try {
+      const stat = fs.lstatSync(entry.fullPath);
+      const wasSymlink = stat.isSymbolicLink();
+
+      if (wasSymlink) {
+        fs.unlinkSync(entry.fullPath);
+      } else {
+        fs.rmSync(entry.fullPath, { recursive: true, force: true });
+      }
+
+      // Re-analyze to clean stale entry from INI
+      await this.analyze();
+
+      return ok({ wasSymlink });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      return err({ code: 'WRITE_FAILED', path: entry.fullPath, reason: message });
+    }
+  }
+
+  /**
    * Move entry up or down within its priority tier.
    */
   async move(

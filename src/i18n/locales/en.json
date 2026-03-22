@@ -893,6 +893,11 @@
       "loadFailed": "Failed to load scenery",
       "total": "packages",
       "globalAirports": "Default Airports (Global)",
+      "deleteTitle": "Delete Scenery",
+      "deleteDescription": "Permanently delete \"{{name}}\" from disk? This cannot be undone.",
+      "deleteConfirm": "Delete",
+      "deleted": "Deleted {{name}}",
+      "deleteFailed": "Failed to delete scenery",
       "packages": "{{count}} scenery packages",
       "unsavedChanges": "Unsaved",
       "safeMode": "Safe",
@@ -952,7 +957,8 @@
       "deletePlugin": "Delete plugin"
     },
     "sceneryEntry": {
-      "openFolder": "Open folder"
+      "openFolder": "Open folder",
+      "delete": "Delete from disk"
     },
     "addonTypes": {
       "Aircraft": "Aircraft",

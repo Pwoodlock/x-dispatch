@@ -865,6 +865,11 @@
       "loadFailed": "加载场景失败",
       "total": "个场景包",
       "globalAirports": "默认机场 (Global)",
+      "deleteTitle": "删除场景",
+      "deleteDescription": "永久删除磁盘上的\"{{name}}\"？此操作无法撤销。",
+      "deleteConfirm": "删除",
+      "deleted": "已删除{{name}}",
+      "deleteFailed": "删除失败",
       "packages": "{{count}} 个场景包",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
@@ -924,7 +929,8 @@
       "deletePlugin": "删除插件"
     },
     "sceneryEntry": {
-      "openFolder": "打开文件夹"
+      "openFolder": "打开文件夹",
+      "delete": "从磁盘删除"
     },
     "addonTypes": {
       "Aircraft": "飞机",

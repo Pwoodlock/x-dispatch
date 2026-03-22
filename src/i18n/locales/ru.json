@@ -865,6 +865,11 @@
       "loadFailed": "Не удалось загрузить сценарии",
       "total": "пакетов",
       "globalAirports": "Аэропорты по умолчанию (Global)",
+      "deleteTitle": "Удалить сценарий",
+      "deleteDescription": "Навсегда удалить \"{{name}}\" с диска? Это действие нельзя отменить.",
+      "deleteConfirm": "Удалить",
+      "deleted": "{{name}} удалён",
+      "deleteFailed": "Ошибка удаления",
       "packages": "{{count}} пакетов сценариев",
       "unsavedChanges": "Не сохранено",
       "safeMode": "Безопасный",
@@ -924,7 +929,8 @@
       "deletePlugin": "Удалить плагин"
     },
     "sceneryEntry": {
-      "openFolder": "Открыть папку"
+      "openFolder": "Открыть папку",
+      "delete": "Удалить с диска"
     },
     "addonTypes": {
       "Aircraft": "Самолёт",
