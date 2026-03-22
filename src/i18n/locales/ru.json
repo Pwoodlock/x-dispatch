@@ -788,6 +788,8 @@
     "rescanFound": "Найдено элементов: {{count}}",
     "rescanRemoved": "Удалено элементов: {{count}}",
     "rescanNoChanges": "Изменений не обнаружено",
+    "rescanAirportsAdded": "Добавлено аэропортов: {{count}}",
+    "rescanAirportsRemoved": "Удалено аэропортов: {{count}}",
     "tabs": {
       "scenery": "Сценарии",
       "installed": "Дополнения",

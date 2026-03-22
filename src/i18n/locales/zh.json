@@ -788,6 +788,8 @@
     "rescanFound": "发现{{count}}个新项目",
     "rescanRemoved": "移除了{{count}}个项目",
     "rescanNoChanges": "未检测到变更",
+    "rescanAirportsAdded": "添加了{{count}}个机场",
+    "rescanAirportsRemoved": "移除了{{count}}个机场",
     "tabs": {
       "scenery": "场景",
       "installed": "附加组件",

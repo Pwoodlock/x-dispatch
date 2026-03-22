@@ -788,6 +788,8 @@
     "rescanFound": "{{count}}件の新しい項目を検出",
     "rescanRemoved": "{{count}}件の項目を削除",
     "rescanNoChanges": "変更は検出されませんでした",
+    "rescanAirportsAdded": "{{count}}空港を追加",
+    "rescanAirportsRemoved": "{{count}}空港を削除",
     "tabs": {
       "scenery": "シーナリー",
       "installed": "アドオン",

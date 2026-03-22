@@ -707,6 +707,8 @@
     "rescanFound": "{{count}} neue(s) Element(e) gefunden",
     "rescanRemoved": "{{count}} Element(e) entfernt",
     "rescanNoChanges": "Keine Änderungen erkannt",
+    "rescanAirportsAdded": "{{count}} Flughäfen hinzugefügt",
+    "rescanAirportsRemoved": "{{count}} Flughäfen entfernt",
     "tabs": {
       "scenery": "Szenerien",
       "installed": "Addons",

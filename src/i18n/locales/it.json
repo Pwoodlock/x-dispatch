@@ -788,6 +788,8 @@
     "rescanFound": "Trovati {{count}} nuovo/i elemento/i",
     "rescanRemoved": "Rimossi {{count}} elemento/i",
     "rescanNoChanges": "Nessun cambiamento rilevato",
+    "rescanAirportsAdded": "{{count}} aeroporto/i aggiunto/i",
+    "rescanAirportsRemoved": "{{count}} aeroporto/i rimosso/i",
     "tabs": {
       "scenery": "Scenari",
       "installed": "Componenti",
