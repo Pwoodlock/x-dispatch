@@ -279,7 +279,10 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
   const detachTab = (id: TabId) => {
     if (inlineTab === id) setInlineTab(null);
     if (!detached.some((d) => d.id === id)) {
-      setDetached((prev) => [...prev, { id, x: 100 + prev.length * 30, y: 60 + prev.length * 30 }]);
+      // Center on screen
+      const x = Math.round(window.innerWidth / 2 - 160);
+      const y = Math.round(window.innerHeight / 2 - 200);
+      setDetached((prev) => [...prev, { id, x, y }]);
     }
   };
 
@@ -488,7 +491,6 @@ function LayersPanel({ stats, mapRef }: { stats: DebugStats; mapRef: MapRef }) {
   }
   return (
     <div className="space-y-1">
-      <div className="text-[9px] text-muted-foreground/40">Click a layer to toggle visibility</div>
       {stats.inspectorData.map((group) => (
         <InspectorGroup key={group.category} group={group} mapRef={mapRef} />
       ))}
@@ -695,9 +697,11 @@ function RendererRow({ renderer, mapRef }: { renderer: RendererInfo; mapRef: Map
     if (hasSublayers) setExpanded((v) => !v);
   };
 
+  const isVisible = renderer.status !== 'hidden';
+
   return (
     <div className="pl-1">
-      <div className="flex items-center gap-1 rounded px-1 py-px hover:bg-muted/40">
+      <div className="flex items-center gap-1 rounded px-1 py-0.5 hover:bg-muted/40">
         <span
           className="w-2 cursor-pointer text-center text-[8px] text-muted-foreground/50"
           onClick={handleExpand}
@@ -706,19 +710,24 @@ function RendererRow({ renderer, mapRef }: { renderer: RendererInfo; mapRef: Map
         </span>
         <OrderBadge order={renderer.drawOrder} />
         <StatusDot status={renderer.status} />
-        <span
-          className="min-w-0 flex-1 cursor-pointer truncate hover:text-foreground"
-          onClick={handleToggle}
-          title="Click to toggle visibility"
-        >
-          {renderer.name}
-        </span>
-        {stateTag && (
+        <span className="min-w-0 flex-1 truncate">{renderer.name}</span>
+        <span className="shrink-0 tabular-nums text-foreground/40">{countStr}</span>
+        {stateTag && stateTag !== 'off' && (
           <span className="shrink-0 rounded bg-muted/60 px-1 text-[9px] leading-tight text-warning">
             {stateTag}
           </span>
         )}
-        <span className="shrink-0 tabular-nums text-foreground/40">{countStr}</span>
+        <button
+          onClick={handleToggle}
+          className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${
+            isVisible
+              ? 'bg-success/20 text-success hover:bg-success/30'
+              : 'bg-destructive/20 text-destructive hover:bg-destructive/30'
+          }`}
+          title={isVisible ? 'Click to hide this layer' : 'Click to show this layer'}
+        >
+          {isVisible ? 'ON' : 'OFF'}
+        </button>
       </div>
       {expanded && (
         <div className="ml-3 border-l border-border/20 pl-1.5">
@@ -738,17 +747,24 @@ function SublayerRow({ sublayer, mapRef }: { sublayer: SublayerInfo; mapRef: Map
     toggleLayerVisibility(map, sublayer.layerId);
   };
 
+  const isVisible = sublayer.status !== 'hidden';
+
   return (
-    <div className="flex items-center gap-1 py-px pl-1">
+    <div className="flex items-center gap-1 py-0.5 pl-1">
       <OrderBadge order={sublayer.drawOrder} />
       <StatusDot status={sublayer.status} />
-      <span
-        className="min-w-0 flex-1 cursor-pointer truncate text-foreground/40 hover:text-foreground"
+      <span className="min-w-0 flex-1 truncate text-foreground/40">{sublayer.name}</span>
+      <button
         onClick={handleToggle}
-        title="Click to toggle visibility"
+        className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${
+          isVisible
+            ? 'bg-success/20 text-success hover:bg-success/30'
+            : 'bg-destructive/20 text-destructive hover:bg-destructive/30'
+        }`}
+        title={isVisible ? 'Hide' : 'Show'}
       >
-        {sublayer.name}
-      </span>
+        {isVisible ? 'ON' : 'OFF'}
+      </button>
     </div>
   );
 }
