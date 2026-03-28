@@ -105,12 +105,7 @@ If you find this useful, consider giving it a star — it helps others discover 
 
 </details>
 
-<details>
-<summary>3D Terrain</summary>
-
 ![3D Terrain](screenshots/3D-terrain.png)
-
-</details>
 
 <details>
 <summary>Live Flight Tracking</summary>
@@ -242,25 +237,7 @@ npm run format      # Prettier
 | Map           | MapLibre GL JS                   |
 | Database      | SQLite (sql.js)                  |
 
-### Project Structure
-
-```
-src/
-├── components/       # React components (Map, dialogs, panels, layout)
-├── config/           # Map styles, zoom behaviors, surface colors
-├── hooks/            # Global React hooks
-├── lib/
-│   ├── parsers/      # X-Plane apt.dat, nav data, METAR, FMS parsers
-│   ├── addonManager/ # Aircraft, scenery, plugin management
-│   ├── xplaneServices/ # X-Plane REST/WebSocket integration
-│   └── geo/          # Geographic calculations
-├── queries/          # TanStack Query hooks
-├── stores/           # Zustand state stores
-├── types/            # TypeScript type definitions
-└── db/               # SQLite schema and migrations
-```
-
-Requires Node.js 20+ and X-Plane 12.1+.
+Requires Node.js 20+ and X-Plane 12.4+.
 
 ## Support
 
