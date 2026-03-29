@@ -19,7 +19,7 @@ import { BaseLayerRenderer } from './BaseLayerRenderer';
 export class TaxiwayLightsLayer extends BaseLayerRenderer {
   layerId = 'airport-taxiway-lights';
   sourceId = 'airport-taxiway-lights';
-  additionalLayerIds = ['airport-taxiway-lights-glow'];
+  additionalLayerIds = ['airport-taxiway-lights-radiation', 'airport-taxiway-lights-glow'];
 
   private animationFrame: number | null = null;
   private pulsatePhase = 0;
@@ -61,7 +61,31 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
     // Match linearFeatures minZoom so lights appear/disappear with taxiway lines
     const minzoom = ZOOM_BEHAVIORS.linearFeatures?.minZoom ?? 14;
 
-    // Glow layer — soft radiated light halo
+    // Layer 1: Outer radiation — large, very faint, full blur (light spill)
+    this.addLayer(map, {
+      id: 'airport-taxiway-lights-radiation',
+      type: 'circle',
+      source: this.sourceId,
+      minzoom,
+      paint: {
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          14,
+          ['*', 5, ['get', 'intensity']],
+          16,
+          ['*', 12, ['get', 'intensity']],
+          18,
+          ['*', 24, ['get', 'intensity']],
+        ],
+        'circle-color': ['get', 'colorHex'],
+        'circle-opacity': 0.03,
+        'circle-blur': 1,
+      },
+    });
+
+    // Layer 2: Mid glow — medium radius, moderate opacity
     this.addLayer(map, {
       id: 'airport-taxiway-lights-glow',
       type: 'circle',
@@ -73,19 +97,19 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
           ['linear'],
           ['zoom'],
           14,
-          ['*', 3, ['get', 'intensity']],
+          ['*', 2, ['get', 'intensity']],
           16,
-          ['*', 6, ['get', 'intensity']],
+          ['*', 4, ['get', 'intensity']],
           18,
-          ['*', 12, ['get', 'intensity']],
+          ['*', 8, ['get', 'intensity']],
         ],
         'circle-color': ['get', 'colorHex'],
-        'circle-opacity': 0.08,
-        'circle-blur': 1,
+        'circle-opacity': 0.1,
+        'circle-blur': 0.8,
       },
     });
 
-    // Main light layer — small bright point
+    // Layer 3: Bright core — tiny, sharp, full brightness
     this.addLayer(map, {
       id: this.layerId,
       type: 'circle',
@@ -97,15 +121,15 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
           ['linear'],
           ['zoom'],
           14,
-          ['*', 0.6, ['get', 'intensity']],
+          ['*', 0.4, ['get', 'intensity']],
           16,
-          ['*', 1.2, ['get', 'intensity']],
+          ['*', 0.8, ['get', 'intensity']],
           18,
-          ['*', 2, ['get', 'intensity']],
+          ['*', 1.5, ['get', 'intensity']],
         ],
-        'circle-color': ['get', 'colorHex'],
+        'circle-color': '#ffffff',
         'circle-opacity': 1,
-        'circle-blur': 0.15,
+        'circle-blur': 0.1,
       },
     });
 
@@ -136,13 +160,19 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
           'case',
           ['get', 'isPulsating'],
           pulse,
-          0.95,
+          1,
         ]);
         map.setPaintProperty('airport-taxiway-lights-glow', 'circle-opacity', [
           'case',
           ['get', 'isPulsating'],
-          pulse * 0.15,
-          0.15,
+          pulse * 0.1,
+          0.1,
+        ]);
+        map.setPaintProperty('airport-taxiway-lights-radiation', 'circle-opacity', [
+          'case',
+          ['get', 'isPulsating'],
+          pulse * 0.03,
+          0.03,
         ]);
       } catch {
         // Layer may have been removed
