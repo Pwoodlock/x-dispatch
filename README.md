@@ -13,7 +13,7 @@
   <a href="https://github.com/lyestarzalt/x-dispatch/releases"><img src="https://img.shields.io/github/downloads/lyestarzalt/x-dispatch/total?style=flat-square&v=1" alt="Downloads"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/blob/main/LICENSE"><img src="https://img.shields.io/github/license/lyestarzalt/x-dispatch?style=flat-square&v=1" alt="License"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/actions"><img src="https://img.shields.io/github/actions/workflow/status/lyestarzalt/x-dispatch/check.yml?style=flat-square&label=checks&v=1" alt="CI"></a>
-  <a href="https://discord.gg/7QBCNv8B"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://discord.gg/76UYpxXWW7"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://ko-fi.com/lyestarzalt"><img src="https://img.shields.io/badge/Ko--fi-Donate-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
   <a href="https://hits.sh/github.com/lyestarzalt/x-dispatch/"><img src="https://hits.sh/github.com/lyestarzalt/x-dispatch.svg" alt="Hits"></a>
 </p>
@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">Download for Windows, macOS, Linux</a>
+  <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">⬇️ Download</a>
 </p>
 
 ---
@@ -35,7 +35,7 @@
 
 X-Plane has detailed airport data but no global map to explore it. X-Dispatch gives you a 3D globe to browse, search, and discover airports visually. Click any airport to see detailed diagrams with runways, taxiways, gates, and markings. Import your flight plan from SimBrief, select a starting position, configure your flight, and launch X-Plane directly.
 
-If you find this useful, consider giving it a star — it helps others discover the project.
+If you find this useful, please give it a ⭐ — it helps others discover the project!
 
 > **macOS Users (Sequoia/Tahoe):** The app is unsigned. After installing, go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
 >
@@ -242,7 +242,7 @@ Requires Node.js 20+ and X-Plane 12.4+.
 
 ## Support
 
-- **Discord**: [Join the server](https://discord.gg/7QBCNv8B) for help, feedback, and discussion
+- **Discord**: [Join the server](https://discord.gg/76UYpxXWW7) for help, feedback, and discussion
 - **Issues**: [Open an issue](https://github.com/lyestarzalt/x-dispatch/issues) for bug reports and feature requests
 - **Donate**: If you enjoy X-Dispatch, consider [supporting on Ko-fi](https://ko-fi.com/lyestarzalt)
 
