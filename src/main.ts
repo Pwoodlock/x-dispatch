@@ -6,14 +6,12 @@ import {
   globalShortcut,
   ipcMain,
   net,
-  screen,
   session,
   shell,
 } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
-import * as os from 'os';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
@@ -27,6 +25,7 @@ import {
   registerTileCacheScheme,
 } from './lib/tileCache';
 import logger, { getLogPath } from './lib/utils/logger';
+import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
   isInvalidCoords,
   isValidICAO,
@@ -1260,24 +1259,7 @@ app.on('open-url', (event, url) => {
 
 app.whenReady().then(async () => {
   // Environment snapshot for production support
-  const displays = screen.getAllDisplays();
-  const primaryDisplay = displays[0];
-  logger.main.info('════════════════════════════════════════════════════════════════');
-  logger.main.info(`X-Dispatch v${app.getVersion()} starting`);
-  logger.main.info('════════════════════════════════════════════════════════════════');
-  logger.main.info(`OS: ${os.platform()} ${os.release()} (${os.arch()})`);
-  logger.main.info(
-    `System: ${os.cpus()[0]?.model || 'Unknown CPU'}, ${Math.round(os.totalmem() / 1024 / 1024 / 1024)}GB RAM`
-  );
-  logger.main.info(
-    `Display: ${displays.length} monitor(s), primary ${primaryDisplay?.size.width}x${primaryDisplay?.size.height}`
-  );
-  logger.main.info(`Locale: ${app.getLocale()}`);
-  logger.main.info(`Paths: userData=${app.getPath('userData')}`);
-  logger.main.debug(`Log file: ${getLogPath()}`);
-
-  // Log crash reporting status (Sentry already initialized at module load)
-  logger.main.info(`Crash reporting: ${shouldInitSentry ? 'enabled' : 'disabled'}`);
+  logStartupEnvironment(shouldInitSentry);
 
   if (app.isPackaged && process.platform === 'win32') {
     try {
