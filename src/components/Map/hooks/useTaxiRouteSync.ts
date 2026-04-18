@@ -1,27 +1,226 @@
 /**
- * Canvas overlay for taxi route rendering.
+ * Canvas overlay for taxi route rendering and drag-to-reroute interaction.
  *
- * Supports two modes:
+ * Two modes:
  * - network: snaps clicks to taxi network nodes, draws path through node coords
  * - freehand: arbitrary clicks, draws direct lines between points
+ *
+ * Drag-to-reroute: hover near the route line to see a grab handle,
+ * drag it to reroute through a different taxiway node.
  */
 import { useEffect, useRef } from 'react';
 import { buildTaxiGraph, findNearestNode } from '@/lib/taxiGraph';
 import type { TaxiGraph } from '@/lib/taxiGraph';
 import { useAppStore } from '@/stores/appStore';
-import { useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
+import { resolveFullPath, useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import type { MapRef } from './useMapSetup';
 
-const ROUTE_COLOR = '#34d399';
-const ROUTE_OUTLINE = 'rgba(0, 0, 0, 0.5)';
-const PULSE_SPEED = 0.02;
+// ============================================================================
+// Visual constants — aviation EFB style
+// ============================================================================
 
-function tracePath(ctx: CanvasRenderingContext2D, pts: { x: number; y: number }[]): void {
+/** Primary route color — taxi clearance green */
+const ROUTE_GREEN = '#22c55e';
+/** Dark casing for contrast on any surface */
+const ROUTE_CASING = 'rgba(0, 0, 0, 0.7)';
+/** Handle color when hovering */
+const HANDLE_COLOR = '#facc15';
+/** Drag preview */
+const PREVIEW_COLOR = 'rgba(250, 204, 21, 0.5)';
+
+const PULSE_SPEED = 0.015;
+/** Pixel radius for detecting hover near route */
+const HIT_TOLERANCE = 18;
+
+// ============================================================================
+// Geometry helpers
+// ============================================================================
+
+interface Pt {
+  x: number;
+  y: number;
+}
+
+/** Distance from point P to line segment AB, returns distance and closest point */
+function pointToSegment(
+  px: number,
+  py: number,
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number
+): { dist: number; t: number } {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return { dist: Math.hypot(px - ax, py - ay), t: 0 };
+  let t = ((px - ax) * dx + (py - ay) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  const cx = ax + t * dx;
+  const cy = ay + t * dy;
+  return { dist: Math.hypot(px - cx, py - cy), t };
+}
+
+/** Find closest point on the polyline to the cursor */
+function findClosestOnLine(
+  pts: Pt[],
+  cursor: Pt
+): { segIndex: number; t: number; dist: number; point: Pt } | null {
+  if (pts.length < 2) return null;
+  let bestDist = Infinity;
+  let bestSeg = 0;
+  let bestT = 0;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i]!;
+    const b = pts[i + 1]!;
+    const { dist, t } = pointToSegment(cursor.x, cursor.y, a.x, a.y, b.x, b.y);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestSeg = i;
+      bestT = t;
+    }
+  }
+  const a = pts[bestSeg]!;
+  const b = pts[bestSeg + 1]!;
+  return {
+    segIndex: bestSeg,
+    t: bestT,
+    dist: bestDist,
+    point: { x: a.x + bestT * (b.x - a.x), y: a.y + bestT * (b.y - a.y) },
+  };
+}
+
+// ============================================================================
+// Drawing
+// ============================================================================
+
+function tracePath(ctx: CanvasRenderingContext2D, pts: Pt[]): void {
   ctx.beginPath();
   ctx.moveTo(pts[0]!.x, pts[0]!.y);
   for (let i = 1; i < pts.length; i++) {
     ctx.lineTo(pts[i]!.x, pts[i]!.y);
   }
+}
+
+/** Draw directional chevrons along the path */
+function drawChevrons(
+  ctx: CanvasRenderingContext2D,
+  pts: Pt[],
+  scale: number,
+  phase: number
+): void {
+  if (pts.length < 2) return;
+
+  const spacing = 40 * scale;
+  const chevronSize = 5 * scale;
+  let accumulated = (phase * spacing) % spacing; // animate offset
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.lineWidth = 2 * scale;
+  ctx.lineCap = 'round';
+
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i]!;
+    const b = pts[i + 1]!;
+    const segLen = Math.hypot(b.x - a.x, b.y - a.y);
+    if (segLen === 0) continue;
+    const dx = (b.x - a.x) / segLen;
+    const dy = (b.y - a.y) / segLen;
+
+    while (accumulated < segLen) {
+      const cx = a.x + dx * accumulated;
+      const cy = a.y + dy * accumulated;
+      // Perpendicular
+      const px = -dy;
+      const py = dx;
+
+      ctx.beginPath();
+      ctx.moveTo(
+        cx - dx * chevronSize + px * chevronSize,
+        cy - dy * chevronSize + py * chevronSize
+      );
+      ctx.lineTo(cx, cy);
+      ctx.lineTo(
+        cx - dx * chevronSize - px * chevronSize,
+        cy - dy * chevronSize - py * chevronSize
+      );
+      ctx.stroke();
+
+      accumulated += spacing;
+    }
+    accumulated -= segLen;
+  }
+  ctx.restore();
+}
+
+/** Draw an endpoint marker (gate or runway) */
+function drawEndpoint(ctx: CanvasRenderingContext2D, p: Pt, scale: number, isStart: boolean): void {
+  const r = 7 * scale;
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r + 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = ROUTE_CASING;
+  ctx.fill();
+
+  // Color fill
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = ROUTE_GREEN;
+  ctx.fill();
+
+  // Inner icon — square for gate, triangle for runway
+  ctx.fillStyle = 'white';
+  if (isStart) {
+    // Small square
+    const s = r * 0.35;
+    ctx.fillRect(p.x - s, p.y - s, s * 2, s * 2);
+  } else {
+    // Small triangle pointing in the route direction
+    const s = r * 0.4;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y - s);
+    ctx.lineTo(p.x - s, p.y + s * 0.7);
+    ctx.lineTo(p.x + s, p.y + s * 0.7);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+/** Draw the drag handle (shown on hover near route) */
+function drawHandle(ctx: CanvasRenderingContext2D, p: Pt, scale: number, grabbed: boolean): void {
+  const r = grabbed ? 8 * scale : 6 * scale;
+
+  ctx.save();
+  // Glow
+  ctx.shadowColor = HANDLE_COLOR;
+  ctx.shadowBlur = grabbed ? 12 : 8;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = HANDLE_COLOR;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Dark ring
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  ctx.strokeStyle = ROUTE_CASING;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r * 0.3, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fill();
+  ctx.restore();
+}
+
+interface DrawState {
+  hoverPoint: Pt | null;
+  isDragging: boolean;
+  previewPoints: Pt[] | null;
 }
 
 function drawRoute(
@@ -30,7 +229,8 @@ function drawRoute(
   points: { longitude: number; latitude: number }[],
   width: number,
   height: number,
-  phase: number
+  phase: number,
+  drawState: DrawState
 ): void {
   ctx.clearRect(0, 0, width, height);
   if (points.length === 0) return;
@@ -40,76 +240,64 @@ function drawRoute(
   const pts = points.map((wp) => map.project([wp.longitude, wp.latitude]));
 
   if (pts.length >= 2) {
-    const lineW = 12 * scale;
-    const outlineW = lineW + 4 * scale;
+    const lineW = 10 * scale;
+    const casingW = lineW + 4 * scale;
 
-    // Dark outline
+    // Casing (dark outline)
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     tracePath(ctx, pts);
-    ctx.strokeStyle = ROUTE_OUTLINE;
-    ctx.lineWidth = outlineW;
+    ctx.strokeStyle = ROUTE_CASING;
+    ctx.lineWidth = casingW;
     ctx.stroke();
     ctx.restore();
 
-    // Bright center fill
+    // Main line
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     tracePath(ctx, pts);
-    ctx.strokeStyle = ROUTE_COLOR;
+    ctx.strokeStyle = ROUTE_GREEN;
     ctx.lineWidth = lineW;
     ctx.stroke();
     ctx.restore();
 
-    // Animated direction dashes (white, semi-transparent)
-    const totalLen = pts.reduce((sum, p, i) => {
-      if (i === 0) return 0;
-      const prev = pts[i - 1]!;
-      return sum + Math.hypot(p.x - prev.x, p.y - prev.y);
-    }, 0);
+    // Directional chevrons
+    drawChevrons(ctx, pts, scale, phase);
 
-    if (totalLen > 0) {
+    // Drag preview path (yellow dashed)
+    if (drawState.previewPoints && drawState.previewPoints.length >= 2) {
       ctx.save();
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.setLineDash([14 * scale, 20 * scale]);
-      ctx.lineDashOffset = -(phase % 1) * totalLen;
-      tracePath(ctx, pts);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.lineWidth = 4 * scale;
+      ctx.setLineDash([8 * scale, 8 * scale]);
+      tracePath(ctx, drawState.previewPoints);
+      ctx.strokeStyle = PREVIEW_COLOR;
+      ctx.lineWidth = 6 * scale;
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
     }
   }
 
-  // Endpoint dots only (first and last)
-  if (pts.length >= 1) {
-    ctx.save();
-    const r = 6 * scale;
-    for (const idx of [0, pts.length - 1]) {
-      const p = pts[idx]!;
-      // Outer ring
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r + 2, 0, Math.PI * 2);
-      ctx.fillStyle = ROUTE_OUTLINE;
-      ctx.fill();
-      // Inner fill
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = ROUTE_COLOR;
-      ctx.fill();
-      // White center
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r * 0.4, 0, Math.PI * 2);
-      ctx.fillStyle = 'white';
-      ctx.fill();
-    }
-    ctx.restore();
+  // Endpoints
+  if (pts.length >= 2) {
+    drawEndpoint(ctx, pts[0]!, scale, true);
+    drawEndpoint(ctx, pts[pts.length - 1]!, scale, false);
+  } else if (pts.length === 1) {
+    drawEndpoint(ctx, pts[0]!, scale, true);
+  }
+
+  // Hover/drag handle
+  if (drawState.hoverPoint) {
+    drawHandle(ctx, drawState.hoverPoint, scale, drawState.isDragging);
   }
 }
+
+// ============================================================================
+// Coordinate resolvers
+// ============================================================================
 
 function resolveNetworkPoints(
   nodeIds: number[],
@@ -126,6 +314,10 @@ function resolveNetworkPoints(
   return points;
 }
 
+// ============================================================================
+// Hook
+// ============================================================================
+
 export function useTaxiRouteSync(mapRef: MapRef): void {
   const mode = useTaxiRouteStore((s) => s.mode);
   const waypoints = useTaxiRouteStore((s) => s.waypoints);
@@ -139,6 +331,28 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const phaseRef = useRef(0);
   const rafRef = useRef<number>(0);
+
+  // Drag/hover state — mutated directly, not React state (perf)
+  const interactionRef = useRef<{
+    hoverPoint: Pt | null;
+    isDragging: boolean;
+    /** 'anchor' = moving an existing anchor, 'line' = inserting a new via-point */
+    dragType: 'anchor' | 'line';
+    /** Index into clickedNodeIds when dragging an anchor */
+    dragAnchorIndex: number;
+    /** Segment index in the line for insertion */
+    dragSegIndex: number;
+    previewNodeId: number | null;
+    previewPoints: Pt[] | null;
+  }>({
+    hoverPoint: null,
+    isDragging: false,
+    dragType: 'line',
+    dragAnchorIndex: -1,
+    dragSegIndex: -1,
+    previewNodeId: null,
+    previewPoints: null,
+  });
 
   // Build graph when airport data changes
   const taxiNetwork = useAppStore((s) => s.selectedAirportData?.taxiNetwork);
@@ -196,6 +410,9 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     if (!map || !taxiModeActive || !clickModeEnabled) return;
 
     const handleMapClick = (e: maplibregl.MapMouseEvent) => {
+      // Don't handle click if we just finished a drag
+      if (interactionRef.current.isDragging) return;
+
       const { mode: currentMode, graph: currentGraph } = useTaxiRouteStore.getState();
       if (currentMode === 'network' && currentGraph) {
         const nearest = findNearestNode(currentGraph, e.lngLat.lng, e.lngLat.lat);
@@ -213,90 +430,191 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     };
   }, [mapRef, taxiModeActive, clickModeEnabled, addWaypoint, addNetworkNode]);
 
-  // Drag-to-reroute — grab a point on the route and drag to a new node
-  const dragRef = useRef<{
-    networkIndex: number;
-    previewNodeId: number | null;
-  } | null>(null);
-
+  // Hover + drag-to-reroute interaction
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !taxiModeActive) return;
+    const mapInstance = mapRef.current;
+    if (!mapInstance || !taxiModeActive) return;
 
-    const HIT_RADIUS = 15; // pixels
+    const mapCanvas = mapInstance.getCanvas();
+    const ANCHOR_HIT = 12; // pixels — tighter for anchor dots
+    // Non-null alias for use in closures (guarded above)
+    const map = mapInstance;
 
-    const handleMouseDown = (e: maplibregl.MapMouseEvent) => {
-      const { mode: m, graph: g, networkNodeIds: ids } = useTaxiRouteStore.getState();
-      if (m !== 'network' || !g || ids.length < 2) return;
+    /** Project clickedNodeIds to screen coords for anchor hit-testing */
+    function getAnchorScreenPts(g: TaxiGraph, clicked: number[]): { pt: Pt; anchorIdx: number }[] {
+      const result: { pt: Pt; anchorIdx: number }[] = [];
+      for (let i = 0; i < clicked.length; i++) {
+        const node = g.nodes.get(clicked[i]!);
+        if (node) {
+          result.push({ pt: map.project([node.lon, node.lat]), anchorIdx: i });
+        }
+      }
+      return result;
+    }
 
-      const click = map.project(e.lngLat.toArray() as [number, number]);
+    /** Build a preview path for the current drag state */
+    function buildPreview(
+      inter: typeof interactionRef.current,
+      g: TaxiGraph,
+      clicked: number[]
+    ): Pt[] | null {
+      if (inter.previewNodeId == null) return null;
 
-      // Find nearest route point to click
-      let bestIdx = -1;
-      let bestDist = Infinity;
-      for (let i = 0; i < ids.length; i++) {
-        const node = g.nodes.get(ids[i]!);
-        if (!node) continue;
-        const pt = map.project([node.lon, node.lat]);
-        const d = Math.hypot(pt.x - click.x, pt.y - click.y);
-        if (d < bestDist) {
-          bestDist = d;
-          bestIdx = i;
+      let hypothetical: number[];
+      if (inter.dragType === 'anchor') {
+        hypothetical = [...clicked];
+        hypothetical[inter.dragAnchorIndex] = inter.previewNodeId;
+      } else {
+        hypothetical = [
+          ...clicked.slice(0, inter.dragSegIndex + 1),
+          inter.previewNodeId,
+          ...clicked.slice(inter.dragSegIndex + 1),
+        ];
+      }
+
+      const nodeIds = resolveFullPath(hypothetical, g);
+      const pts: Pt[] = [];
+      for (const id of nodeIds) {
+        const node = g.nodes.get(id);
+        if (node) pts.push(map.project([node.lon, node.lat]));
+      }
+      return pts.length >= 2 ? pts : null;
+    }
+
+    const handleMouseMove = (e: maplibregl.MapMouseEvent) => {
+      const inter = interactionRef.current;
+      const {
+        mode: m,
+        graph: g,
+        networkNodeIds: ids,
+        clickedNodeIds: clicked,
+      } = useTaxiRouteStore.getState();
+
+      if (m !== 'network' || !g || ids.length < 2) {
+        if (inter.hoverPoint) {
+          inter.hoverPoint = null;
+          mapCanvas.style.cursor = '';
+        }
+        return;
+      }
+
+      const cursor = map.project(e.lngLat.toArray() as [number, number]);
+
+      if (inter.isDragging) {
+        // Snap to nearest connected node
+        const nearest = findNearestNode(g, e.lngLat.lng, e.lngLat.lat, true);
+        if (nearest) {
+          inter.previewNodeId = nearest.id;
+          const node = g.nodes.get(nearest.id);
+          if (node) {
+            inter.hoverPoint = map.project([node.lon, node.lat]);
+          }
+          // Build ghost preview
+          inter.previewPoints = buildPreview(inter, g, clicked);
+        }
+        return;
+      }
+
+      // --- Not dragging: check hover ---
+
+      // 1. Check anchor points first (start, end, via-points)
+      const anchors = getAnchorScreenPts(g, clicked);
+      for (const { pt, anchorIdx } of anchors) {
+        const d = Math.hypot(pt.x - cursor.x, pt.y - cursor.y);
+        if (d < ANCHOR_HIT) {
+          inter.hoverPoint = pt;
+          inter.dragType = 'anchor';
+          inter.dragAnchorIndex = anchorIdx;
+          inter.dragSegIndex = -1;
+          mapCanvas.style.cursor = 'grab';
+          return;
         }
       }
 
-      if (bestDist > HIT_RADIUS || bestIdx < 0) return;
+      // 2. Check proximity to route line
+      const linePts: Pt[] = [];
+      for (const id of ids) {
+        const node = g.nodes.get(id);
+        if (node) linePts.push(map.project([node.lon, node.lat]));
+      }
 
-      // Start drag
-      e.preventDefault();
-      map.dragPan.disable();
-      dragRef.current = { networkIndex: bestIdx, previewNodeId: null };
-      map.getCanvas().style.cursor = 'grabbing';
-    };
-
-    const handleMouseMove = (e: maplibregl.MapMouseEvent) => {
-      if (!dragRef.current) return;
-      const { graph: g } = useTaxiRouteStore.getState();
-      if (!g) return;
-
-      const nearest = findNearestNode(g, e.lngLat.lng, e.lngLat.lat, true);
-      if (nearest) {
-        dragRef.current.previewNodeId = nearest.id;
+      const closest = findClosestOnLine(linePts, cursor);
+      if (closest && closest.dist < HIT_TOLERANCE) {
+        inter.hoverPoint = closest.point;
+        inter.dragType = 'line';
+        inter.dragAnchorIndex = -1;
+        // Find which anchor segment this falls in
+        const store = useTaxiRouteStore.getState();
+        inter.dragSegIndex = store.findAnchorSegment(closest.segIndex);
+        mapCanvas.style.cursor = 'grab';
+      } else {
+        inter.hoverPoint = null;
+        inter.dragType = 'line';
+        inter.dragAnchorIndex = -1;
+        inter.dragSegIndex = -1;
+        mapCanvas.style.cursor = '';
       }
     };
 
-    const handleMouseUp = () => {
-      if (!dragRef.current) return;
-      const { previewNodeId, networkIndex } = dragRef.current;
-      dragRef.current = null;
-      map.dragPan.enable();
-      map.getCanvas().style.cursor = '';
+    const handleMouseDown = (e: maplibregl.MapMouseEvent) => {
+      const inter = interactionRef.current;
+      if (!inter.hoverPoint) return;
+      if (inter.dragType === 'anchor' && inter.dragAnchorIndex < 0) return;
+      if (inter.dragType === 'line' && inter.dragSegIndex < 0) return;
 
-      if (previewNodeId == null) return;
-
-      const store = useTaxiRouteStore.getState();
-      // Find which anchor segment this point belongs to and insert a via-point
-      const segIdx = store.findAnchorSegment(networkIndex);
-      store.insertViaNode(segIdx, previewNodeId);
+      e.preventDefault();
+      inter.isDragging = true;
+      inter.previewNodeId = null;
+      inter.previewPoints = null;
+      map.dragPan.disable();
+      mapCanvas.style.cursor = 'grabbing';
     };
 
-    map.on('mousedown', handleMouseDown);
+    const handleMouseUp = () => {
+      const inter = interactionRef.current;
+      if (!inter.isDragging) return;
+
+      const nodeId = inter.previewNodeId;
+      const dragType = inter.dragType;
+      const anchorIdx = inter.dragAnchorIndex;
+      const segIdx = inter.dragSegIndex;
+
+      // Reset
+      inter.isDragging = false;
+      inter.previewNodeId = null;
+      inter.previewPoints = null;
+      inter.hoverPoint = null;
+      map.dragPan.enable();
+      mapCanvas.style.cursor = '';
+
+      if (nodeId == null) return;
+
+      const store = useTaxiRouteStore.getState();
+      if (dragType === 'anchor' && anchorIdx >= 0) {
+        store.replaceNetworkNode(anchorIdx, nodeId);
+      } else if (dragType === 'line' && segIdx >= 0) {
+        store.insertViaNode(segIdx, nodeId);
+      }
+    };
+
     map.on('mousemove', handleMouseMove);
+    map.on('mousedown', handleMouseDown);
     map.on('mouseup', handleMouseUp);
 
+    const interSnap = interactionRef.current;
     return () => {
-      map.off('mousedown', handleMouseDown);
       map.off('mousemove', handleMouseMove);
+      map.off('mousedown', handleMouseDown);
       map.off('mouseup', handleMouseUp);
-      if (dragRef.current) {
+      if (interSnap.isDragging) {
+        interSnap.isDragging = false;
         map.dragPan.enable();
-        map.getCanvas().style.cursor = '';
-        dragRef.current = null;
+        mapCanvas.style.cursor = '';
       }
     };
   }, [mapRef, taxiModeActive]);
 
-  // Animated render loop
+  // Animated render loop — always runs when taxi mode active
   useEffect(() => {
     const map = mapRef.current;
     const canvas = canvasRef.current;
@@ -311,7 +629,6 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const needsAnimation = drawPoints.length >= 2;
     let cancelled = false;
 
     const render = () => {
@@ -320,34 +637,30 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       const w = canvas.width / dpr;
       const h = canvas.height / dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawRoute(ctx, map, drawPoints, w, h, phaseRef.current);
 
-      if (needsAnimation) {
-        phaseRef.current += PULSE_SPEED;
-        rafRef.current = requestAnimationFrame(render);
-      }
+      const inter = interactionRef.current;
+      drawRoute(ctx, map, drawPoints, w, h, phaseRef.current, {
+        hoverPoint: inter.hoverPoint,
+        isDragging: inter.isDragging,
+        previewPoints: inter.previewPoints,
+      });
+
+      phaseRef.current += PULSE_SPEED;
+      rafRef.current = requestAnimationFrame(render);
     };
 
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     render();
 
     const onMove = () => {
-      if (!needsAnimation) {
-        const dpr = window.devicePixelRatio || 1;
-        const w = canvas.width / dpr;
-        const h = canvas.height / dpr;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        drawRoute(ctx, map, drawPoints, w, h, phaseRef.current);
-      }
+      // render loop handles it continuously now
     };
     map.on('move', onMove);
-    map.on('zoom', onMove);
 
     return () => {
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       map.off('move', onMove);
-      map.off('zoom', onMove);
     };
   }, [mapRef, drawPoints, taxiModeActive]);
 }

@@ -76,9 +76,9 @@ interface TaxiRouteState {
 
 /**
  * Rebuild the full networkNodeIds from clickedNodeIds by running A*
- * between each consecutive pair.
+ * between each consecutive pair. Exported for preview computation.
  */
-function resolveFullPath(clickedIds: number[], graph: TaxiGraph | null): number[] {
+export function resolveFullPath(clickedIds: number[], graph: TaxiGraph | null): number[] {
   if (!graph || clickedIds.length === 0) return [];
   if (clickedIds.length === 1) return [clickedIds[0]!];
 
