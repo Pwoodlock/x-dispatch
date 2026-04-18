@@ -39,7 +39,11 @@ export enum RowCode {
   TAXI_NETWORK_HEADER = 1200,
   TAXI_NETWORK_NODE = 1201,
   TAXI_NETWORK_EDGE = 1202,
+  TAXI_NETWORK_ACTIVE_ZONE = 1204,
+  TAXI_NETWORK_TRUCK_EDGE = 1206,
   START_LOCATION_NEW = 1300,
+  TRUCK_PARKING = 1400,
+  TRUCK_DESTINATION = 1401,
   START_LOCATION_METADATA = 1301,
   METADATA = 1302,
 }
@@ -313,21 +317,85 @@ export interface BoundaryFeature {
   paths: ParsedPath[];
 }
 
+// ============================================================================
+// Taxi Network — row codes 1200–1401
+// ============================================================================
+
+/** Node usage in the taxi network (row code 1201 field 3) */
+export type TaxiNodeUsage = 'init' | 'dest' | 'both' | 'junc';
+
+/** Taxiway width class A–E (row code 1202 restriction field, per apt.dat 1200 spec) */
+export type TaxiWidthClass = 'A' | 'B' | 'C' | 'D' | 'E';
+
+/** Active zone type (row code 1204 field 1) */
+export type ActiveZoneType = 'departure' | 'arrival' | 'ils';
+
 export interface TaxiNode {
   id: number;
   latitude: number;
   longitude: number;
+  usage: TaxiNodeUsage;
+  /** Optional object name or marker (e.g. 'apron_light.obj', '_stop') */
+  name?: string;
+}
+
+/** Active zone — runway conflict area for a taxi edge (row code 1204) */
+export interface ActiveZone {
+  type: ActiveZoneType;
+  /** Runway identifiers this zone conflicts with (e.g. ['05', '23']) */
+  runways: string[];
 }
 
 export interface TaxiEdge {
   fromNodeId: number;
   toNodeId: number;
+  direction: 'oneway' | 'twoway';
+  /** Taxiway width class, or 'runway' for runway edges */
+  widthClass: TaxiWidthClass | 'runway';
+  /** Taxiway/runway name (e.g. 'A6', '25R') */
   name: string;
+  /** Active zones for this edge (runway conflicts, ILS-critical areas) */
+  activeZones?: ActiveZone[];
+}
+
+/** Ground truck route edge (row code 1206) — reuses taxi network nodes */
+export interface TruckEdge {
+  fromNodeId: number;
+  toNodeId: number;
+  direction: 'oneway' | 'twoway';
+  /** Optional route name */
+  name?: string;
+}
+
+/** Ground truck parking location (row code 1400) */
+export interface TruckParking {
+  latitude: number;
+  longitude: number;
+  heading: number;
+  type: string;
+  /** 0–10 for baggage_train, 0 otherwise */
+  extra: number;
+  /** Name of parking location */
+  name?: string;
+}
+
+/** Ground truck destination (row code 1401) */
+export interface TruckDestination {
+  latitude: number;
+  longitude: number;
+  heading: number;
+  /** Pipe-separated types in raw data, stored as array */
+  types: string[];
+  /** Name of destination */
+  name?: string;
 }
 
 export interface TaxiNetwork {
   nodes: TaxiNode[];
   edges: TaxiEdge[];
+  truckEdges: TruckEdge[];
+  truckParkings: TruckParking[];
+  truckDestinations: TruckDestination[];
 }
 
 // ============================================================================

@@ -372,7 +372,13 @@ export class AirportParser {
       linearFeatures: [],
       frequencies: [],
       helipads: [],
-      taxiNetwork: { nodes: [], edges: [] },
+      taxiNetwork: {
+        nodes: [],
+        edges: [],
+        truckEdges: [],
+        truckParkings: [],
+        truckDestinations: [],
+      },
     };
 
     for (let i = 0; i < this.lines.length; i++) {
@@ -612,41 +618,131 @@ export class AirportParser {
           break;
 
         case RowCode.TAXI_NETWORK_NODE: {
-          if (tokens.length < 4) break;
+          // 1201  lat  lon  usage  id  [name]
+          if (tokens.length < 5) break;
           const lat = parseFloat(token(tokens, 1));
           const lon = parseFloat(token(tokens, 2));
+          const usage = token(tokens, 3) as import('@/types/apt').TaxiNodeUsage;
           const nodeId = parseInt(token(tokens, 4));
+          const nodeName = tokens.length > 5 ? tokens.slice(5).join(' ') : undefined;
           if (
             Number.isFinite(lat) &&
             Number.isFinite(lon) &&
             Number.isFinite(nodeId) &&
             airport.taxiNetwork
           ) {
-            airport.taxiNetwork.nodes.push({ id: nodeId, latitude: lat, longitude: lon });
+            airport.taxiNetwork.nodes.push({
+              id: nodeId,
+              latitude: lat,
+              longitude: lon,
+              usage: usage || 'both',
+              name: nodeName || undefined,
+            });
           }
           break;
         }
 
         case RowCode.TAXI_NETWORK_EDGE: {
+          // 1202  fromId  toId  direction  restriction  name
           if (tokens.length < 5) break;
           const fromId = parseInt(token(tokens, 1));
           const toId = parseInt(token(tokens, 2));
-          // token[3] = direction (twoway/oneway)
-          // token[4] = restriction (taxiway_X or runway)
-          // token[5+] = actual taxiway name
+          const direction = token(tokens, 3) as 'oneway' | 'twoway';
           const restriction = token(tokens, 4);
-          if (restriction === 'runway') break;
-          const taxiwayName = tokens.slice(5).join(' ');
-          if (
-            Number.isFinite(fromId) &&
-            Number.isFinite(toId) &&
-            taxiwayName &&
-            airport.taxiNetwork
-          ) {
+          const edgeName = tokens.slice(5).join(' ').trim();
+
+          // Parse width class from restriction (taxiway_A → 'A', runway → 'runway')
+          let widthClass: import('@/types/apt').TaxiWidthClass | 'runway' = 'runway';
+          if (restriction && restriction.startsWith('taxiway_')) {
+            const cls = restriction.charAt(8).toUpperCase();
+            if ('ABCDE'.includes(cls)) {
+              widthClass = cls as import('@/types/apt').TaxiWidthClass;
+            }
+          }
+
+          if (Number.isFinite(fromId) && Number.isFinite(toId) && airport.taxiNetwork) {
             airport.taxiNetwork.edges.push({
               fromNodeId: fromId,
               toNodeId: toId,
-              name: taxiwayName,
+              direction: direction || 'twoway',
+              widthClass,
+              name: edgeName || '',
+            });
+          }
+          break;
+        }
+
+        case RowCode.TAXI_NETWORK_ACTIVE_ZONE: {
+          // 1204  type  runways (comma-separated)
+          // Belongs to the most recently parsed edge
+          if (tokens.length < 3 || !airport.taxiNetwork) break;
+          const edges = airport.taxiNetwork.edges;
+          const parentEdge = edges[edges.length - 1];
+          if (!parentEdge) break;
+
+          const zoneType = token(tokens, 1) as import('@/types/apt').ActiveZoneType;
+          const runways = token(tokens, 2).split(',').filter(Boolean);
+
+          if (!parentEdge.activeZones) parentEdge.activeZones = [];
+          parentEdge.activeZones.push({ type: zoneType, runways });
+          break;
+        }
+
+        case RowCode.TAXI_NETWORK_TRUCK_EDGE: {
+          // 1206  fromId  toId  direction  [name]
+          if (tokens.length < 4 || !airport.taxiNetwork) break;
+          const fromId = parseInt(token(tokens, 1));
+          const toId = parseInt(token(tokens, 2));
+          const direction = token(tokens, 3) as 'oneway' | 'twoway';
+          const truckEdgeName = tokens.length > 4 ? tokens.slice(4).join(' ').trim() : undefined;
+          if (Number.isFinite(fromId) && Number.isFinite(toId)) {
+            airport.taxiNetwork.truckEdges.push({
+              fromNodeId: fromId,
+              toNodeId: toId,
+              direction: direction || 'twoway',
+              name: truckEdgeName || undefined,
+            });
+          }
+          break;
+        }
+
+        case RowCode.TRUCK_PARKING: {
+          // 1400  lat  lon  heading  type  extra  [name]
+          if (tokens.length < 6 || !airport.taxiNetwork) break;
+          const lat = parseFloat(token(tokens, 1));
+          const lon = parseFloat(token(tokens, 2));
+          const heading = parseFloat(token(tokens, 3));
+          const type = token(tokens, 4);
+          const extra = parseInt(token(tokens, 5));
+          const parkingName = tokens.length > 6 ? tokens.slice(6).join(' ').trim() : undefined;
+          if (Number.isFinite(lat) && Number.isFinite(lon) && Number.isFinite(heading)) {
+            airport.taxiNetwork.truckParkings.push({
+              latitude: lat,
+              longitude: lon,
+              heading,
+              type: type || '',
+              extra: Number.isFinite(extra) ? extra : 0,
+              name: parkingName || undefined,
+            });
+          }
+          break;
+        }
+
+        case RowCode.TRUCK_DESTINATION: {
+          // 1401  lat  lon  heading  types (pipe-separated)  [name]
+          if (tokens.length < 5 || !airport.taxiNetwork) break;
+          const lat = parseFloat(token(tokens, 1));
+          const lon = parseFloat(token(tokens, 2));
+          const heading = parseFloat(token(tokens, 3));
+          const types = token(tokens, 4).split('|').filter(Boolean);
+          const destName = tokens.length > 5 ? tokens.slice(5).join(' ').trim() : undefined;
+          if (Number.isFinite(lat) && Number.isFinite(lon) && Number.isFinite(heading)) {
+            airport.taxiNetwork.truckDestinations.push({
+              latitude: lat,
+              longitude: lon,
+              heading,
+              types,
+              name: destName || undefined,
             });
           }
           break;
