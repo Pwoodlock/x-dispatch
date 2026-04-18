@@ -23,10 +23,11 @@ import type { MapRef } from './useMapSetup';
 const ROUTE_GREEN = '#22c55e';
 /** Dark casing for contrast on any surface */
 const ROUTE_CASING = 'rgba(0, 0, 0, 0.7)';
-/** Handle color when hovering */
-const HANDLE_COLOR = '#facc15';
+/** Handle color when hovering — white for contrast against green route */
+const HANDLE_COLOR = '#ffffff';
 /** Drag preview */
-const PREVIEW_COLOR = 'rgba(250, 204, 21, 0.5)';
+/** Preview: same green as route but faded, with dashes */
+const PREVIEW_COLOR = 'rgba(34, 197, 94, 0.35)';
 
 const PULSE_SPEED = 0.015;
 /** Pixel radius for detecting hover near route */
@@ -194,7 +195,7 @@ function drawHandle(ctx: CanvasRenderingContext2D, p: Pt, scale: number, grabbed
 
   ctx.save();
   // Glow
-  ctx.shadowColor = HANDLE_COLOR;
+  ctx.shadowColor = ROUTE_GREEN;
   ctx.shadowBlur = grabbed ? 12 : 8;
   ctx.beginPath();
   ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
