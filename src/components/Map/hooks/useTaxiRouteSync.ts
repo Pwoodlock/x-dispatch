@@ -167,14 +167,15 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     };
   }, [mapRef]);
 
-  // Click handler
+  // Click handler — reads mode/graph from store directly to avoid stale closures
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !taxiModeActive || !clickModeEnabled) return;
 
     const handleMapClick = (e: maplibregl.MapMouseEvent) => {
-      if (mode === 'network' && graph) {
-        const nearest = findNearestNode(graph, e.lngLat.lng, e.lngLat.lat);
+      const { mode: currentMode, graph: currentGraph } = useTaxiRouteStore.getState();
+      if (currentMode === 'network' && currentGraph) {
+        const nearest = findNearestNode(currentGraph, e.lngLat.lng, e.lngLat.lat);
         if (nearest) {
           addNetworkNode(nearest.id);
         }
@@ -187,7 +188,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     return () => {
       map.off('click', handleMapClick);
     };
-  }, [mapRef, taxiModeActive, clickModeEnabled, mode, graph, addWaypoint, addNetworkNode]);
+  }, [mapRef, taxiModeActive, clickModeEnabled, addWaypoint, addNetworkNode]);
 
   // Animated render loop
   useEffect(() => {

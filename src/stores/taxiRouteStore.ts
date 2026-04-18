@@ -103,7 +103,7 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       waypoints: [],
       clickedNodeIds: [],
       networkNodeIds: [],
-      clickModeEnabled: false,
+      clickModeEnabled: true,
     }),
 
   addWaypoint: (lon, lat) =>
@@ -144,7 +144,8 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       clickedNodeIds: [],
       networkNodeIds: [],
       clickModeEnabled: false,
-      graph: null,
+      // Keep graph — it belongs to the airport, not the taxi session.
+      // It gets rebuilt by useTaxiRouteSync when the airport changes.
     }),
 
   setClickModeEnabled: (enabled) => set({ clickModeEnabled: enabled }),
