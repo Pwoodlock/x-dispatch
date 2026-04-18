@@ -398,7 +398,7 @@ declare global {
     airportAPI: {
       getAirports: () => Promise<Airport[]>;
       getDistinctCountries: () => Promise<string[]>;
-      getAirportData: (icao: string) => Promise<string>;
+      getAirportData: (icao: string) => Promise<{ data: string; sourceFile: string } | null>;
       fetchMetar: (icao: string) => Promise<ApiResponse>;
       fetchTaf: (icao: string) => Promise<ApiResponse>;
       fetchGatewayReleases: () => Promise<ApiResponse>;

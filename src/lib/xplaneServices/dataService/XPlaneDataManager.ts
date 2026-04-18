@@ -453,15 +453,16 @@ export class XPlaneDataManager {
   /**
    * Get airport data by ICAO
    */
-  getAirportData(icao: string): string | null {
+  getAirportData(icao: string): { data: string; sourceFile: string } | null {
     const db = getDb();
     const result = db
-      .select({ data: airports.data })
+      .select({ data: airports.data, sourceFile: airports.sourceFile })
       .from(airports)
       .where(eq(airports.icao, icao))
       .get();
 
-    return result?.data || null;
+    if (!result?.data) return null;
+    return { data: result.data, sourceFile: result.sourceFile ?? '' };
   }
 
   /**
@@ -500,10 +501,10 @@ export class XPlaneDataManager {
 
       // Extract runway ends from airport data for runway waypoint resolution (RW09, RW27L, etc.)
       const runwayEnds: Array<{ name: string; latitude: number; longitude: number }> = [];
-      const airportDataJson = this.getAirportData(icao);
-      if (airportDataJson) {
+      const airportDataResult = this.getAirportData(icao);
+      if (airportDataResult) {
         try {
-          const airportData = JSON.parse(airportDataJson);
+          const airportData = JSON.parse(airportDataResult.data);
           if (airportData.runways && Array.isArray(airportData.runways)) {
             for (const runway of airportData.runways) {
               if (runway.ends && Array.isArray(runway.ends)) {

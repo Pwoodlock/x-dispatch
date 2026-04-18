@@ -83,15 +83,16 @@ export function useAirportRenderer(
       // Clear previous airport layers before adding new ones
       clearAirport();
 
-      const data = await window.airportAPI.getAirportData(icao);
-      if (!data) return null;
+      const result = await window.airportAPI.getAirportData(icao);
+      if (!result) return null;
 
-      const parser = new AirportParser(data);
+      const parser = new AirportParser(result.data);
       const { data: parsedAirport, errors, stats } = parser.parse();
 
-      // Enrich with coordinates from click location
+      // Enrich with coordinates and source file path
       parsedAirport.longitude = center[0];
       parsedAirport.latitude = center[1];
+      parsedAirport.sourceFile = result.sourceFile;
 
       if (errors.length > 0) {
         window.appAPI.log.warn(

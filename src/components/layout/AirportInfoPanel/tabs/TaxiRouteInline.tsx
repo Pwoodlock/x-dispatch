@@ -77,7 +77,7 @@ export default function TaxiRouteInline() {
       startPosition?.name ?? String(networkNodeIds[0]),
       selectedRunway ?? String(networkNodeIds[networkNodeIds.length - 1]),
       networkNodeIds,
-      ''
+      airport?.sourceFile ?? ''
     );
     const result = await window.xplaneAPI.writeTaxiRoute(JSON.stringify(payload, null, 2));
     if (result.success) {

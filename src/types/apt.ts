@@ -424,4 +424,6 @@ export interface ParsedAirport {
   beacon?: Beacon;
   helipads: Helipad[];
   taxiNetwork?: TaxiNetwork;
+  /** Path to the apt.dat source file (set after parsing, from DB metadata) */
+  sourceFile?: string;
 }
