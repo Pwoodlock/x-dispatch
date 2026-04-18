@@ -133,8 +133,13 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
       },
     });
 
-    // Start pulsating animation for stop bars
-    this.startAnimation();
+    // Defer animation start until MapLibre finishes processing this source.
+    // Starting immediately causes setPaintProperty to dirty the style before
+    // tile processing completes, leaving the tile manager paused permanently
+    // and blocking isStyleLoaded() → which stalls basemap tile loading.
+    map.once('idle', () => {
+      if (this.map) this.startAnimation();
+    });
   }
 
   /**
@@ -175,7 +180,9 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
           0.03,
         ]);
       } catch {
-        // Layer may have been removed
+        // Layer removed — stop animation to prevent style._changed staying true
+        this.animationFrame = null;
+        return;
       }
 
       this.animationFrame = requestAnimationFrame(animate);

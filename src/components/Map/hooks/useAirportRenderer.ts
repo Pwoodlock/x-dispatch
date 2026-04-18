@@ -57,14 +57,44 @@ export function useAirportRenderer(
   const animationsEnabled = useRef(true);
 
   /**
-   * Clear all airport feature layers from the map
+   * Clear all airport feature layers from the map.
+   *
+   * Bypasses safeRemove (which defers when isStyleLoaded() is false)
+   * because the TaxiwayLightsLayer animation keeps style._changed=true
+   * permanently, preventing isStyleLoaded() from ever returning true.
+   * This causes sources to accumulate across airport switches, eventually
+   * exhausting GPU memory and blocking basemap tile loading.
    */
   const clearAirport = useCallback(() => {
-    if (!map.current) return;
+    const m = map.current;
+    if (!m || !m.getStyle()) return;
 
-    const renderers = [...layerRenderers.current].reverse();
-    for (const renderer of renderers) {
-      renderer.remove(map.current);
+    // Get all current layers and sources
+    const style = m.getStyle();
+    const layers = style?.layers ?? [];
+    const sources = Object.keys(style?.sources ?? {});
+
+    // Remove all airport layers first (must remove before sources)
+    for (let i = layers.length - 1; i >= 0; i--) {
+      const layer = layers[i];
+      if (layer && layer.id.startsWith('airport-')) {
+        try {
+          m.removeLayer(layer.id);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+
+    // Remove all airport sources
+    for (const sourceId of sources) {
+      if (sourceId.startsWith('airport-')) {
+        try {
+          m.removeSource(sourceId);
+        } catch {
+          /* ignore */
+        }
+      }
     }
 
     selectedAirport.current = null;

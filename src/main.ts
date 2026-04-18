@@ -1306,6 +1306,11 @@ function registerIpcHandlers() {
   });
 }
 
+// Enable remote debugging port for chrome-devtools-mcp (dev only)
+if (!app.isPackaged) {
+  app.commandLine.appendSwitch('remote-debugging-port', '9222');
+}
+
 // Must register custom scheme before app is ready
 registerTileCacheScheme();
 
