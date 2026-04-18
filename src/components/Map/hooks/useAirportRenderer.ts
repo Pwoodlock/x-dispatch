@@ -59,10 +59,26 @@ export function useAirportRenderer(
   /**
    * Clear all airport feature layers from the map.
    *
-   * Removes layers and sources directly instead of going through
-   * safeRemove, which defers when isStyleLoaded() is false. The
-   * TaxiwayLightsLayer animation can keep isStyleLoaded() false
-   * permanently, causing old sources to accumulate across switches.
+   * Why this doesn't use renderer.remove():
+   * BaseLayerRenderer.remove() delegates to safeRemove(), which checks
+   * map.isStyleLoaded(). If false, removal is deferred to the 'idle' event.
+   *
+   * Problem: TaxiwayLightsLayer's animation calls setPaintProperty() every
+   * frame, which keeps style._changed = true. MapLibre's isStyleLoaded()
+   * checks !style._changed, so it returns false permanently while the
+   * animation runs. This means safeRemove NEVER executes synchronously —
+   * it always defers. But 'idle' also never fires because the animation
+   * keeps dirtying the style. Result: old airport sources are never removed,
+   * they accumulate (20 sources × 10-16MB each), and by the 2nd-3rd airport
+   * switch the map stalls completely (black screen, no basemap tiles).
+   *
+   * Fix: bypass safeRemove entirely. Collect all layer/source IDs from the
+   * renderer metadata and remove them directly. Individual try/catch ensures
+   * one failure doesn't block others. Layers must be removed before their
+   * sources (MapLibre throws if a source still has referencing layers).
+   *
+   * See also: TaxiwayLightsLayer.render() which defers its animation start
+   * to map.once('idle') for the same reason.
    */
   const clearAirport = useCallback(() => {
     const m = map.current;
@@ -85,14 +101,14 @@ export function useAirportRenderer(
       try {
         if (m.getLayer(id)) m.removeLayer(id);
       } catch {
-        /* ignore */
+        /* Style may be mid-transition — safe to ignore */
       }
     }
     for (const id of sourceIds) {
       try {
         if (m.getSource(id)) m.removeSource(id);
       } catch {
-        /* ignore */
+        /* Source may have dangling layer refs — safe to ignore */
       }
     }
 

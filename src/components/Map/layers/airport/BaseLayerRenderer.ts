@@ -13,7 +13,11 @@ export interface LayerRenderer {
   sourceId: string;
   /** Additional layer IDs this renderer creates */
   additionalLayerIds?: string[];
-  /** Additional source IDs this renderer creates (beyond sourceId) */
+  /**
+   * Additional source IDs this renderer creates (beyond sourceId).
+   * Used by clearAirport() to ensure all sources are cleaned up.
+   * E.g. RunwayLayer creates a separate 'airport-runway-shoulders' source.
+   */
   additionalSourceIds?: string[];
 
   /**

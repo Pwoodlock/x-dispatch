@@ -133,10 +133,22 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
       },
     });
 
-    // Defer animation start until MapLibre finishes processing this source.
-    // Starting immediately causes setPaintProperty to dirty the style before
-    // tile processing completes, leaving the tile manager paused permanently
-    // and blocking isStyleLoaded() → which stalls basemap tile loading.
+    // IMPORTANT: Defer animation to after MapLibre finishes processing this source.
+    //
+    // Why: startAnimation() calls setPaintProperty() every frame, which sets
+    // style._changed = true. If this runs before MapLibre's tile workers finish
+    // processing the GeoJSON, the tile manager stays in _paused state with
+    // _didEmitContent = false. This keeps isStyleLoaded() permanently false.
+    //
+    // Consequence: safeRemove() (used by BaseLayerRenderer.remove()) checks
+    // isStyleLoaded() and defers removal when false. With isStyleLoaded stuck
+    // on false, old airport layers/sources are NEVER cleaned up on airport
+    // switch. They accumulate, eventually blocking all basemap tile loading
+    // and causing a black screen.
+    //
+    // Fix: wait for 'idle' (all sources processed) before starting the RAF loop.
+    // See also: useAirportRenderer.ts clearAirport() which bypasses safeRemove
+    // entirely for the same reason.
     map.once('idle', () => {
       if (this.map) this.startAnimation();
     });
