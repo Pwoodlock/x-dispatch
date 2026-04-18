@@ -59,41 +59,40 @@ export function useAirportRenderer(
   /**
    * Clear all airport feature layers from the map.
    *
-   * Bypasses safeRemove (which defers when isStyleLoaded() is false)
-   * because the TaxiwayLightsLayer animation keeps style._changed=true
-   * permanently, preventing isStyleLoaded() from ever returning true.
-   * This causes sources to accumulate across airport switches, eventually
-   * exhausting GPU memory and blocking basemap tile loading.
+   * Removes layers and sources directly instead of going through
+   * safeRemove, which defers when isStyleLoaded() is false. The
+   * TaxiwayLightsLayer animation can keep isStyleLoaded() false
+   * permanently, causing old sources to accumulate across switches.
    */
   const clearAirport = useCallback(() => {
     const m = map.current;
     if (!m || !m.getStyle()) return;
 
-    // Get all current layers and sources
-    const style = m.getStyle();
-    const layers = style?.layers ?? [];
-    const sources = Object.keys(style?.sources ?? {});
+    // Collect all layer and source IDs from the renderers
+    const renderers = layerRenderers.current;
+    const layerIds: string[] = [];
+    const sourceIds: string[] = [];
 
-    // Remove all airport layers first (must remove before sources)
-    for (let i = layers.length - 1; i >= 0; i--) {
-      const layer = layers[i];
-      if (layer && layer.id.startsWith('airport-')) {
-        try {
-          m.removeLayer(layer.id);
-        } catch {
-          /* ignore */
-        }
-      }
+    for (const renderer of renderers) {
+      if (renderer.additionalLayerIds) layerIds.push(...renderer.additionalLayerIds);
+      layerIds.push(renderer.layerId);
+      if (renderer.additionalSourceIds) sourceIds.push(...renderer.additionalSourceIds);
+      sourceIds.push(renderer.sourceId);
     }
 
-    // Remove all airport sources
-    for (const sourceId of sources) {
-      if (sourceId.startsWith('airport-')) {
-        try {
-          m.removeSource(sourceId);
-        } catch {
-          /* ignore */
-        }
+    // Remove layers first (reverse order), then sources
+    for (const id of layerIds.reverse()) {
+      try {
+        if (m.getLayer(id)) m.removeLayer(id);
+      } catch {
+        /* ignore */
+      }
+    }
+    for (const id of sourceIds) {
+      try {
+        if (m.getSource(id)) m.removeSource(id);
+      } catch {
+        /* ignore */
       }
     }
 

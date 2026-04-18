@@ -40,6 +40,7 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
     'airport-runway-aiming-points',
     'airport-runway-tdz-marks',
   ];
+  additionalSourceIds = ['airport-runway-numbers'];
 
   private numberSourceId = 'airport-runway-numbers';
 

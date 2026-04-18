@@ -13,6 +13,7 @@ export class RunwayLayer extends BaseLayerRenderer {
     'airport-runway-centerlines',
     'airport-runway-labels',
   ];
+  additionalSourceIds = ['airport-runway-shoulders'];
   private shoulderSourceId = 'airport-runway-shoulders';
 
   hasData(airport: ParsedAirport): boolean {

@@ -13,6 +13,8 @@ export interface LayerRenderer {
   sourceId: string;
   /** Additional layer IDs this renderer creates */
   additionalLayerIds?: string[];
+  /** Additional source IDs this renderer creates (beyond sourceId) */
+  additionalSourceIds?: string[];
 
   /**
    * Render the layer on the map
@@ -41,6 +43,7 @@ export abstract class BaseLayerRenderer implements LayerRenderer {
   abstract layerId: string;
   abstract sourceId: string;
   additionalLayerIds?: string[];
+  additionalSourceIds?: string[];
 
   abstract render(map: maplibregl.Map, airport: ParsedAirport): void | Promise<void>;
   abstract hasData(airport: ParsedAirport): boolean;
