@@ -2,10 +2,13 @@
  * Taxi Route Store
  * Manages taxi route state for airport ground navigation.
  *
- * Users click on the map to add waypoints, creating a connected
- * taxi route path displayed as a canvas overlay.
+ * Two modes:
+ * - network: clicks snap to taxi network nodes, A* pathfinds between them
+ * - freehand: arbitrary clicks on the map (legacy behavior)
  */
 import { create } from 'zustand';
+import type { TaxiGraph } from '@/lib/taxiGraph';
+import { findPath } from '@/lib/taxiGraph';
 
 // ============================================================================
 // Types
@@ -16,50 +19,135 @@ export interface TaxiRoutePoint {
   latitude: number;
 }
 
+export type TaxiRouteMode = 'network' | 'freehand';
+
 interface TaxiRouteState {
-  /** Ordered waypoints clicked by the user */
+  mode: TaxiRouteMode;
+
+  // --- Freehand mode state ---
   waypoints: TaxiRoutePoint[];
-  /** ICAO of the airport taxi mode is active for, or null when inactive */
+
+  // --- Network mode state ---
+  /** The user-clicked node IDs (anchors for re-routing) */
+  clickedNodeIds: number[];
+  /** The full resolved path as node IDs (includes intermediate A* nodes) */
+  networkNodeIds: number[];
+  /** Prebuilt graph for the active airport */
+  graph: TaxiGraph | null;
+
+  // --- Shared state ---
   activeTaxiIcao: string | null;
-  /** Whether click-to-add mode is enabled */
   clickModeEnabled: boolean;
 
   // Actions
+  setMode: (mode: TaxiRouteMode) => void;
+  setGraph: (graph: TaxiGraph | null) => void;
   setActiveAirport: (icao: string) => void;
   addWaypoint: (lon: number, lat: number) => void;
+  addNetworkNode: (nodeId: number) => void;
   removeLastWaypoint: () => void;
+  removeLastNetworkNode: () => void;
   clearRoute: () => void;
   deactivate: () => void;
   setClickModeEnabled: (enabled: boolean) => void;
 }
 
 // ============================================================================
+// Helpers
+// ============================================================================
+
+/**
+ * Rebuild the full networkNodeIds from clickedNodeIds by running A*
+ * between each consecutive pair.
+ */
+function resolveFullPath(clickedIds: number[], graph: TaxiGraph | null): number[] {
+  if (!graph || clickedIds.length === 0) return [];
+  if (clickedIds.length === 1) return [clickedIds[0]!];
+
+  const full: number[] = [];
+  for (let i = 0; i < clickedIds.length - 1; i++) {
+    const result = findPath(graph, clickedIds[i]!, clickedIds[i + 1]!);
+    if (!result) {
+      // No path between these nodes — just connect directly
+      if (full.length === 0) full.push(clickedIds[i]!);
+      full.push(clickedIds[i + 1]!);
+    } else {
+      // Avoid duplicating the junction node
+      const segment = i === 0 ? result.nodeIds : result.nodeIds.slice(1);
+      full.push(...segment);
+    }
+  }
+  return full;
+}
+
+// ============================================================================
 // Store
 // ============================================================================
 
-export const useTaxiRouteStore = create<TaxiRouteState>()((set) => ({
+export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
+  mode: 'network',
   waypoints: [],
+  clickedNodeIds: [],
+  networkNodeIds: [],
+  graph: null,
   activeTaxiIcao: null,
   clickModeEnabled: false,
 
-  setActiveAirport: (icao: string) =>
-    set({ activeTaxiIcao: icao.toUpperCase(), waypoints: [], clickModeEnabled: false }),
+  setMode: (mode) => set({ mode, waypoints: [], clickedNodeIds: [], networkNodeIds: [] }),
+
+  setGraph: (graph) => set({ graph }),
+
+  setActiveAirport: (icao) =>
+    set({
+      activeTaxiIcao: icao.toUpperCase(),
+      waypoints: [],
+      clickedNodeIds: [],
+      networkNodeIds: [],
+      clickModeEnabled: false,
+    }),
 
   addWaypoint: (lon, lat) =>
     set((state) => ({
       waypoints: [...state.waypoints, { longitude: lon, latitude: lat }],
     })),
 
+  addNetworkNode: (nodeId) => {
+    const { clickedNodeIds, graph } = get();
+    const newClicked = [...clickedNodeIds, nodeId];
+    set({
+      clickedNodeIds: newClicked,
+      networkNodeIds: resolveFullPath(newClicked, graph),
+    });
+  },
+
   removeLastWaypoint: () =>
     set((state) => ({
       waypoints: state.waypoints.length > 0 ? state.waypoints.slice(0, -1) : state.waypoints,
     })),
 
-  clearRoute: () => set({ waypoints: [] }),
+  removeLastNetworkNode: () => {
+    const { clickedNodeIds, graph } = get();
+    if (clickedNodeIds.length === 0) return;
+    const newClicked = clickedNodeIds.slice(0, -1);
+    set({
+      clickedNodeIds: newClicked,
+      networkNodeIds: resolveFullPath(newClicked, graph),
+    });
+  },
 
-  deactivate: () => set({ activeTaxiIcao: null, waypoints: [], clickModeEnabled: false }),
+  clearRoute: () => set({ waypoints: [], clickedNodeIds: [], networkNodeIds: [] }),
 
-  setClickModeEnabled: (enabled: boolean) => set({ clickModeEnabled: enabled }),
+  deactivate: () =>
+    set({
+      activeTaxiIcao: null,
+      waypoints: [],
+      clickedNodeIds: [],
+      networkNodeIds: [],
+      clickModeEnabled: false,
+      graph: null,
+    }),
+
+  setClickModeEnabled: (enabled) => set({ clickModeEnabled: enabled }),
 }));
 
 // ============================================================================
