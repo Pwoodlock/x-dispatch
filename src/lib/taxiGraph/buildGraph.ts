@@ -15,7 +15,9 @@ function haversineMetres(lat1: number, lon1: number, lat2: number, lon2: number)
 
 /**
  * Build a TaxiGraph from parsed TaxiNetwork data.
- * Skips runway edges — routing stops at hold-short nodes.
+ * Includes all edges (taxiway + runway) to ensure full connectivity.
+ * Runway edges are penalized with higher weight to discourage routing
+ * through runways when a taxiway path exists.
  */
 export function buildTaxiGraph(network: TaxiNetwork): TaxiGraph {
   const nodes = new Map<number, IndexedNode>();
@@ -26,14 +28,14 @@ export function buildTaxiGraph(network: TaxiNetwork): TaxiGraph {
   const adjacency: AdjacencyList = new Map();
 
   for (const edge of network.edges) {
-    // Skip runway edges — route ends at hold-short point
-    if (edge.widthClass === 'runway') continue;
-
     const from = nodes.get(edge.fromNodeId);
     const to = nodes.get(edge.toNodeId);
     if (!from || !to) continue;
 
-    const distance = haversineMetres(from.lat, from.lon, to.lat, to.lon);
+    let distance = haversineMetres(from.lat, from.lon, to.lat, to.lon);
+    // Penalize runway edges so A* prefers taxiway paths
+    if (edge.widthClass === 'runway') distance *= 10;
+
     const fwd: GraphEdge = { toNodeId: to.id, distance, edge };
     const rev: GraphEdge = { toNodeId: from.id, distance, edge };
 

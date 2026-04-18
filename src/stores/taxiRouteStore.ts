@@ -139,8 +139,8 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
     const { graph } = get();
     if (!graph) return;
 
-    const gateNode = findNearestNode(graph, gateLon, gateLat);
-    const runwayNode = findNearestNode(graph, runwayLon, runwayLat);
+    const gateNode = findNearestNode(graph, gateLon, gateLat, true);
+    const runwayNode = findNearestNode(graph, runwayLon, runwayLat, true);
     if (!gateNode || !runwayNode) return;
 
     const result = findPath(graph, gateNode.id, runwayNode.id);
