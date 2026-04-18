@@ -393,14 +393,16 @@
       "viewOnGateway": "Auf Gateway ansehen"
     },
     "taxiRoute": {
-      "label": "Taxi-Route",
-      "undo": "Letzten Punkt rückgängig",
-      "clearAll": "Alle löschen",
-      "enableClick": "Klick-Hinzufügen aktivieren",
-      "disableClick": "Klick-Hinzufügen deaktivieren",
-      "clickInstruction": "Auf die Karte klicken, um Routenpunkte hinzuzufügen",
-      "pointsPlaced": "{{count}} Punkt(e) gesetzt — klicken für weitere",
-      "enableHint": "Klick-Hinzufügen aktivieren, um Routenpunkte zu setzen"
+      "taxiTo": "Rollen zu",
+      "undo": "Rückgängig",
+      "clearAll": "Löschen",
+      "selectRunway": "Landebahn auswählen",
+      "noNetwork": "Keine Rollwegdaten",
+      "drawManually": "Manuell zeichnen",
+      "autoRoute": "Automatische Route",
+      "pointsPlaced": "{{count}} Punkt(e)",
+      "export": "Für Follow the Greens exportieren",
+      "exportSuccess": "Route für Follow the Greens exportiert"
     }
   },
   "navigation": {

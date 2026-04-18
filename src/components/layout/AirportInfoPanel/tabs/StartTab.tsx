@@ -266,55 +266,57 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
         const hasBadges = sizeConfig || opConfig;
 
         return (
-          <div key={originalIndex}>
-            <Button
-              data-selected={isSelected || undefined}
-              variant="ghost"
-              onClick={() =>
-                onSelect?.({
-                  latitude: gate.latitude,
-                  longitude: gate.longitude,
-                  name: gate.name,
-                  heading: gate.heading,
-                  index: originalIndex,
-                  xplaneIndex: xplaneIndices[originalIndex],
-                })
-              }
-              className={cn(
-                'h-auto w-full flex-col items-stretch rounded px-2.5 py-2 text-left',
-                isSelected
-                  ? 'bg-cat-emerald/10 text-cat-emerald'
-                  : 'text-foreground/80 hover:bg-muted/50'
-              )}
-            >
-              {/* Row 1: Name + Heading */}
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-sm">{gate.name}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground/50">
-                    {Math.round(gate.heading)}°
-                  </span>
-                  {isSelected && <Check className="h-3.5 w-3.5" />}
-                </div>
+          <div
+            key={originalIndex}
+            data-selected={isSelected || undefined}
+            className={cn(
+              'rounded px-2.5 py-2',
+              isSelected
+                ? 'bg-cat-emerald/10 text-cat-emerald'
+                : 'cursor-pointer text-foreground/80 hover:bg-muted/50'
+            )}
+            onClick={() =>
+              onSelect?.({
+                latitude: gate.latitude,
+                longitude: gate.longitude,
+                name: gate.name,
+                heading: gate.heading,
+                index: originalIndex,
+                xplaneIndex: xplaneIndices[originalIndex],
+              })
+            }
+          >
+            {/* Row 1: Name + Heading */}
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-sm">{gate.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground/50">
+                  {Math.round(gate.heading)}°
+                </span>
+                {isSelected && <Check className="h-3.5 w-3.5" />}
               </div>
-              {/* Row 2: Badges */}
-              {hasBadges && (
-                <div className="mt-1 flex gap-1.5">
-                  {sizeConfig && (
-                    <Badge variant={sizeConfig.variant} className="h-4 px-1.5 text-[9px]">
-                      {t(sizeConfig.labelKey)}
-                    </Badge>
-                  )}
-                  {opConfig && (
-                    <Badge variant={opConfig.variant} className="h-4 px-1.5 text-[9px]">
-                      {t(opConfig.labelKey)}
-                    </Badge>
-                  )}
-                </div>
-              )}
-            </Button>
-            {/* Taxi route input — appears under the selected gate */}
-            {isSelected && <TaxiRouteInline />}
+            </div>
+            {/* Row 2: Badges */}
+            {hasBadges && (
+              <div className="mt-1 flex gap-1.5">
+                {sizeConfig && (
+                  <Badge variant={sizeConfig.variant} className="h-4 px-1.5 text-[9px]">
+                    {t(sizeConfig.labelKey)}
+                  </Badge>
+                )}
+                {opConfig && (
+                  <Badge variant={opConfig.variant} className="h-4 px-1.5 text-[9px]">
+                    {t(opConfig.labelKey)}
+                  </Badge>
+                )}
+              </div>
+            )}
+            {/* Taxi route — inside the card */}
+            {isSelected && (
+              <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+                <TaxiRouteInline />
+              </div>
+            )}
           </div>
         );
       })}

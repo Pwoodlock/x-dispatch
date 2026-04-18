@@ -460,14 +460,16 @@
       "viewOnGateway": "Ver no Gateway"
     },
     "taxiRoute": {
-      "label": "Rota de táxi",
-      "undo": "Desfazer último ponto",
-      "clearAll": "Limpar tudo",
-      "enableClick": "Ativar clique para adicionar",
-      "disableClick": "Desativar clique para adicionar",
-      "clickInstruction": "Clique no mapa para adicionar pontos de rota de táxi",
-      "pointsPlaced": "{{count}} ponto(s) colocado(s) — clique para adicionar mais",
-      "enableHint": "Ative clique para adicionar e coloque pontos de rota"
+      "taxiTo": "Taxiar para",
+      "undo": "Desfazer",
+      "clearAll": "Limpar",
+      "selectRunway": "Selecionar pista",
+      "noNetwork": "Sem dados de taxi",
+      "drawManually": "Desenhar manualmente",
+      "autoRoute": "Rota automática",
+      "pointsPlaced": "{{count}} ponto(s)",
+      "export": "Exportar para Follow the Greens",
+      "exportSuccess": "Rota exportada para Follow the Greens"
     }
   },
   "navigation": {

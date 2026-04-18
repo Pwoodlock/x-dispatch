@@ -499,15 +499,14 @@
       "viewOnGateway": "View on Gateway"
     },
     "taxiRoute": {
-      "label": "Taxi Route",
+      "taxiTo": "Taxi to",
       "undo": "Undo",
       "clearAll": "Clear",
       "selectRunway": "Select runway",
-      "noNetwork": "No taxi network",
-      "freehandMode": "Freehand",
-      "switchFreehand": "Freehand",
-      "switchNetwork": "Network snap",
-      "pointsPlaced": "{{count}} point(s) placed — click to add more",
+      "noNetwork": "No taxi data",
+      "drawManually": "Draw manually",
+      "autoRoute": "Auto route",
+      "pointsPlaced": "{{count}} point(s)",
       "export": "Export for Follow the Greens",
       "exportSuccess": "Route exported for Follow the Greens"
     }

@@ -460,14 +460,16 @@
       "viewOnGateway": "Zobacz na Gateway"
     },
     "taxiRoute": {
-      "label": "Trasa kołowania",
-      "undo": "Cofnij ostatni punkt",
-      "clearAll": "Wyczyść wszystko",
-      "enableClick": "Włącz dodawanie kliknięciem",
-      "disableClick": "Wyłącz dodawanie kliknięciem",
-      "clickInstruction": "Kliknij na mapę, aby dodać punkty trasy kołowania",
-      "pointsPlaced": "{{count}} punkt(ów) ustawionych — kliknij, aby dodać więcej",
-      "enableHint": "Włącz dodawanie kliknięciem, aby ustawić punkty trasy"
+      "taxiTo": "Kołuj do",
+      "undo": "Cofnij",
+      "clearAll": "Wyczyść",
+      "selectRunway": "Wybierz pas startowy",
+      "noNetwork": "Brak danych kołowania",
+      "drawManually": "Rysuj ręcznie",
+      "autoRoute": "Automatyczna trasa",
+      "pointsPlaced": "{{count}} punkt(ów)",
+      "export": "Eksportuj dla Follow the Greens",
+      "exportSuccess": "Trasa wyeksportowana dla Follow the Greens"
     }
   },
   "navigation": {

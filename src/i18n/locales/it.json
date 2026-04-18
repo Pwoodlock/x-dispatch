@@ -460,14 +460,16 @@
       "viewOnGateway": "Visualizza su Gateway"
     },
     "taxiRoute": {
-      "label": "Rotta taxi",
-      "undo": "Annulla ultimo punto",
-      "clearAll": "Cancella tutto",
-      "enableClick": "Attiva clic per aggiungere",
-      "disableClick": "Disattiva clic per aggiungere",
-      "clickInstruction": "Clicca sulla mappa per aggiungere punti di rotta taxi",
-      "pointsPlaced": "{{count}} punto/i posizionato/i — clicca per aggiungerne altri",
-      "enableHint": "Attiva clic per aggiungere e posiziona i punti di rotta"
+      "taxiTo": "Rullare verso",
+      "undo": "Annulla",
+      "clearAll": "Cancella",
+      "selectRunway": "Seleziona pista",
+      "noNetwork": "Nessun dato di rullaggio",
+      "drawManually": "Disegna manualmente",
+      "autoRoute": "Rotta automatica",
+      "pointsPlaced": "{{count}} punto/i",
+      "export": "Esporta per Follow the Greens",
+      "exportSuccess": "Rotta esportata per Follow the Greens"
     }
   },
   "navigation": {

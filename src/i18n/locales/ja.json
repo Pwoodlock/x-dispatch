@@ -460,14 +460,16 @@
       "viewOnGateway": "Gatewayで表示"
     },
     "taxiRoute": {
-      "label": "タクシールート",
-      "undo": "最後のポイントを元に戻す",
-      "clearAll": "すべてクリア",
-      "enableClick": "クリック追加を有効にする",
-      "disableClick": "クリック追加を無効にする",
-      "clickInstruction": "マップをクリックしてタクシールートのポイントを追加",
-      "pointsPlaced": "{{count}}ポイント配置済み — クリックで追加",
-      "enableHint": "クリック追加を有効にしてルートポイントを配置"
+      "taxiTo": "タクシー先",
+      "undo": "元に戻す",
+      "clearAll": "クリア",
+      "selectRunway": "滑走路を選択",
+      "noNetwork": "タクシーデータなし",
+      "drawManually": "手動で描画",
+      "autoRoute": "自動ルート",
+      "pointsPlaced": "{{count}}ポイント",
+      "export": "Follow the Greens用にエクスポート",
+      "exportSuccess": "Follow the Greens用にルートをエクスポートしました"
     }
   },
   "navigation": {

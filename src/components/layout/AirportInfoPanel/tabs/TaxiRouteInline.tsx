@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Download, Pencil, RotateCcw, X } from 'lucide-react';
+import { Download, Pencil, RotateCcw, Route, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,10 +14,6 @@ import { buildFtgPayload } from '@/lib/taxiGraph/ftgExport';
 import { useAppStore } from '@/stores/appStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 
-/**
- * Inline taxi route controls — renders inside the selected gate card.
- * No wrapper card — blends into the parent gate button styling.
- */
 export default function TaxiRouteInline() {
   const { t } = useTranslation();
 
@@ -101,7 +97,6 @@ export default function TaxiRouteInline() {
   const hasGraph = !!graph;
   const isFreehand = mode === 'freehand';
 
-  // Route summary
   const routeSummary = useMemo(() => {
     if (!autoRouteResult) return null;
     const seen = new Set<string>();
@@ -119,14 +114,14 @@ export default function TaxiRouteInline() {
   }, [autoRouteResult]);
 
   return (
-    <div className="mt-1.5 space-y-1">
-      {/* Runway selector row */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-muted-foreground/50">→</span>
+    <div className="space-y-2 border-t border-border/30 pt-2">
+      {/* Taxi to runway */}
+      <div className="flex items-center gap-2">
+        <span className="xp-label shrink-0">{t('airportInfo.taxiRoute.taxiTo', 'Taxi to')}</span>
 
         {isFreehand ? (
           <span className="xp-label min-w-0 flex-1 truncate italic">
-            {t('airportInfo.taxiRoute.freehandMode', 'Freehand')}
+            {t('airportInfo.taxiRoute.drawManually', 'Draw manually')}
           </span>
         ) : (
           <Select
@@ -134,18 +129,18 @@ export default function TaxiRouteInline() {
             onValueChange={handleRunwaySelect}
             disabled={!hasGraph || runwayEnds.length === 0}
           >
-            <SelectTrigger className="h-7 min-w-0 flex-1 border-border/30 bg-transparent px-2 font-mono text-xs">
+            <SelectTrigger className="h-8 min-w-0 flex-1 font-mono text-sm">
               <SelectValue
                 placeholder={
                   hasGraph
                     ? t('airportInfo.taxiRoute.selectRunway', 'Select runway')
-                    : t('airportInfo.taxiRoute.noNetwork', 'No taxi network')
+                    : t('airportInfo.taxiRoute.noNetwork', 'No taxi data')
                 }
               />
             </SelectTrigger>
             <SelectContent>
               {runwayEnds.map((r) => (
-                <SelectItem key={r.name} value={r.name} className="font-mono text-xs">
+                <SelectItem key={r.name} value={r.name} className="font-mono text-sm">
                   {r.name}
                 </SelectItem>
               ))}
@@ -153,83 +148,75 @@ export default function TaxiRouteInline() {
           </Select>
         )}
 
-        {/* Undo */}
+        {/* Actions */}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => (isNetwork ? removeLastNetworkNode() : removeLastWaypoint())}
           disabled={!hasRoute}
-          className="h-6 w-6 shrink-0 text-muted-foreground/40 hover:text-foreground"
-          title={t('airportInfo.taxiRoute.undo', 'Undo')}
+          tooltip={t('airportInfo.taxiRoute.undo', 'Undo')}
+          className="h-8 w-8 shrink-0"
         >
-          <RotateCcw className="h-3 w-3" />
+          <RotateCcw className="h-4 w-4" />
         </Button>
 
-        {/* FTG Export */}
         {canExport && (
           <Button
             variant="ghost"
             size="icon"
             onClick={handleExport}
-            className="h-6 w-6 shrink-0 text-muted-foreground/40 hover:text-cat-emerald"
-            title={t('airportInfo.taxiRoute.export', 'Export for Follow the Greens')}
+            tooltip={t('airportInfo.taxiRoute.export', 'Export for Follow the Greens')}
+            className="h-8 w-8 shrink-0"
           >
-            <Download className="h-3 w-3" />
+            <Download className="h-4 w-4" />
           </Button>
         )}
-
-        {/* Close */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={deactivate}
-          className="h-6 w-6 shrink-0 text-muted-foreground/40 hover:text-foreground"
-          title={t('common.close', 'Close')}
-        >
-          <X className="h-3 w-3" />
-        </Button>
       </div>
 
-      {/* Route summary + mode toggle */}
+      {/* Route summary */}
+      {routeSummary && (
+        <p className="xp-value-primary">
+          via {routeSummary.taxiways.join(', ')} · {routeSummary.distance}
+        </p>
+      )}
+      {isFreehand && waypoints.length > 0 && (
+        <p className="xp-value truncate">
+          {t('airportInfo.taxiRoute.pointsPlaced', {
+            count: waypoints.length,
+            defaultValue: '{{count}} point(s)',
+          })}
+        </p>
+      )}
+
+      {/* Footer: clear + mode switch */}
       <div className="flex items-center justify-between">
-        {routeSummary ? (
-          <p className="min-w-0 truncate text-[10px] text-cat-emerald/60">
-            via {routeSummary.taxiways.join(', ')} · {routeSummary.distance}
-          </p>
-        ) : isFreehand && waypoints.length > 0 ? (
-          <p className="text-[10px] text-cat-emerald/60">
-            {t('airportInfo.taxiRoute.pointsPlaced', {
-              count: waypoints.length,
-              defaultValue: '{{count}} point(s)',
-            })}
-          </p>
+        {hasRoute ? (
+          <Button variant="ghost" size="sm" onClick={clearRoute} className="h-7 gap-1 px-2 text-sm">
+            <Trash2 className="h-3.5 w-3.5" />
+            {t('airportInfo.taxiRoute.clearAll', 'Clear')}
+          </Button>
         ) : (
           <span />
         )}
 
-        <div className="flex shrink-0 items-center gap-2">
-          {hasRoute && (
-            <button
-              onClick={clearRoute}
-              className="text-[10px] text-muted-foreground/30 hover:text-muted-foreground"
-            >
-              {t('airportInfo.taxiRoute.clearAll', 'Clear')}
-            </button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setMode(isFreehand ? 'network' : 'freehand')}
+          className="h-7 gap-1 px-2 text-sm"
+        >
+          {isFreehand ? (
+            <>
+              <Route className="h-3.5 w-3.5" />
+              {t('airportInfo.taxiRoute.autoRoute', 'Auto route')}
+            </>
+          ) : (
+            <>
+              <Pencil className="h-3.5 w-3.5" />
+              {t('airportInfo.taxiRoute.drawManually', 'Draw manually')}
+            </>
           )}
-          <button
-            onClick={() => setMode(isFreehand ? 'network' : 'freehand')}
-            className="flex items-center gap-0.5 text-[10px] text-muted-foreground/30 hover:text-muted-foreground"
-          >
-            {isFreehand ? (
-              t('airportInfo.taxiRoute.switchNetwork', 'Network')
-            ) : (
-              <>
-                <Pencil className="h-2.5 w-2.5" />
-                {t('airportInfo.taxiRoute.switchFreehand', 'Freehand')}
-              </>
-            )}
-          </button>
-        </div>
+        </Button>
       </div>
     </div>
   );

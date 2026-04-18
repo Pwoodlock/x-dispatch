@@ -460,14 +460,16 @@
       "viewOnGateway": "Смотреть на Gateway"
     },
     "taxiRoute": {
-      "label": "Маршрут руления",
-      "undo": "Отменить последнюю точку",
-      "clearAll": "Очистить всё",
-      "enableClick": "Включить добавление по клику",
-      "disableClick": "Выключить добавление по клику",
-      "clickInstruction": "Нажмите на карту, чтобы добавить точки маршрута руления",
-      "pointsPlaced": "{{count}} точка(и) размещено — нажмите для добавления",
-      "enableHint": "Включите добавление по клику для размещения точек маршрута"
+      "taxiTo": "Рулить к",
+      "undo": "Отменить",
+      "clearAll": "Очистить",
+      "selectRunway": "Выбрать ВПП",
+      "noNetwork": "Нет данных руления",
+      "drawManually": "Нарисовать вручную",
+      "autoRoute": "Автомаршрут",
+      "pointsPlaced": "{{count}} точка(и)",
+      "export": "Экспортировать для Follow the Greens",
+      "exportSuccess": "Маршрут экспортирован для Follow the Greens"
     }
   },
   "navigation": {
