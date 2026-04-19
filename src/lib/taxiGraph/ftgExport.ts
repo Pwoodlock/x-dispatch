@@ -1,4 +1,5 @@
 import { useAppStore } from '@/stores/appStore';
+import { useLaunchStore } from '@/stores/launchStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import { version } from '../../../package.json';
 
@@ -11,6 +12,8 @@ export interface FtgRoutePayload {
   taxiway_names: string[];
   distance_m: number;
   gate_heading: number;
+  aircraft_icao: string;
+  timestamp: string;
   'apt.dat': string;
   'x-dispatch-version': string;
 }
@@ -24,6 +27,7 @@ export function buildFtgPayload(opts: {
   taxiwayNames: string[];
   distanceM: number;
   gateHeading: number;
+  aircraftIcao: string;
   aptDatPath: string;
 }): FtgRoutePayload {
   // Deduplicate consecutive taxiway names
@@ -41,6 +45,8 @@ export function buildFtgPayload(opts: {
     taxiway_names: names,
     distance_m: Math.round(opts.distanceM),
     gate_heading: Math.round(opts.gateHeading),
+    aircraft_icao: opts.aircraftIcao,
+    timestamp: new Date().toISOString(),
     'apt.dat': opts.aptDatPath,
     'x-dispatch-version': version,
   };
@@ -63,6 +69,7 @@ export async function writeFtgRoute(): Promise<{
   const icao = app.selectedICAO ?? '';
   const airport = app.selectedAirportData;
   const startPos = app.startPosition;
+  const aircraft = useLaunchStore.getState().selectedAircraft;
 
   const payload = buildFtgPayload({
     icao,
@@ -73,6 +80,7 @@ export async function writeFtgRoute(): Promise<{
     taxiwayNames: taxi.autoRouteResult?.taxiwayNames ?? [],
     distanceM: taxi.autoRouteResult?.totalDistance ?? 0,
     gateHeading: startPos?.heading ?? 0,
+    aircraftIcao: aircraft?.icao ?? '',
     aptDatPath: airport?.sourceFile ?? '',
   });
 
