@@ -140,6 +140,10 @@ export function useMapSetup({
     // Wrap with proxy for safe access after destruction
     const map = createSafeMapProxy(rawMap);
     mapRef.current = map;
+    // Expose map instance for DevTools debugging (dev only)
+    if (process.env.NODE_ENV !== 'production') {
+      (window as unknown as Record<string, unknown>).__map = map;
+    }
 
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 200, unit: 'metric' }), 'bottom-left');
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
