@@ -80,3 +80,6 @@ design-system/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Embedding model cache
+.fastembed_cache/
