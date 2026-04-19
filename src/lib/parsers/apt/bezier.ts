@@ -2,6 +2,20 @@ import type { LonLat } from '@/types/geo';
 
 export const DEFAULT_BEZIER_RESOLUTION = 60;
 
+/** Map surface detail setting to bezier resolution */
+export const SURFACE_DETAIL_RESOLUTION: Record<string, number> = {
+  low: 16,
+  medium: 40,
+  high: 60,
+};
+
+/** Current active resolution — updated by settings store */
+export let activeBezierResolution = DEFAULT_BEZIER_RESOLUTION;
+
+export function setActiveBezierResolution(detail: string): void {
+  activeBezierResolution = SURFACE_DETAIL_RESOLUTION[detail] ?? DEFAULT_BEZIER_RESOLUTION;
+}
+
 /**
  * Quadratic Bezier interpolation (3 control points)
  * B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
@@ -30,7 +44,7 @@ export function calculateBezier(
   p0: LonLat,
   p1: LonLat,
   p2: LonLat,
-  resolution = DEFAULT_BEZIER_RESOLUTION
+  resolution = activeBezierResolution
 ): LonLat[] {
   const points: LonLat[] = [];
   for (let i = 0; i <= resolution; i++) {
@@ -52,7 +66,7 @@ export function calculateCubicBezier(
   p1: LonLat,
   p2: LonLat,
   p3: LonLat,
-  resolution = DEFAULT_BEZIER_RESOLUTION
+  resolution = activeBezierResolution
 ): LonLat[] {
   const points: LonLat[] = [];
   for (let i = 0; i <= resolution; i++) {

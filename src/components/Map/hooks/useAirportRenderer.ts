@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import { AirportParser } from '@/lib/parsers/apt';
+import { setActiveBezierResolution } from '@/lib/parsers/apt/bezier';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { LayerVisibility } from '@/types/layers';
 import { LayerRenderer, createLayerRenderers } from '../layers';
@@ -130,6 +132,10 @@ export function useAirportRenderer(
 
       const result = await window.airportAPI.getAirportData(icao);
       if (!result) return null;
+
+      // Apply surface detail setting before parsing
+      const { surfaceDetail } = useSettingsStore.getState().graphics;
+      setActiveBezierResolution(surfaceDetail);
 
       const parser = new AirportParser(result.data);
       const { data: parsedAirport, errors, stats } = parser.parse();

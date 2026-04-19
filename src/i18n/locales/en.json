@@ -340,8 +340,19 @@
     "graphics": {
       "title": "Graphics",
       "description": "Control visual effects and animations",
+      "surfaceDetail": "Surface detail",
+      "surfaceDetailDesc": "Curve smoothness for taxiway and pavement edges",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
       "approachLights": "Approach light animation",
-      "approachLightsDesc": "Animated sequenced flashing on approach"
+      "approachLightsDesc": "Animated sequenced flashing on approach",
+      "taxiwayGlow": "Taxiway light glow",
+      "taxiwayGlowDesc": "Multi-layer glow effect on taxiway lights",
+      "dayNight": "Day/night overlay",
+      "dayNightDesc": "Real-time day/night shadow on the globe",
+      "contours": "Contour lines",
+      "contoursDesc": "Elevation contour lines on terrain"
     },
     "navigation": {
       "title": "Navigation",

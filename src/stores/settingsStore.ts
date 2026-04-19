@@ -84,9 +84,19 @@ export interface AppearanceSettings {
   debugOverlay: boolean;
 }
 
+export type SurfaceDetail = 'low' | 'medium' | 'high';
+
 export interface GraphicsSettings {
-  /** Approach light "rabbit" sweep animation */
+  /** Approach light sequenced flash animation */
   approachLightAnimation: boolean;
+  /** Taxiway light glow layers (3-layer vs core only) */
+  taxiwayLightGlow: boolean;
+  /** Surface detail — curve smoothness for taxiway/pavement edges */
+  surfaceDetail: SurfaceDetail;
+  /** Day/night terminator overlay */
+  dayNightOverlay: boolean;
+  /** Contour lines on terrain */
+  contourLines: boolean;
 }
 
 export interface LauncherSettings {
@@ -136,6 +146,10 @@ function applyZoomLevel(level: number) {
 
 const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   approachLightAnimation: true,
+  taxiwayLightGlow: true,
+  surfaceDetail: 'high',
+  dayNightOverlay: true,
+  contourLines: true,
 };
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
