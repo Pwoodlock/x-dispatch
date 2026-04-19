@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CloudDownload, Database, Info, Palette, Plane } from 'lucide-react';
+import { CloudDownload, Database, Info, Monitor, Palette, Plane } from 'lucide-react';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import {
   Dialog,
@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils/helpers';
 import {
   AboutSection,
   AppearanceSection,
+  GraphicsSection,
   NavigationDataSection,
   SimbriefSection,
   XPlaneSection,
@@ -26,7 +27,7 @@ interface SettingsDialogProps {
   onClose: () => void;
 }
 
-type TabId = 'xplane' | 'data' | 'appearance' | 'simbrief' | 'about';
+type TabId = 'xplane' | 'data' | 'appearance' | 'graphics' | 'simbrief' | 'about';
 
 interface TabConfig {
   id: TabId;
@@ -38,6 +39,7 @@ const TABS: TabConfig[] = [
   { id: 'xplane', icon: Plane, labelKey: 'settings.tabs.xplane' },
   { id: 'data', icon: Database, labelKey: 'settings.tabs.data' },
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
+  { id: 'graphics', icon: Monitor, labelKey: 'settings.tabs.graphics' },
   { id: 'simbrief', icon: CloudDownload, labelKey: 'settings.tabs.simbrief' },
   { id: 'about', icon: Info, labelKey: 'settings.tabs.about' },
 ];
@@ -122,6 +124,17 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="p-6">
                 <SectionErrorBoundary name="Appearance">
                   <AppearanceSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="graphics"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="Graphics">
+                  <GraphicsSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>

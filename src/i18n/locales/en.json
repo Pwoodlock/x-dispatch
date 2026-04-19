@@ -223,6 +223,7 @@
       "addons": "Addons",
       "data": "Nav Data",
       "appearance": "Appearance",
+      "graphics": "Graphics",
       "simbrief": "SimBrief",
       "navigation": "Navigation",
       "vatsim": "VATSIM",
@@ -335,6 +336,12 @@
       "zoomLevel": "Interface Zoom",
       "zoomLevelDescription": "Scale the entire interface up or down",
       "zoomReset": "Reset"
+    },
+    "graphics": {
+      "title": "Graphics",
+      "description": "Control visual effects and animations",
+      "approachLights": "Approach light animation",
+      "approachLightsDesc": "Animated sequenced flashing on approach"
     },
     "navigation": {
       "title": "Navigation",

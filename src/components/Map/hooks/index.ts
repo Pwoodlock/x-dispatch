@@ -19,3 +19,4 @@ export { useTrackControl } from './useTrackControl';
 export { useIdleOrbit } from './useIdleOrbit';
 export { useTerrainShading } from './useTerrainShading';
 export { useTaxiRouteSync } from './useTaxiRouteSync';
+export { useApproachLightAnimation } from './useApproachLightAnimation';

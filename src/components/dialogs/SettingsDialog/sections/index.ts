@@ -3,3 +3,4 @@ export { default as NavigationDataSection } from './NavigationDataSection';
 export { default as AppearanceSection } from './AppearanceSection';
 export { default as SimbriefSection } from './SimbriefSection';
 export { default as AboutSection } from './AboutSection';
+export { GraphicsSection } from './GraphicsSection';

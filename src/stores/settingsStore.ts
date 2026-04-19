@@ -84,6 +84,11 @@ export interface AppearanceSettings {
   debugOverlay: boolean;
 }
 
+export interface GraphicsSettings {
+  /** Approach light "rabbit" sweep animation */
+  approachLightAnimation: boolean;
+}
+
 export interface LauncherSettings {
   closeOnLaunch: boolean;
   customLaunchArgs: string[];
@@ -93,9 +98,11 @@ interface SettingsState {
   map: MapSettings;
   simbrief: SimBriefSettings;
   appearance: AppearanceSettings;
+  graphics: GraphicsSettings;
   launcher: LauncherSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
+  updateGraphicsSettings: (settings: Partial<GraphicsSettings>) => void;
   updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
   setFontSize: (size: FontSize) => void;
   setZoomLevel: (level: number) => void;
@@ -127,6 +134,10 @@ function applyZoomLevel(level: number) {
   window.appAPI?.setZoomFactor(level);
 }
 
+const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
+  approachLightAnimation: true,
+};
+
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   closeOnLaunch: false,
   customLaunchArgs: [],
@@ -138,6 +149,7 @@ export const useSettingsStore = create<SettingsState>()(
       map: DEFAULT_MAP_SETTINGS,
       simbrief: DEFAULT_SIMBRIEF_SETTINGS,
       appearance: DEFAULT_APPEARANCE_SETTINGS,
+      graphics: DEFAULT_GRAPHICS_SETTINGS,
       launcher: DEFAULT_LAUNCHER_SETTINGS,
 
       updateMapSettings: (settings) =>
@@ -148,6 +160,11 @@ export const useSettingsStore = create<SettingsState>()(
       updateSimbriefSettings: (settings) =>
         set((state) => ({
           simbrief: { ...state.simbrief, ...settings },
+        })),
+
+      updateGraphicsSettings: (settings) =>
+        set((state) => ({
+          graphics: { ...state.graphics, ...settings },
         })),
 
       updateLauncherSettings: (settings) =>
@@ -177,13 +194,14 @@ export const useSettingsStore = create<SettingsState>()(
           map: DEFAULT_MAP_SETTINGS,
           simbrief: DEFAULT_SIMBRIEF_SETTINGS,
           appearance: DEFAULT_APPEARANCE_SETTINGS,
+          graphics: DEFAULT_GRAPHICS_SETTINGS,
           launcher: DEFAULT_LAUNCHER_SETTINGS,
         });
       },
     }),
     {
       name: 'xplane-viz-settings',
-      version: 15,
+      version: 16,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return {
@@ -267,6 +285,14 @@ export const useSettingsStore = create<SettingsState>()(
               ...state.appearance,
               debugOverlay: false,
             },
+          };
+        }
+        if (version < 16) {
+          // Add graphics settings
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            graphics: DEFAULT_GRAPHICS_SETTINGS,
           };
         }
         return persistedState as SettingsState;

@@ -31,6 +31,7 @@ import {
   useAirportFilters,
   useAirportInteractions,
   useAirportRenderer,
+  useApproachLightAnimation,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useIvaoSync,
   useMapSetup,
@@ -326,6 +327,9 @@ export default function Map({ airports }: MapProps) {
 
   // Taxi route sync - renders user-placed waypoints as a canvas overlay
   useTaxiRouteSync(mapRef);
+
+  // Approach light "rabbit" animation — canvas overlay, no MapLibre repaints
+  useApproachLightAnimation(mapRef);
 
   // Pin-drop custom start location
   const { placeAtCenter: handlePinDrop, placeAtCoordinates: handlePinDropAtCoordinates } =
