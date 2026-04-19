@@ -248,7 +248,12 @@ Requires Node.js 20+ and X-Plane 12.4+.
 
 - [Discord](https://discord.gg/76UYpxXWW7) - help, feedback, discussion
 - [Issues](https://github.com/lyestarzalt/x-dispatch/issues) - bugs and feature requests
-- [Ko-fi](https://ko-fi.com/lyestarzalt) - if you want to support the project
+
+## Donation
+
+X-Dispatch is a passion project built for the X-Plane community. Donations are entirely optional but appreciated.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A21V3IZZ)
 
 ## License
 
