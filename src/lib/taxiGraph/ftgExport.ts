@@ -71,14 +71,31 @@ export async function writeFtgRoute(): Promise<{
   const startPos = app.startPosition;
   const aircraft = useLaunchStore.getState().selectedAircraft;
 
+  // Compute taxiway names and distance from the graph edges directly,
+  // since autoRouteResult may be null after drag-to-reroute edits.
+  const nodeIds = taxi.networkNodeIds;
+  const taxiwayNames: string[] = [];
+  let totalDistance = 0;
+
+  if (taxi.graph) {
+    for (let i = 0; i < nodeIds.length - 1; i++) {
+      const neighbors = taxi.graph.adjacency.get(nodeIds[i]!);
+      const edge = neighbors?.find((e) => e.toNodeId === nodeIds[i + 1]!);
+      if (edge) {
+        totalDistance += edge.distance;
+        taxiwayNames.push(edge.edge.name);
+      }
+    }
+  }
+
   const payload = buildFtgPayload({
     icao,
     mode: 'departure',
-    startName: startPos?.name ?? String(taxi.networkNodeIds[0]),
+    startName: startPos?.name ?? String(nodeIds[0]),
     destName: taxi.selectedRunway ?? '',
-    nodeIds: taxi.networkNodeIds,
-    taxiwayNames: taxi.autoRouteResult?.taxiwayNames ?? [],
-    distanceM: taxi.autoRouteResult?.totalDistance ?? 0,
+    nodeIds,
+    taxiwayNames,
+    distanceM: totalDistance,
     gateHeading: startPos?.heading ?? 0,
     aircraftIcao: aircraft?.icao ?? '',
     aptDatPath: airport?.sourceFile ?? '',
