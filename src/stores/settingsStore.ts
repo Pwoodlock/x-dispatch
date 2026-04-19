@@ -93,10 +93,6 @@ export interface GraphicsSettings {
   taxiwayLightGlow: boolean;
   /** Surface detail — curve smoothness for taxiway/pavement edges */
   surfaceDetail: SurfaceDetail;
-  /** Day/night terminator overlay */
-  dayNightOverlay: boolean;
-  /** Contour lines on terrain */
-  contourLines: boolean;
 }
 
 export interface LauncherSettings {
@@ -148,8 +144,6 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   approachLightAnimation: true,
   taxiwayLightGlow: true,
   surfaceDetail: 'high',
-  dayNightOverlay: true,
-  contourLines: true,
 };
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
@@ -215,7 +209,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 16,
+      version: 17,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return {
@@ -307,6 +301,17 @@ export const useSettingsStore = create<SettingsState>()(
           return {
             ...state,
             graphics: DEFAULT_GRAPHICS_SETTINGS,
+          };
+        }
+        if (version < 17) {
+          // Add taxiwayLightGlow and surfaceDetail to graphics
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            graphics: {
+              ...DEFAULT_GRAPHICS_SETTINGS,
+              ...state.graphics,
+            },
           };
         }
         return persistedState as SettingsState;

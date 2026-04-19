@@ -99,42 +99,6 @@ export function GraphicsSection() {
               onCheckedChange={(checked) => updateGraphics({ taxiwayLightGlow: checked })}
             />
           </div>
-
-          <Separator />
-
-          {/* Day/night overlay */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">
-                {t('settings.graphics.dayNight', 'Day/night overlay')}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t('settings.graphics.dayNightDesc', 'Real-time day/night shadow on the globe')}
-              </p>
-            </div>
-            <Switch
-              checked={graphics.dayNightOverlay}
-              onCheckedChange={(checked) => updateGraphics({ dayNightOverlay: checked })}
-            />
-          </div>
-
-          <Separator />
-
-          {/* Contour lines */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">
-                {t('settings.graphics.contours', 'Contour lines')}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t('settings.graphics.contoursDesc', 'Elevation contour lines on terrain')}
-              </p>
-            </div>
-            <Switch
-              checked={graphics.contourLines}
-              onCheckedChange={(checked) => updateGraphics({ contourLines: checked })}
-            />
-          </div>
         </CardContent>
       </Card>
     </div>
