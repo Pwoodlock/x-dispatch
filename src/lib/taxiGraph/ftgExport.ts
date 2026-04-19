@@ -1,3 +1,5 @@
+import { useAppStore } from '@/stores/appStore';
+import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import { version } from '../../../package.json';
 
 export interface FtgRoutePayload {
@@ -42,4 +44,37 @@ export function buildFtgPayload(opts: {
     'apt.dat': opts.aptDatPath,
     'x-dispatch-version': version,
   };
+}
+
+/**
+ * Write the current taxi route to the FTG route file.
+ * Reads from taxiRouteStore and appStore. Returns the write result,
+ * or null if no valid route exists.
+ */
+export async function writeFtgRoute(): Promise<{
+  success: boolean;
+  path?: string;
+  error?: string;
+} | null> {
+  const taxi = useTaxiRouteStore.getState();
+  if (taxi.mode !== 'network' || taxi.networkNodeIds.length < 2) return null;
+
+  const app = useAppStore.getState();
+  const icao = app.selectedICAO ?? '';
+  const airport = app.selectedAirportData;
+  const startPos = app.startPosition;
+
+  const payload = buildFtgPayload({
+    icao,
+    mode: 'departure',
+    startName: startPos?.name ?? String(taxi.networkNodeIds[0]),
+    destName: taxi.selectedRunway ?? '',
+    nodeIds: taxi.networkNodeIds,
+    taxiwayNames: taxi.autoRouteResult?.taxiwayNames ?? [],
+    distanceM: taxi.autoRouteResult?.totalDistance ?? 0,
+    gateHeading: startPos?.heading ?? 0,
+    aptDatPath: airport?.sourceFile ?? '',
+  });
+
+  return window.xplaneAPI.writeTaxiRoute(JSON.stringify(payload, null, 2));
 }

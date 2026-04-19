@@ -7,6 +7,7 @@ import tzLookup from 'tz-lookup';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import {
   type FlightInit,
   useAircraftList,
@@ -78,6 +79,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     setLaunchError(null);
 
     try {
+      // Write taxi route for Follow the Greens plugin (fire and forget)
+      writeFtgRoute().catch(() => {});
+
       // Calculate per-tank fuel weights in kilograms for API
       const LBS_TO_KG = 0.453592;
       const tankWeightsKg = new Array(9).fill(0);

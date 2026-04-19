@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { buildFtgPayload } from '@/lib/taxiGraph/ftgExport';
+import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { useAppStore } from '@/stores/appStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 
@@ -69,19 +69,8 @@ export default function TaxiRouteInline() {
   };
 
   const handleExport = async () => {
-    if (!icao || networkNodeIds.length < 2) return;
-    const payload = buildFtgPayload({
-      icao,
-      mode: 'departure',
-      startName: startPosition?.name ?? String(networkNodeIds[0]),
-      destName: selectedRunway ?? String(networkNodeIds[networkNodeIds.length - 1]),
-      nodeIds: networkNodeIds,
-      taxiwayNames: autoRouteResult?.taxiwayNames ?? [],
-      distanceM: autoRouteResult?.totalDistance ?? 0,
-      gateHeading: startPosition?.heading ?? 0,
-      aptDatPath: airport?.sourceFile ?? '',
-    });
-    const result = await window.xplaneAPI.writeTaxiRoute(JSON.stringify(payload, null, 2));
+    const result = await writeFtgRoute();
+    if (!result) return;
     if (result.success) {
       toast.success(
         t('airportInfo.taxiRoute.exportSuccess', 'Route exported for Follow the Greens')

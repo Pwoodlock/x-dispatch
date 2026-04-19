@@ -1295,7 +1295,7 @@ function registerIpcHandlers() {
         fs.mkdirSync(outputDir, { recursive: true });
       }
 
-      const filePath = path.join(outputDir, 'dispatched-flight.json');
+      const filePath = path.join(outputDir, 'route.json');
       fs.writeFileSync(filePath, json, 'utf-8');
       logger.data.info(`Taxi route written to ${filePath}`);
       return { success: true, path: filePath };
