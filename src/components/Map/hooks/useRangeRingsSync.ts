@@ -2,16 +2,27 @@ import { useEffect, useMemo } from 'react';
 import { useMapStore } from '@/stores/mapStore';
 import type { Coordinates } from '@/types/geo';
 import { RANGE_RING_COLORS, RANGE_RING_LABELS, RANGE_RING_SPEEDS } from '@/types/layers';
-import { addRangeRingsLayer, removeRangeRingsLayer } from '../layers';
+import {
+  LayerManager,
+  RANGE_RINGS_LAYER_IDS,
+  addRangeRingsLayer,
+  removeRangeRingsLayer,
+} from '../layers';
 import type { RangeRingsConfig } from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseRangeRingsSyncOptions {
   mapRef: MapRef;
   navDataLocation: Coordinates | null;
+  /** LayerManager instance for authoritative layer ordering (optional) */
+  layerManager?: LayerManager | null;
 }
 
-export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSyncOptions): void {
+export function useRangeRingsSync({
+  mapRef,
+  navDataLocation,
+  layerManager,
+}: UseRangeRingsSyncOptions): void {
   const rangeRingsEnabled = useMapStore((s) => s.rangeRingsEnabled);
   const rangeRingsDuration = useMapStore((s) => s.rangeRingsDuration);
   const rangeRingsCategories = useMapStore((s) => s.rangeRingsCategories);
@@ -56,6 +67,14 @@ export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSync
       if (!mapRef.current) return;
       try {
         addRangeRingsLayer(map, config, setRangeRingsDuration);
+        // Bring range rings to top using LayerManager if available
+        if (layerManager) {
+          for (const id of RANGE_RINGS_LAYER_IDS) {
+            if (layerManager.hasLayer(id)) {
+              layerManager.bringToTop(id);
+            }
+          }
+        }
       } catch (err) {
         window.appAPI?.log?.error?.('Failed to add range rings layer', err);
       }
@@ -74,5 +93,5 @@ export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSync
     return () => {
       removeRangeRingsLayer(map);
     };
-  }, [mapRef, config, setRangeRingsDuration]);
+  }, [mapRef, config, setRangeRingsDuration, layerManager]);
 }

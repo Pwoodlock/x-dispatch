@@ -49,12 +49,14 @@ export {
   removeVatsimPilotLayer,
   setupVatsimClickHandler,
   updateVatsimPilotLayer,
+  VATSIM_LAYER_IDS,
 } from './dynamic/VatsimLayer';
 export {
   bringIvaoLayersToTop,
   removeIvaoPilotLayer,
   setupIvaoClickHandler,
   updateIvaoPilotLayer,
+  IVAO_LAYER_IDS,
 } from './dynamic/IvaoLayer';
 export {
   addRangeRingsLayer,

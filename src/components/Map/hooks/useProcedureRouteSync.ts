@@ -1,17 +1,27 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
-import { type RouteWaypoint, addProcedureRouteLayer, removeProcedureRouteLayer } from '../layers';
+import {
+  LayerManager,
+  type RouteWaypoint,
+  addProcedureRouteLayer,
+  removeProcedureRouteLayer,
+} from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseProcedureRouteSyncOptions {
   mapRef: MapRef;
+  /** LayerManager instance for authoritative layer ordering (optional) */
+  layerManager?: LayerManager | null;
 }
 
 /**
  * Syncs the selected procedure from appStore to the map layer.
  * Automatically adds/removes the procedure route layer when selection changes.
  */
-export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions): void {
+export function useProcedureRouteSync({
+  mapRef,
+  layerManager,
+}: UseProcedureRouteSyncOptions): void {
   const selectedProcedure = useAppStore((s) => s.selectedProcedure);
 
   useEffect(() => {
@@ -64,5 +74,5 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
       // Use captured map reference for cleanup
       removeProcedureRouteLayer(map);
     };
-  }, [mapRef, selectedProcedure]);
+  }, [mapRef, selectedProcedure, layerManager]);
 }

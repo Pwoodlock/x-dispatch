@@ -1,6 +1,12 @@
 import { useEffect } from 'react';
 import { VatsimData, getPilotsInBounds } from '@/queries/useVatsimQuery';
-import { removeVatsimPilotLayer, setupVatsimClickHandler, updateVatsimPilotLayer } from '../layers';
+import {
+  LayerManager,
+  VATSIM_LAYER_IDS,
+  removeVatsimPilotLayer,
+  setupVatsimClickHandler,
+  updateVatsimPilotLayer,
+} from '../layers';
 import type { MapRef, PopupRef } from './useMapSetup';
 
 interface UseVatsimSyncOptions {
@@ -8,6 +14,8 @@ interface UseVatsimSyncOptions {
   vatsimPopupRef: PopupRef;
   vatsimData: VatsimData | undefined;
   vatsimEnabled: boolean;
+  /** LayerManager instance for authoritative layer ordering (optional) */
+  layerManager?: LayerManager | null;
 }
 
 export function useVatsimSync({
@@ -15,6 +23,7 @@ export function useVatsimSync({
   vatsimPopupRef,
   vatsimData,
   vatsimEnabled,
+  layerManager,
 }: UseVatsimSyncOptions): void {
   useEffect(() => {
     const map = mapRef.current;
@@ -38,6 +47,15 @@ export function useVatsimSync({
       if (vatsimPopupRef.current) {
         setupVatsimClickHandler(map, vatsimPopupRef.current);
       }
+
+      // Bring VATSIM layers to top using LayerManager if available
+      if (layerManager) {
+        for (const id of VATSIM_LAYER_IDS) {
+          if (layerManager.hasLayer(id)) {
+            layerManager.bringToTop(id);
+          }
+        }
+      }
     };
 
     const handleMoveEnd = () => {
@@ -50,7 +68,7 @@ export function useVatsimSync({
     return () => {
       map.off('moveend', handleMoveEnd);
     };
-  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled]);
+  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled, layerManager]);
 }
 
 export function toggleVatsimLayer(mapRef: MapRef, vatsimPopupRef: PopupRef, enable: boolean): void {

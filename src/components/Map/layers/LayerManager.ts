@@ -2,7 +2,8 @@
  * LayerManager - Authoritative layer ordering for MapLibre
  *
  * Problem: No central authority for layer ordering. Airport layers bury nav overlays.
- * Solution: LayerManager owns all layer ordering across 6 categories.
+ * Solution: LayerManager owns all layer ordering across 6 categories and is more friendly
+ * for future features like layer groups, toggling visibility, and z-index control.
  *
  * Layer categories (bottom to top):
  * 1. base     - map tiles, raster basemap
@@ -11,6 +12,7 @@
  * 4. nav      - airspaces, airways, navaids, ILS, holding patterns
  * 5. dynamic  - VATSIM, IVAO, flight plan, range rings, procedure route
  * 6. overlay  - canvas overlays (taxi route, approach lights) - excluded from LayerManager
+ * 7. And so on.....
  */
 import maplibregl from 'maplibre-gl';
 

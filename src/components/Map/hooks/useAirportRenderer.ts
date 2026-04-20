@@ -5,7 +5,7 @@ import { setActiveBezierResolution } from '@/lib/parsers/apt/bezier';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { LayerVisibility } from '@/types/layers';
-import { LayerRenderer, createLayerRenderers } from '../layers';
+import { LayerManager, LayerRenderer, createLayerRenderers } from '../layers';
 import { calculateOptimalZoom } from '../utils/zoomCalculator';
 
 // Map layer IDs to visibility keys
@@ -51,12 +51,15 @@ interface UseAirportRendererResult {
  */
 export function useAirportRenderer(
   map: React.MutableRefObject<maplibregl.Map | null>,
-  _isNightMode = false
+  _isNightMode = false,
+  layerManager?: LayerManager | null
 ): UseAirportRendererResult {
   const layerRenderers = useRef<LayerRenderer[]>(createLayerRenderers());
   const selectedAirport = useRef<string | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const animationsEnabled = useRef(true);
+  // Track airport layer IDs for LayerManager
+  const airportLayerIdsRef = useRef<Set<string>>(new Set());
 
   /**
    * Clear all airport feature layers from the map.
@@ -78,6 +81,8 @@ export function useAirportRenderer(
    * renderer metadata and remove them directly. Individual try/catch ensures
    * one failure doesn't block others. Layers must be removed before their
    * sources (MapLibre throws if a source still has referencing layers).
+   *
+   * If LayerManager is provided, use it for layer removal tracking.
    *
    * See also: TaxiwayLightsLayer.render() which defers its animation start
    * to map.once('idle') for the same reason.
@@ -101,7 +106,14 @@ export function useAirportRenderer(
     // Remove layers first (reverse order), then sources
     for (const id of layerIds.reverse()) {
       try {
-        if (m.getLayer(id)) m.removeLayer(id);
+        if (m.getLayer(id)) {
+          // Use LayerManager for removal tracking if available
+          if (layerManager) {
+            layerManager.removeLayer(id);
+          } else {
+            m.removeLayer(id);
+          }
+        }
       } catch {
         /* Style may be mid-transition — safe to ignore */
       }
@@ -114,8 +126,10 @@ export function useAirportRenderer(
       }
     }
 
+    // Clear tracked airport layer IDs
+    airportLayerIdsRef.current.clear();
     selectedAirport.current = null;
-  }, [map]);
+  }, [map, layerManager]);
 
   const renderAirport = useCallback(
     async (icao: string, center: [number, number]): Promise<ParsedAirport | null> => {
@@ -182,7 +196,8 @@ export function useAirportRenderer(
   );
 
   /**
-   * Set visibility for layers based on toggle state
+   * Set visibility for layers based on toggle state.
+   * Uses LayerManager for visibility when available.
    */
   const setLayerVisibility = useCallback(
     (visibility: LayerVisibility) => {
@@ -191,13 +206,18 @@ export function useAirportRenderer(
       Object.entries(LAYER_VISIBILITY_MAP).forEach(([layerId, visibilityKey]) => {
         if (map.current?.getLayer(layerId)) {
           const isVisible = visibility[visibilityKey];
-          map.current.setLayoutProperty(layerId, 'visibility', isVisible ? 'visible' : 'none');
+          // Use LayerManager for visibility when available
+          if (layerManager) {
+            layerManager.setVisibility(layerId, isVisible);
+          } else {
+            map.current.setLayoutProperty(layerId, 'visibility', isVisible ? 'visible' : 'none');
+          }
         }
       });
 
       animationsEnabled.current = visibility.animations;
     },
-    [map]
+    [map, layerManager]
   );
 
   /**

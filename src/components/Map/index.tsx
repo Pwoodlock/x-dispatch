@@ -189,7 +189,7 @@ export default function Map({ airports }: MapProps) {
     setLayerVisibility: applyLayerVisibility,
     startAnimations,
     stopAnimations,
-  } = useAirportRenderer(mapRef, isNightMode);
+  } = useAirportRenderer(mapRef, isNightMode, layerManagerRef.current);
 
   // Update refs after useAirportRenderer is called
   useEffect(() => {
@@ -316,6 +316,7 @@ export default function Map({ airports }: MapProps) {
     vatsimPopupRef,
     vatsimData,
     vatsimEnabled,
+    layerManager: layerManagerRef.current,
   });
 
   // IVAO sync
@@ -324,19 +325,28 @@ export default function Map({ airports }: MapProps) {
     ivaoPopupRef,
     ivaoData,
     ivaoEnabled,
+    layerManager: layerManagerRef.current,
   });
 
   // Route line sync for Explore panel routes
   useRouteLineSync({
     mapRef,
     airports,
+    layerManager: layerManagerRef.current,
   });
 
   // Procedure route sync - renders selected procedure on map
-  useProcedureRouteSync({ mapRef });
+  useProcedureRouteSync({
+    mapRef,
+    layerManager: layerManagerRef.current,
+  });
 
   // Range rings sync - renders reach circles from selected airport
-  useRangeRingsSync({ mapRef, navDataLocation });
+  useRangeRingsSync({
+    mapRef,
+    navDataLocation,
+    layerManager: layerManagerRef.current,
+  });
 
   // Taxi route sync - renders user-placed waypoints as a canvas overlay
   useTaxiRouteSync(mapRef);

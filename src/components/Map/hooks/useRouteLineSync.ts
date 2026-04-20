@@ -1,15 +1,21 @@
 import { useEffect } from 'react';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
-import { addRouteLineLayer, removeRouteLineLayer, updateRouteLine } from '../layers';
+import { LayerManager, addRouteLineLayer, removeRouteLineLayer, updateRouteLine } from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseRouteLineSyncOptions {
   mapRef: MapRef;
   airports: Airport[];
+  /** LayerManager instance for authoritative layer ordering (optional) */
+  layerManager?: LayerManager | null;
 }
 
-export function useRouteLineSync({ mapRef, airports }: UseRouteLineSyncOptions): void {
+export function useRouteLineSync({
+  mapRef,
+  airports,
+  layerManager,
+}: UseRouteLineSyncOptions): void {
   const selectedRoute = useMapStore((s) => s.explore.selectedRoute);
 
   // Initialize route line layer on map load and style change
@@ -32,7 +38,7 @@ export function useRouteLineSync({ mapRef, airports }: UseRouteLineSyncOptions):
         removeRouteLineLayer(map);
       }
     };
-  }, [mapRef]);
+  }, [mapRef, layerManager]);
 
   // Update route line when selection changes
   useEffect(() => {

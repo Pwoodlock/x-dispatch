@@ -1,6 +1,12 @@
 import { useEffect } from 'react';
 import { IvaoData, getPilotsInBounds } from '@/queries/useIvaoQuery';
-import { removeIvaoPilotLayer, setupIvaoClickHandler, updateIvaoPilotLayer } from '../layers';
+import {
+  IVAO_LAYER_IDS,
+  LayerManager,
+  removeIvaoPilotLayer,
+  setupIvaoClickHandler,
+  updateIvaoPilotLayer,
+} from '../layers';
 import type { MapRef, PopupRef } from './useMapSetup';
 
 interface UseIvaoSyncOptions {
@@ -8,6 +14,8 @@ interface UseIvaoSyncOptions {
   ivaoPopupRef: PopupRef;
   ivaoData: IvaoData | undefined;
   ivaoEnabled: boolean;
+  /** LayerManager instance for authoritative layer ordering (optional) */
+  layerManager?: LayerManager | null;
 }
 
 export function useIvaoSync({
@@ -15,6 +23,7 @@ export function useIvaoSync({
   ivaoPopupRef,
   ivaoData,
   ivaoEnabled,
+  layerManager,
 }: UseIvaoSyncOptions): void {
   useEffect(() => {
     const map = mapRef.current;
@@ -38,6 +47,15 @@ export function useIvaoSync({
       if (ivaoPopupRef.current) {
         setupIvaoClickHandler(map, ivaoPopupRef.current);
       }
+
+      // Bring IVAO layers to top using LayerManager if available
+      if (layerManager) {
+        for (const id of IVAO_LAYER_IDS) {
+          if (layerManager.hasLayer(id)) {
+            layerManager.bringToTop(id);
+          }
+        }
+      }
     };
 
     const handleMoveEnd = () => {
@@ -50,7 +68,7 @@ export function useIvaoSync({
     return () => {
       map.off('moveend', handleMoveEnd);
     };
-  }, [mapRef, ivaoPopupRef, ivaoData, ivaoEnabled]);
+  }, [mapRef, ivaoPopupRef, ivaoData, ivaoEnabled, layerManager]);
 }
 
 export function toggleIvaoLayer(mapRef: MapRef, ivaoPopupRef: PopupRef, enable: boolean): void {
