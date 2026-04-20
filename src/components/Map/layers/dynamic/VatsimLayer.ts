@@ -235,13 +235,6 @@ export function setVatsimPilotLayerVisibility(map: maplibregl.Map, visible: bool
   if (map.getLayer(LABEL_LAYER_ID)) map.setLayoutProperty(LABEL_LAYER_ID, 'visibility', v);
 }
 
-export function bringVatsimLayersToTop(map: maplibregl.Map): void {
-  if (map.getLayer(TRAIL_LAYER_ID)) map.moveLayer(TRAIL_LAYER_ID);
-  if (map.getLayer(`${PILOT_LAYER_ID}-glow`)) map.moveLayer(`${PILOT_LAYER_ID}-glow`);
-  if (map.getLayer(PILOT_LAYER_ID)) map.moveLayer(PILOT_LAYER_ID);
-  if (map.getLayer(LABEL_LAYER_ID)) map.moveLayer(LABEL_LAYER_ID);
-}
-
 const clickHandlerSetup = new WeakSet<maplibregl.Map>();
 
 export function setupVatsimClickHandler(map: maplibregl.Map, popup: maplibregl.Popup): void {

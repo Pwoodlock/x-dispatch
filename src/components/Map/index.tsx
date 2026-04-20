@@ -50,9 +50,6 @@ import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
   LayerManager,
   addFlightPlanLayer,
-  bringIvaoLayersToTop,
-  bringPlaneLayerToTop,
-  bringVatsimLayersToTop,
   firLayer,
   fitMapToFlightPlan,
   removeFlightPlanLayer,
@@ -126,7 +123,6 @@ export default function Map({ airports }: MapProps) {
   const stopAnimationsRef = useRef<(() => void) | null>(null);
   const applyLayerVisibilityRef = useRef<((visibility: LayerVisibility) => void) | null>(null);
   const layerVisibilityRef = useRef<LayerVisibility>(layerVisibility);
-  const bringNetworkLayersToTopRef = useRef<(() => void) | null>(null);
   const selectedICAORef = useRef<string | null>(null);
   const airportsRef = useRef<Airport[]>(airports);
   airportsRef.current = airports;
@@ -142,8 +138,7 @@ export default function Map({ airports }: MapProps) {
         setTimeout(() => {
           startAnimationsRef.current?.();
           applyLayerVisibilityRef.current?.(layerVisibilityRef.current);
-          // Bring network layers to top after airport rendering
-          bringNetworkLayersToTopRef.current?.();
+          // LayerManager now handles layer ordering automatically - no bring-to-top needed
         }, 100);
       } else {
         useAppStore.getState().clearAirport();
@@ -197,13 +192,7 @@ export default function Map({ airports }: MapProps) {
     startAnimationsRef.current = startAnimations;
     stopAnimationsRef.current = stopAnimations;
     applyLayerVisibilityRef.current = applyLayerVisibility;
-    bringNetworkLayersToTopRef.current = () => {
-      if (mapRef.current) {
-        bringVatsimLayersToTop(mapRef.current);
-        bringIvaoLayersToTop(mapRef.current);
-      }
-    };
-  }, [renderAirport, startAnimations, stopAnimations, applyLayerVisibility, mapRef]);
+  }, [renderAirport, startAnimations, stopAnimations, applyLayerVisibility]);
 
   useEffect(() => {
     layerVisibilityRef.current = layerVisibility;
@@ -286,7 +275,7 @@ export default function Map({ airports }: MapProps) {
 
     if (showPlaneTracker && isXPlaneConnected && planePosition) {
       updatePlaneLayer(map, planePosition);
-      bringPlaneLayerToTop(map);
+      // LayerManager handles layer ordering automatically - no bring-to-top needed
     } else if (!showPlaneTracker || !isXPlaneConnected) {
       removePlaneLayer(map);
     }
@@ -551,16 +540,11 @@ export default function Map({ airports }: MapProps) {
         setTimeout(() => {
           startAnimations();
           applyLayerVisibility(layerVisibility);
-          // Bring network layers to top after airport rendering
-          if (mapRef.current) {
-            bringVatsimLayersToTop(mapRef.current);
-            bringIvaoLayersToTop(mapRef.current);
-          }
+          // LayerManager now handles layer ordering automatically - no bring-to-top needed
         }, 100);
       }
     },
     [
-      mapRef,
       renderAirport,
       startAnimations,
       applyLayerVisibility,

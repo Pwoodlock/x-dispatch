@@ -270,12 +270,3 @@ export function updatePlaneLayer(
     // Map might be in invalid state
   }
 }
-
-export function bringPlaneLayerToTop(map: maplibregl.Map | null | undefined): void {
-  if (!map) return;
-  try {
-    if (map.getLayer(LAYER_ID)) map.moveLayer(LAYER_ID);
-  } catch {
-    // Map might be in invalid state
-  }
-}

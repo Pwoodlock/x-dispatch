@@ -230,13 +230,6 @@ export async function updateIvaoPilotLayer(
   }
 }
 
-export function bringIvaoLayersToTop(map: maplibregl.Map): void {
-  if (map.getLayer(TRAIL_LAYER_ID)) map.moveLayer(TRAIL_LAYER_ID);
-  if (map.getLayer(`${PILOT_LAYER_ID}-glow`)) map.moveLayer(`${PILOT_LAYER_ID}-glow`);
-  if (map.getLayer(PILOT_LAYER_ID)) map.moveLayer(PILOT_LAYER_ID);
-  if (map.getLayer(LABEL_LAYER_ID)) map.moveLayer(LABEL_LAYER_ID);
-}
-
 const clickHandlerSetup = new WeakSet<maplibregl.Map>();
 
 export function setupIvaoClickHandler(map: maplibregl.Map, popup: maplibregl.Popup): void {

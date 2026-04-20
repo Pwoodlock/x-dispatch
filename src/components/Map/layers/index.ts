@@ -32,12 +32,7 @@ export {
   fitMapToFlightPlan,
   removeFlightPlanLayer,
 } from './dynamic/FlightPlanLayer';
-export {
-  addPlaneLayer,
-  bringPlaneLayerToTop,
-  removePlaneLayer,
-  updatePlaneLayer,
-} from './dynamic/PlaneLayer';
+export { addPlaneLayer, removePlaneLayer, updatePlaneLayer } from './dynamic/PlaneLayer';
 export {
   addProcedureRouteLayer,
   removeProcedureRouteLayer,
@@ -45,14 +40,12 @@ export {
 } from './dynamic/ProcedureRouteLayer';
 export { addRouteLineLayer, removeRouteLineLayer, updateRouteLine } from './dynamic/RouteLineLayer';
 export {
-  bringVatsimLayersToTop,
   removeVatsimPilotLayer,
   setupVatsimClickHandler,
   updateVatsimPilotLayer,
   VATSIM_LAYER_IDS,
 } from './dynamic/VatsimLayer';
 export {
-  bringIvaoLayersToTop,
   removeIvaoPilotLayer,
   setupIvaoClickHandler,
   updateIvaoPilotLayer,
