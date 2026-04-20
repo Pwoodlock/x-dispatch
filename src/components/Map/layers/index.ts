@@ -20,6 +20,9 @@ import type { LayerRenderer } from './airport/BaseLayerRenderer';
 // Re-export base types
 export { type LayerRenderer } from './airport/BaseLayerRenderer';
 
+// LayerManager - authoritative layer ordering
+export { LayerManager, type LayerCategory } from './LayerManager';
+
 // Navigation layer singletons (consolidated)
 export { airspaceLayer, firLayer, holdingPatternLayer, ilsLayer, navaidLayer } from './navigation';
 

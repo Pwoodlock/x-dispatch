@@ -2,16 +2,23 @@ import { useEffect } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { NavigationData } from '@/queries/useNavDataQuery';
 import type { NavLayerVisibility } from '@/types/layers';
-import { airspaceLayer, ilsLayer, navaidLayer } from '../layers';
+import { LayerManager, airspaceLayer, ilsLayer, navaidLayer } from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseNavLayerSyncOptions {
   mapRef: MapRef;
   navData: NavigationData | undefined;
   navVisibility: NavLayerVisibility;
+  /** LayerManager instance for authoritative layer ordering (optional for Phase 1 proof-of-concept) */
+  layerManager?: LayerManager | null;
 }
 
-export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerSyncOptions): void {
+export function useNavLayerSync({
+  mapRef,
+  navData,
+  navVisibility,
+  layerManager,
+}: UseNavLayerSyncOptions): void {
   // Sync local nav layers (navaids, ILS, airspaces)
   useEffect(() => {
     const map = mapRef.current;
@@ -28,19 +35,41 @@ export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerS
         const allNavaids = [...navData.vors, ...navData.ndbs, ...navData.dmes];
         if (allNavaids.length > 0) {
           await navaidLayer.add(map, allNavaids);
-          navaidLayer.setVisibility(map, navVisibility.navaids);
+          // Use LayerManager for visibility if available (Phase 1 proof-of-concept)
+          if (layerManager) {
+            const layerIds = navaidLayer.getAllLayerIds();
+            for (const id of layerIds) {
+              layerManager.setVisibility(id, navVisibility.navaids);
+            }
+          } else {
+            navaidLayer.setVisibility(map, navVisibility.navaids);
+          }
         }
 
         // ILS (separate due to complex geometry)
         if (navData.ils.length > 0) {
           await ilsLayer.add(map, navData.ils);
-          ilsLayer.setVisibility(map, navVisibility.ils);
+          if (layerManager) {
+            const layerIds = ilsLayer.getAllLayerIds();
+            for (const id of layerIds) {
+              layerManager.setVisibility(id, navVisibility.ils);
+            }
+          } else {
+            ilsLayer.setVisibility(map, navVisibility.ils);
+          }
         }
 
         // Airspaces
         if (navData.airspaces.length > 0) {
           await airspaceLayer.add(map, navData.airspaces);
-          airspaceLayer.setVisibility(map, navVisibility.airspaces);
+          if (layerManager) {
+            const layerIds = airspaceLayer.getAllLayerIds();
+            for (const id of layerIds) {
+              layerManager.setVisibility(id, navVisibility.airspaces);
+            }
+          } else {
+            airspaceLayer.setVisibility(map, navVisibility.airspaces);
+          }
         }
       } catch (err) {
         window.appAPI.log.error('Nav layer update failed', err);
@@ -48,7 +77,7 @@ export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerS
     };
 
     updateNavLayers();
-  }, [mapRef, navData, navVisibility]);
+  }, [mapRef, navData, navVisibility, layerManager]);
 }
 
 // Helper to apply visibility changes for individual nav layers

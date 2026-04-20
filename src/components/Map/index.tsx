@@ -48,6 +48,7 @@ import {
 import { useDayNightLayer } from './hooks/useDayNightLayer';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
+  LayerManager,
   addFlightPlanLayer,
   bringIvaoLayersToTop,
   bringPlaneLayerToTop,
@@ -114,6 +115,9 @@ export default function Map({ airports }: MapProps) {
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
 
+  // LayerManager ref - instantiated after map is ready
+  const layerManagerRef = useRef<LayerManager | null>(null);
+
   // Refs for stable airport click callback (avoids circular dependency)
   const renderAirportRef = useRef<
     ((icao: string, center: [number, number]) => Promise<ParsedAirport | null>) | null
@@ -158,6 +162,14 @@ export default function Map({ airports }: MapProps) {
     mapStyleUrl,
     onAirportClick: handleAirportClick,
   });
+
+  // Initialize LayerManager after map is ready
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map && !layerManagerRef.current) {
+      layerManagerRef.current = new LayerManager(map);
+    }
+  }, [mapRef]);
 
   // Initialize IVAO popup
   useEffect(() => {
@@ -295,6 +307,7 @@ export default function Map({ airports }: MapProps) {
     mapRef,
     navData,
     navVisibility,
+    layerManager: layerManagerRef.current,
   });
 
   // Vatsim sync
