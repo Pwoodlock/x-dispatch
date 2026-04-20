@@ -1,3 +1,15 @@
+/**
+ * Layer exports for x-dispatch map rendering.
+ *
+ * Layer Architecture:
+ * - LayerManager: Authoritative layer ordering (6-category stack)
+ * - BaseLayerRenderer: Base class for airport layers
+ * - NavLayerRenderer: Base class for navigation layers
+ * - Dynamic layers: VATSIM, IVAO, flight plan, etc.
+ *
+ * See LayerManager.ts for the 6-category layer stack:
+ * base -> terrain -> airport -> nav -> dynamic -> overlay
+ */
 // Layer imports for registry
 import {
   BeaconLayer,
