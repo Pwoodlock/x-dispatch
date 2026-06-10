@@ -460,6 +460,8 @@
       "terrain3dDesc": "ズームインすると山がマップから立ち上がります。",
       "terrainShading": "地形シェーディング",
       "terrainShadingDesc": "シェーディングと等高線で山が見やすくなります。",
+      "tawsLayer": "TAWS terrain overlay",
+      "tawsLayerDescription": "Color-code terrain by altitude relative to your aircraft. Automatically hidden while on the ground.",
       "surfaceDetail": "地表ディテール",
       "surfaceDetailDesc": "誘導路や舗装端の曲線の滑らかさ",
       "low": "低",

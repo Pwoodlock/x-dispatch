@@ -460,6 +460,8 @@
       "terrain3dDesc": "Mountains rise off the chart when ye zoom in.",
       "terrainShading": "Terrain shadowin'",
       "terrainShadingDesc": "Shading an' contour lines so mountains look better.",
+      "tawsLayer": "TAWS terrain overlay",
+      "tawsLayerDescription": "Color-code terrain by altitude relative to your aircraft. Automatically hidden while on the ground.",
       "surfaceDetail": "Ground detail",
       "surfaceDetailDesc": "Curve smoothness fer taxiway an' pavement edges",
       "low": "Low tide",

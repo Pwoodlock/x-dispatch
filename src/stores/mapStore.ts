@@ -83,6 +83,13 @@ interface MapState {
   flightStripPosition: { x: number; y: number } | null;
   terrainShadingEnabled: boolean;
   terrain3dEnabled: boolean;
+  /**
+   * TAWS (Terrain Awareness and Warning System) overlay — color-relief band
+   * shading relative to current aircraft altitude. Suppressed when the
+   * aircraft reports on_ground=true (X-Plane dataref) to avoid the
+   * "all-red when parked" UX bug.
+   */
+  tawsEnabled: boolean;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -117,6 +124,7 @@ interface MapState {
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
   setTerrainShadingEnabled: (enabled: boolean) => void;
   setTerrain3dEnabled: (enabled: boolean) => void;
+  setTawsEnabled: (enabled: boolean) => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -154,6 +162,7 @@ export const useMapStore = create<MapState>()(
       flightStripPosition: null as { x: number; y: number } | null,
       terrainShadingEnabled: true,
       terrain3dEnabled: true,
+      tawsEnabled: false,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -246,10 +255,11 @@ export const useMapStore = create<MapState>()(
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
       setTerrain3dEnabled: (enabled) => set({ terrain3dEnabled: enabled }),
+      setTawsEnabled: (enabled) => set({ tawsEnabled: enabled }),
     }),
     {
       name: 'xplane-viz-map',
-      version: 10,
+      version: 11,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
@@ -262,6 +272,7 @@ export const useMapStore = create<MapState>()(
         flightStripPosition: state.flightStripPosition,
         terrainShadingEnabled: state.terrainShadingEnabled,
         terrain3dEnabled: state.terrain3dEnabled,
+        tawsEnabled: state.tawsEnabled,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
@@ -321,6 +332,10 @@ export const useMapStore = create<MapState>()(
         // MapLibre TerrainControl button that used to live on the map).
         if (version < 10) {
           if (state.terrain3dEnabled === undefined) state.terrain3dEnabled = true;
+        }
+        // Migration to v11: add TAWS overlay toggle (default off; opt-in).
+        if (version < 11) {
+          if (state.tawsEnabled === undefined) state.tawsEnabled = false;
         }
         return state;
       },

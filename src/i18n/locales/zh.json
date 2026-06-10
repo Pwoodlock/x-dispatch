@@ -460,6 +460,8 @@
       "terrain3dDesc": "放大时山脉从地图上立体浮现。",
       "terrainShading": "地形阴影",
       "terrainShadingDesc": "阴影与等高线让山脉更易辨识。",
+      "tawsLayer": "TAWS terrain overlay",
+      "tawsLayerDescription": "Color-code terrain by altitude relative to your aircraft. Automatically hidden while on the ground.",
       "surfaceDetail": "地表细节",
       "surfaceDetailDesc": "滑行道与铺装边缘曲线的平滑度",
       "low": "低",

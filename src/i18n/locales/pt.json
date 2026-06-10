@@ -460,6 +460,8 @@
       "terrain3dDesc": "As montanhas sobressaem no mapa ao aproximar o zoom.",
       "terrainShading": "Sombreamento do terreno",
       "terrainShadingDesc": "Sombreamento e curvas de nível para destacar melhor as montanhas.",
+      "tawsLayer": "TAWS terrain overlay",
+      "tawsLayerDescription": "Color-code terrain by altitude relative to your aircraft. Automatically hidden while on the ground.",
       "surfaceDetail": "Detalhe da superfície",
       "surfaceDetailDesc": "Suavidade das curvas nas extremidades de pistas de táxi e pavimento",
       "low": "Baixo",

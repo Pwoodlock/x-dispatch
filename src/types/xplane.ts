@@ -47,6 +47,13 @@ export interface PlaneState extends Coordinates {
   apAirspeed: number;
   apVerticalSpeed: number;
   aircraftCategory: AircraftCategory | null;
+  /**
+   * True when any of the aircraft's gear/wheels is touching the ground.
+   * Sourced from X-Plane dataref `sim/flightmodel/forces/on_ground` (number,
+   * 1 = on ground, 0 = airborne). Used by the TAWS terrain layer to suppress
+   * the "all-red when parked" UX bug.
+   */
+  onGround: boolean;
 }
 
 export interface PlanePosition {

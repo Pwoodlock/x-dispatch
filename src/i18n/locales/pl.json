@@ -460,6 +460,8 @@
       "terrain3dDesc": "Po przybliżeniu góry wznoszą się ponad mapę.",
       "terrainShading": "Cieniowanie terenu",
       "terrainShadingDesc": "Cieniowanie i poziomice ułatwiają rozpoznawanie gór.",
+      "tawsLayer": "TAWS terrain overlay",
+      "tawsLayerDescription": "Color-code terrain by altitude relative to your aircraft. Automatically hidden while on the ground.",
       "surfaceDetail": "Szczegółowość powierzchni",
       "surfaceDetailDesc": "Gładkość krzywych na krawędziach dróg kołowania i nawierzchni",
       "low": "Niska",

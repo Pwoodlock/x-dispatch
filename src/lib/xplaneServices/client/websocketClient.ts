@@ -28,6 +28,7 @@ const DATAREF_NAMES = [
   'sim/flightmodel/position/groundspeed',
   'sim/flightmodel/position/indicated_airspeed',
   'sim/flightmodel/position/y_agl',
+  'sim/flightmodel/forces/on_ground',
   'sim/cockpit2/gauges/indicators/vvi_fpm_pilot',
   'sim/flightmodel/misc/machno',
   'sim/weather/aircraft/wind_now_direction_degt',
@@ -70,6 +71,7 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/flightmodel/position/groundspeed': 'groundspeed',
   'sim/flightmodel/position/indicated_airspeed': 'indicatedAirspeed',
   'sim/flightmodel/position/y_agl': 'altitudeAGL',
+  'sim/flightmodel/forces/on_ground': 'onGround',
   'sim/cockpit2/gauges/indicators/vvi_fpm_pilot': 'verticalSpeed',
   'sim/flightmodel/misc/machno': 'mach',
   'sim/weather/aircraft/wind_now_direction_degt': 'windDirection',
@@ -373,7 +375,7 @@ export class XPlaneWebSocketClient {
 
       const stateKey = DATAREF_MAPPING[datarefName];
       if (stateKey && typeof value === 'number') {
-        let convertedValue = value;
+        let convertedValue: number | boolean = value;
         if (
           datarefName === 'sim/flightmodel/position/elevation' ||
           datarefName === 'sim/flightmodel/position/y_agl'
@@ -384,6 +386,9 @@ export class XPlaneWebSocketClient {
           datarefName === 'sim/weather/aircraft/wind_now_speed_msc'
         ) {
           convertedValue = value * MPS_TO_KNOTS;
+        } else if (datarefName === 'sim/flightmodel/forces/on_ground') {
+          // X-Plane emits 1/0; we surface a boolean to consumers.
+          convertedValue = value === 1;
         }
         (this.currentState as Record<string, unknown>)[stateKey] = convertedValue;
       }

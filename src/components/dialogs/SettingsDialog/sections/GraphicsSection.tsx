@@ -32,6 +32,8 @@ export function GraphicsSection() {
   const setTerrain3dEnabled = useMapStore((s) => s.setTerrain3dEnabled);
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const setTerrainShadingEnabled = useMapStore((s) => s.setTerrainShadingEnabled);
+  const tawsEnabled = useMapStore((s) => s.tawsEnabled);
+  const setTawsEnabled = useMapStore((s) => s.setTawsEnabled);
 
   return (
     <div className="space-y-6">
@@ -68,6 +70,12 @@ export function GraphicsSection() {
           description={t('settings.graphics.terrainShadingDesc')}
           checked={terrainShadingEnabled}
           onCheckedChange={(checked) => setTerrainShadingEnabled(checked)}
+        />
+        <SettingsToggleRow
+          title={t('settings.graphics.tawsLayer')}
+          description={t('settings.graphics.tawsLayerDescription')}
+          checked={tawsEnabled}
+          onCheckedChange={(checked) => setTawsEnabled(checked)}
         />
       </SettingsSectionBlock>
 

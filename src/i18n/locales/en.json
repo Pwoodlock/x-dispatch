@@ -460,6 +460,8 @@
       "terrain3dDesc": "Show raised terrain when the map is zoomed in.",
       "terrainShading": "Terrain shading",
       "terrainShadingDesc": "Add shading and contour lines to make terrain easier to read.",
+      "tawsLayer": "TAWS terrain overlay",
+      "tawsLayerDescription": "Color-code terrain by altitude relative to your aircraft. Automatically hidden while on the ground.",
       "surfaceDetail": "Surface detail",
       "surfaceDetailDesc": "Curve smoothness for taxiway and pavement edges",
       "low": "Low",

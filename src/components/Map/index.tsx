@@ -45,6 +45,7 @@ import {
   useProcedureRouteSync,
   useRangeRingsSync,
   useRouteLineSync,
+  useTawsTerrainSync,
   useTaxiRouteSync,
   useTerrainShading,
   useTrackControl,
@@ -379,6 +380,12 @@ export default function Map({ airports }: MapProps) {
 
   // Terrain shading (hillshade + contour lines)
   useTerrainShading(mapRef, terrainShadingEnabled);
+
+  // TAWS terrain overlay — color-relief bands relative to aircraft altitude.
+  // Auto-hides while the X-Plane dataref sim/flightmodel/forces/on_ground
+  // reports true, so the user doesn't see "all red" when parked at a gate.
+  // The enabled flag is read from mapStore internally by the hook.
+  useTawsTerrainSync({ mapRef });
 
   // Cursor-following terrain elevation. `supported` flips with terrain
   // availability so the compass keeps the elevation row mounted in mercator

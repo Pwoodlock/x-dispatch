@@ -460,6 +460,8 @@
       "terrain3dDesc": "Le montagne emergono dalla mappa quando ingrandisci.",
       "terrainShading": "Ombreggiatura del terreno",
       "terrainShadingDesc": "Ombreggiatura e curve di livello per distinguere meglio le montagne.",
+      "tawsLayer": "TAWS terrain overlay",
+      "tawsLayerDescription": "Color-code terrain by altitude relative to your aircraft. Automatically hidden while on the ground.",
       "surfaceDetail": "Dettaglio superficie",
       "surfaceDetailDesc": "Morbidezza delle curve sui bordi di vie di rullaggio e piazzali",
       "low": "Basso",
