@@ -3,7 +3,10 @@
  *
  * Bridges MapLibre (via `TawsTerrainLayer.ts`) to:
  *   - The `tawsEnabled` user setting in `mapStore`
- *   - Live aircraft altitude and `on_ground` state from the X-Plane WebSocket
+ *   - Live aircraft altitude and `on_ground` state, passed in by the caller
+ *     (`Map/index.tsx` owns the single `usePlaneState` mount — hooks must
+ *     NOT mount their own, as each `usePlaneState` call starts a new
+ *     WebSocket state stream in the main process).
  *
  * Algorithm (ported byte-for-byte from ChartMap):
  *   - `buildColorExpression(altitudeFt)` produces a 5-band `interpolate`
@@ -23,10 +26,17 @@
  * no paint-property push). When `onGround` flips back to `false` visibility
  * is restored, the last-known altitude is re-applied, and the 1 Hz / 100 ft
  * throttle resumes.
+ *
+ * Disconnect behaviour
+ * ────────────────────
+ * When the X-Plane WebSocket is disconnected the layer is also hidden:
+ * with no live altitude the expression would fall back to 0 ft MSL and
+ * paint all terrain above sea level red — the same "all-red" failure the
+ * on-ground short-circuit exists to prevent.
  */
 import { useEffect, useRef } from 'react';
-import { usePlaneState } from '@/queries';
 import { useMapStore } from '@/stores/mapStore';
+import type { PlaneState } from '@/types/xplane';
 import {
   TAWS_LAYER_ID,
   TAWS_SOURCE_ID,
@@ -48,21 +58,23 @@ const RETRY_PAINT_MS = 50;
 
 export interface UseTawsTerrainSyncOptions {
   mapRef: MapRef;
+  /** Live plane state from the caller's `usePlaneState` mount (null when no state yet). */
+  planeState: PlaneState | null;
+  /** X-Plane WebSocket connection flag from the same `usePlaneState` mount. */
+  isXPlaneConnected: boolean;
 }
 
 /**
- * Hook signature intentionally minimal — the user setting is read from
- * `mapStore` directly, and the X-Plane state is read via `usePlaneState`
- * (which is already mounted by `Map/index.tsx` for the plane tracker).
+ * The user setting is read from `mapStore` directly; the X-Plane state is
+ * passed in by the caller so only one `usePlaneState` mount (and therefore
+ * one WebSocket stream) exists per map.
  */
-export function useTawsTerrainSync({ mapRef }: UseTawsTerrainSyncOptions): void {
-  // The plane-state stream is started by `Map/index.tsx`'s `usePlaneState`
-  // mount. We share it; calling `usePlaneState` again would re-subscribe.
-  // Since both consumers are children of the same parent component, React
-  // re-uses the same state instance via the singleton-like pattern used
-  // elsewhere in this repo.
+export function useTawsTerrainSync({
+  mapRef,
+  planeState,
+  isXPlaneConnected,
+}: UseTawsTerrainSyncOptions): void {
   const tawsEnabled = useMapStore((s) => s.tawsEnabled);
-  const { state: planeState, connected: isXPlaneConnected } = usePlaneState();
 
   // Module-local-ish state: the throttling counters and last-pushed
   // expression live in refs so re-renders don't reset them.
@@ -76,11 +88,23 @@ export function useTawsTerrainSync({ mapRef }: UseTawsTerrainSyncOptions): void 
   // Pending retry timer (id so we can clear on unmount).
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Compute the user-facing effective visibility: opt-in AND not on ground.
+  // Compute the user-facing effective visibility: opt-in AND connected AND
+  // not on ground. Disconnected is treated like on-ground: with no live
+  // altitude the expression would fall back to 0 ft MSL and paint the whole
+  // map red, so we hide instead.
   const onGround = planeState?.onGround === true;
-  const effectiveVisible = tawsEnabled && !onGround;
+  const effectiveVisible = tawsEnabled && isXPlaneConnected && !onGround;
+  // Mirrored into a ref so the style.load re-add path (effect 1) can read
+  // the current visibility without taking onGround/connection as deps —
+  // otherwise every ground/connection flip would tear down and re-add the
+  // source, forcing tile re-fetches.
+  const effectiveVisibleRef = useRef(effectiveVisible);
+  useEffect(() => {
+    effectiveVisibleRef.current = effectiveVisible;
+  }, [effectiveVisible]);
 
-  // Compute altitude in feet (0 when disconnected — ChartMap's fallback).
+  // Compute altitude in feet (unused while disconnected — the layer is
+  // hidden and effect 3 bails before recomputing).
   const altitudeFt = isXPlaneConnected && planeState ? planeState.altitudeMSL : 0;
 
   // Cache for later use (style.load re-add path). The lint rule forbids
@@ -90,7 +114,7 @@ export function useTawsTerrainSync({ mapRef }: UseTawsTerrainSyncOptions): void 
     lastKnownAltitudeRef.current = altitudeFt;
   }, [altitudeFt]);
 
-  // ── 1. Mount / unmount / toggle: add or remove the layer ─────────────
+  //  1. Mount / unmount / toggle: add or remove the layer
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -107,11 +131,11 @@ export function useTawsTerrainSync({ mapRef }: UseTawsTerrainSyncOptions): void 
       if (m.getSource(TAWS_SOURCE_ID)) {
         // Style rebuild carried it over (e.g. via transformStyle) —
         // just re-apply visibility + last expression.
-        setTawsVisibility(m, tawsEnabled && !onGround);
+        setTawsVisibility(m, effectiveVisibleRef.current);
         setTawsColorStops(m, lastExpressionRef.current);
         return;
       }
-      addTawsTerrainLayer(m, lastExpressionRef.current, tawsEnabled && !onGround);
+      addTawsTerrainLayer(m, lastExpressionRef.current, effectiveVisibleRef.current);
     };
 
     if (!wantLayer) {
@@ -143,21 +167,30 @@ export function useTawsTerrainSync({ mapRef }: UseTawsTerrainSyncOptions): void 
         retryTimerRef.current = null;
       }
     };
-  }, [mapRef, tawsEnabled, onGround]);
+    // NOTE: onGround / connection state deliberately excluded — those only
+    // affect visibility (effect 2) and colour stops (effect 3), not layer
+    // existence. Including them would tear down and re-add the raster-dem
+    // source on every takeoff/landing, forcing tile re-fetches.
+  }, [mapRef, tawsEnabled]);
 
-  // ── 2. Visibility: opt-in toggle + on-ground short-circuit ──────────
+  //  2. Visibility: opt-in toggle + on-ground short-circuit
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     setTawsVisibility(map, effectiveVisible);
   }, [mapRef, effectiveVisible]);
 
-  // ── 3. Colour stops: 1 Hz throttle + 100 ft hysteresis ───────────────
-  // Skip entirely while on the ground — ChartMap would still recompute
-  // (and indeed show all red at altitude=0); we suppress that update so
-  // we never push a "everything is danger" expression.
+  // 3. Colour stops: 1 Hz throttle + 100 ft hysteresis
+  // Skip entirely while disconnected or on the ground — ChartMap would
+  // still recompute (and indeed show all red at altitude=0); we suppress
+  // that update so we never push an "everything is danger" expression.
   useEffect(() => {
     if (!tawsEnabled) return;
+    if (!isXPlaneConnected) {
+      // Hidden by effect 2; leave the cached expression untouched so the
+      // layer comes back with the pre-disconnect colours on reconnect.
+      return;
+    }
     if (onGround) {
       // Remember the ground state so when we lift off we know to resume
       // recomputation.
@@ -202,5 +235,5 @@ export function useTawsTerrainSync({ mapRef }: UseTawsTerrainSyncOptions): void 
       setTawsColorStops(map, expression);
     };
     apply();
-  }, [mapRef, tawsEnabled, onGround, altitudeFt]);
+  }, [mapRef, tawsEnabled, isXPlaneConnected, onGround, altitudeFt]);
 }

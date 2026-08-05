@@ -174,6 +174,11 @@ export function useMapSetup({
             url.includes('basemaps.cartocdn.com') ||
             url.includes('tiles.mapterhorn.com') ||
             url.includes('arcgisonline.com') ||
+            // TAWS Terrarium DEM tiles — the S3 bucket sends no CORS
+            // headers, so a direct renderer fetch fails with MapLibre's
+            // "Could not load image". Route through the main-process
+            // tile cache like every other tile source.
+            url.includes('elevation-tiles-prod.s3.amazonaws.com') ||
             url.includes('rainviewer.com'))
         ) {
           return { url: url.replace('https://', 'tile-cache://') };

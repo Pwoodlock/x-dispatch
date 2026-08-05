@@ -382,10 +382,12 @@ export default function Map({ airports }: MapProps) {
   useTerrainShading(mapRef, terrainShadingEnabled);
 
   // TAWS terrain overlay — color-relief bands relative to aircraft altitude.
-  // Auto-hides while the X-Plane dataref sim/flightmodel/forces/on_ground
-  // reports true, so the user doesn't see "all red" when parked at a gate.
-  // The enabled flag is read from mapStore internally by the hook.
-  useTawsTerrainSync({ mapRef });
+  // Auto-hides while the X-Plane dataref sim/flightmodel/failures/onground_any
+  // reports true (or the WebSocket is disconnected), so the user doesn't see
+  // "all red" when parked at a gate. The plane state is shared from the
+  // usePlaneState mount above — do NOT mount a second one inside the hook
+  // (each mount opens another WebSocket stream in the main process).
+  useTawsTerrainSync({ mapRef, planeState, isXPlaneConnected });
 
   // Cursor-following terrain elevation. `supported` flips with terrain
   // availability so the compass keeps the elevation row mounted in mercator

@@ -29,8 +29,10 @@
  * aircraft altitude is 0 ft MSL → all terrain is at or above the plane).
  * In X-Dispatch we hide the layer entirely (visibility: 'none') and freeze
  * the last-known colour expression while the X-Plane dataref
- * `sim/flightmodel/forces/on_ground` reports `1`. When the plane lifts off,
- * visibility is restored and the expression recomputation resumes.
+ * `sim/flightmodel/failures/onground_any` reports `1`. When the plane lifts
+ * off, visibility is restored and the expression recomputation resumes.
+ * The layer is likewise hidden while the X-Plane WebSocket is disconnected
+ * (no live altitude → same all-red failure mode).
  */
 import maplibregl from 'maplibre-gl';
 
