@@ -2142,6 +2142,11 @@
       "message": "Das Fenster ist kurz nach dem Neuladen erneut abgestürzt. Noch einmal neu laden oder beenden?",
       "reload": "Neu laden",
       "quit": "Beenden"
+    },
+    "unresponsive": {
+      "title": "X-Dispatch reagiert nicht",
+      "message": "Das Fenster reagiert nicht mehr. Sie können es neu laden, weiter warten oder beenden.",
+      "wait": "Weiter warten"
     }
   },
   "weatherRadar": {

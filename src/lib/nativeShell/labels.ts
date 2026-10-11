@@ -35,6 +35,12 @@ export interface NativeLabels {
     reload: string;
     quit: string;
   };
+  /** The hung-window dialog; its Reload and Quit buttons reuse the crash labels. */
+  unresponsive: {
+    title: string;
+    message: string;
+    wait: string;
+  };
 }
 
 export const DEFAULT_NATIVE_LABELS: NativeLabels = {
@@ -69,6 +75,11 @@ export const DEFAULT_NATIVE_LABELS: NativeLabels = {
     reload: 'Reload',
     quit: 'Quit',
   },
+  unresponsive: {
+    title: 'X-Dispatch is not responding',
+    message: 'The window has stopped responding. You can reload it, keep waiting, or quit.',
+    wait: 'Keep Waiting',
+  },
 };
 
 function pickStrings<T extends Record<string, string>>(defaults: T, input: unknown): T {
@@ -89,5 +100,6 @@ export function parseNativeLabels(input: unknown): NativeLabels {
   return {
     menu: pickStrings(DEFAULT_NATIVE_LABELS.menu, source.menu),
     crash: pickStrings(DEFAULT_NATIVE_LABELS.crash, source.crash),
+    unresponsive: pickStrings(DEFAULT_NATIVE_LABELS.unresponsive, source.unresponsive),
   };
 }

@@ -2142,6 +2142,11 @@
       "message": "A janela travou novamente logo após recarregar. Recarregar mais uma vez ou sair?",
       "reload": "Recarregar",
       "quit": "Sair"
+    },
+    "unresponsive": {
+      "title": "O X-Dispatch não está respondendo",
+      "message": "A janela parou de responder. Você pode recarregá-la, continuar aguardando ou sair.",
+      "wait": "Continuar aguardando"
     }
   },
   "weatherRadar": {

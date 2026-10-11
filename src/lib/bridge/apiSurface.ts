@@ -11,6 +11,7 @@ import type { DesktopPrefs } from '@/lib/nativeShell/desktopPrefs';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
 import type { AppMenuNode } from '@/lib/nativeShell/menuSerialization';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
+import type { StartupFailureReport } from '@/lib/startup/startupFallback';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type {
   XPLogReadResult,
@@ -124,6 +125,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
         info: (message: string, ...args: unknown[]) => t.send('log:info', message, args),
       },
       getLogPath: () => t.invoke('app:getLogPath'),
+      reportStartupFailure: (report: StartupFailureReport) =>
+        t.invoke('app:reportStartupFailure', report),
       openLogFile: () => t.invoke('app:openLogFile'),
       openLogFolder: () => t.invoke('app:openLogFolder'),
       getConfigPath: () => t.invoke('app:getConfigPath'),

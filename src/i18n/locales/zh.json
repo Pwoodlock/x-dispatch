@@ -2142,6 +2142,11 @@
       "message": "窗口在重新加载后不久再次崩溃。要再重新加载一次，还是退出？",
       "reload": "重新加载",
       "quit": "退出"
+    },
+    "unresponsive": {
+      "title": "X-Dispatch 未响应",
+      "message": "窗口已停止响应。你可以重新加载、继续等待或退出。",
+      "wait": "继续等待"
     }
   },
   "weatherRadar": {

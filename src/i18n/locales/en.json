@@ -2142,6 +2142,11 @@
       "message": "The window crashed again shortly after reloading. Reload it once more, or quit?",
       "reload": "Reload",
       "quit": "Quit"
+    },
+    "unresponsive": {
+      "title": "X-Dispatch is not responding",
+      "message": "The window has stopped responding. You can reload it, keep waiting, or quit.",
+      "wait": "Keep Waiting"
     }
   },
   "weatherRadar": {

@@ -70,6 +70,7 @@ import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import { isSimbriefUser, parseOfpResponse, simbriefFetchUrl } from './lib/simbrief/ofp';
+import type { StartupFailureReport } from './lib/startup/startupFallback';
 import {
   closeTileCache,
   getTileCache,
@@ -204,6 +205,11 @@ process.on('unhandledRejection', (reason) => {
 
 app.on('render-process-gone', (_event, webContents, details) => {
   if (details.reason === 'clean-exit') return;
+  if (rendererKillRequested && details.reason === 'killed') {
+    // The unresponsive dialog asked for this kill; the reload is already on its way.
+    rendererKillRequested = false;
+    return;
+  }
 
   let url: string | undefined;
   try {
@@ -271,6 +277,9 @@ let isQuitting = false;
 /** Translated by the renderer; English until its first push. */
 let nativeLabels: NativeLabels = DEFAULT_NATIVE_LABELS;
 const crashRecovery = createCrashRecovery();
+/** Set while the unresponsive dialog restarts the renderer, so the kill is not treated as a crash. */
+let rendererKillRequested = false;
+let unresponsiveDialogOpen = false;
 /**
  * Actions from links, held until the renderer is listening. A link on a cold
  * start arrives before the window exists; the renderer drains the queue once
@@ -313,6 +322,38 @@ function recoverCrashedWindow(webContents: Electron.WebContents): void {
       if (response === 0) win.webContents.reload();
       else app.quit();
     });
+}
+
+/**
+ * A hung renderer is a frozen or blank window with no error anywhere. Ask, the way VS Code
+ * does: reload it, keep waiting, or quit. A hung page may not take a plain reload, so the
+ * reload starts it in a fresh process.
+ */
+async function askAboutUnresponsiveWindow(win: BrowserWindow): Promise<void> {
+  if (unresponsiveDialogOpen || isQuitting || win.isDestroyed()) return;
+  unresponsiveDialogOpen = true;
+  const { crash, unresponsive } = nativeLabels;
+  try {
+    const { response } = await dialog.showMessageBox(win, {
+      type: 'warning',
+      message: unresponsive.title,
+      detail: unresponsive.message,
+      buttons: [crash.reload, unresponsive.wait, crash.quit],
+      defaultId: 1,
+      cancelId: 1,
+    });
+    if (win.isDestroyed()) return;
+    if (response === 0) {
+      logger.main.warn('Reloading the main window after it stopped responding');
+      rendererKillRequested = true;
+      win.webContents.forcefullyCrashRenderer();
+      win.webContents.reload();
+    } else if (response === 2) {
+      app.quit();
+    }
+  } finally {
+    unresponsiveDialogOpen = false;
+  }
 }
 
 /** Only the desktop window: a tablet must not have Settings pop open from the PC's menu. */
@@ -756,6 +797,24 @@ function createWindow(): BrowserWindow {
   // app actions again until the new page drains the queue.
   window.webContents.on('did-start-loading', () => pendingAppActions.reset());
 
+  // A page that never arrives shows the user nothing; the log has to say what happened.
+  // -3 is a load the app itself cancelled.
+  window.webContents.on(
+    'did-fail-load',
+    (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      if (!isMainFrame || errorCode === -3) return;
+      logger.main.error(
+        'Main window failed to load',
+        new Error(`code=${errorCode} ${errorDescription} url=${validatedURL}`)
+      );
+    }
+  );
+  window.on('unresponsive', () => {
+    logger.main.warn('Main window is not responding');
+    void askAboutUnresponsiveWindow(window);
+  });
+  window.on('responsive', () => logger.main.info('Main window is responding again'));
+
   // Every shortcut is a menu accelerator (lib/nativeShell/appMenu): one list, every OS.
   // Page zoom keys reach the Interface Zoom setting through the View menu.
 
@@ -1007,6 +1066,19 @@ function registerIpcHandlers() {
   });
 
   handle('app:getLogPath', () => getLogPath());
+  handle('app:reportStartupFailure', (_, report: StartupFailureReport) => {
+    // The renderer's own Sentry client starts after this point, so main reports for it.
+    // One issue per host and stage; the error text stays as detail.
+    Sentry.withScope((scope) => {
+      scope.setFingerprint(['startup-failed', report.host, report.stage]);
+      scope.setTag('startup.host', report.host);
+      scope.setTag('startup.stage', report.stage);
+      logger.main.error(
+        `Renderer failed to start (${report.host}, ${report.stage})`,
+        new Error(`${report.error}\n(ua=${report.userAgent})`)
+      );
+    });
+  });
   handle('app:openLogFile', () => {
     const logPath = getLogPath();
     shell.openPath(logPath);
