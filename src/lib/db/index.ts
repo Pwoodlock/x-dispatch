@@ -68,8 +68,13 @@ function cleanupOldDbFiles(): void {
  * Delete the database if its schema doesn't match the current Drizzle snapshot.
  * The DB is purely a cache of X-Plane files — all data is rescanned automatically.
  */
-function deleteStaleDb(fingerprint: string): void {
-  if (!fs.existsSync(dbPath)) return;
+/**
+ * Removes a database built by an older schema. Returns false when the file is
+ * still in use and could not be unlinked or moved aside, which on Windows is a
+ * virus scanner, the indexer, or the previous instance finishing its save.
+ */
+function deleteStaleDb(fingerprint: string): boolean {
+  if (!fs.existsSync(dbPath)) return true;
 
   const versionPath = dbPath + '.version';
   let stored: string;
@@ -80,20 +85,28 @@ function deleteStaleDb(fingerprint: string): void {
     stored = '';
   }
 
-  if (stored !== fingerprint) {
-    logger.data.info(`Schema changed — deleting stale database`);
+  if (stored === fingerprint) return true;
+
+  logger.data.info(`Schema changed — deleting stale database`);
+  let removed = true;
+  try {
+    fs.unlinkSync(dbPath);
+  } catch {
     try {
-      fs.unlinkSync(dbPath);
-    } catch {
-      // Windows: file may be locked by antivirus/indexer — rename as fallback
       fs.renameSync(dbPath, `${dbPath}.old-${Date.now()}`);
-    }
-    try {
-      fs.unlinkSync(versionPath);
-    } catch {
-      /* already gone */
+    } catch (err) {
+      // The cache is rebuilt from X-Plane files either way, so a fresh database
+      // overwrites the held file once the lock clears instead of blocking startup.
+      logger.data.warn(`Stale database is in use, starting fresh: ${(err as Error).message}`);
+      removed = false;
     }
   }
+  try {
+    fs.unlinkSync(versionPath);
+  } catch {
+    /* already gone */
+  }
+  return removed;
 }
 
 /**
@@ -150,14 +163,14 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
   cleanupOldDbFiles();
 
   const fingerprint = getSchemaFingerprint();
-  deleteStaleDb(fingerprint);
+  const staleRemoved = deleteStaleDb(fingerprint);
 
   const SQL = await initSqlJs();
 
   // Try opening existing DB, fall back to fresh DB on any error.
   // The DB is a cache — safe to delete and rebuild from X-Plane files.
   let data: Buffer | undefined;
-  if (fs.existsSync(dbPath)) {
+  if (staleRemoved && fs.existsSync(dbPath)) {
     data = await fs.promises.readFile(dbPath);
   }
 

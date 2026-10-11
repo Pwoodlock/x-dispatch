@@ -17,6 +17,29 @@ import * as os from 'os';
 import * as path from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Paths the fake Windows file lock holds: unlink and rename of these throw EPERM.
+const lockedPaths = vi.hoisted(() => new Set<string>());
+
+vi.mock('fs', async (importOriginal) => {
+  const real = await importOriginal<typeof import('fs')>();
+  const eperm = (op: string, p: unknown) =>
+    Object.assign(new Error(`EPERM: operation not permitted, ${op} '${String(p)}'`), {
+      code: 'EPERM',
+    });
+  return {
+    ...real,
+    default: real,
+    unlinkSync: (p: fs.PathLike) => {
+      if (lockedPaths.has(String(p))) throw eperm('unlink', p);
+      return real.unlinkSync(p);
+    },
+    renameSync: (from: fs.PathLike, to: fs.PathLike) => {
+      if (lockedPaths.has(String(from))) throw eperm('rename', from);
+      return real.renameSync(from, to);
+    },
+  };
+});
+
 // Mutable test state, read by the electron mock at runtime so each test can
 // point at its own temp userData dir.
 let TEST_USER_DATA: string;
@@ -138,6 +161,24 @@ describe('DB integrity & recovery', () => {
       const mod2 = await freshInit();
       expect(fs.existsSync(versionFilePath())).toBe(true);
       mod2.closeDb();
+    });
+
+    it('starts fresh instead of failing when Windows still holds the stale file', async () => {
+      const mod = await freshInit();
+      mod.closeDb();
+      fs.writeFileSync(versionFilePath(), 'stale-fingerprint-from-old-app-version');
+
+      lockedPaths.add(dbFilePath());
+      try {
+        const mod2 = await freshInit();
+        const newFingerprint = fs.readFileSync(versionFilePath(), 'utf-8').trim();
+        expect(newFingerprint).not.toBe('stale-fingerprint-from-old-app-version');
+        expect(relaunchSpy).not.toHaveBeenCalled();
+        expect(exitSpy).not.toHaveBeenCalled();
+        mod2.closeDb();
+      } finally {
+        lockedPaths.clear();
+      }
     });
 
     it('reuses the existing db when the fingerprint matches', async () => {

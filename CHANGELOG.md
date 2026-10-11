@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Startup no longer fails when Windows is still holding the old database.** After an update that changes the database layout, a virus scanner or the previous instance could keep the old file open for a moment, and X-Dispatch quit with a "Failed to initialize the database" error. It now starts with a fresh database and overwrites the old file once it is released.
+
+### Fixed
+
 - **A refused Change Flight no longer looks like a success.** When X-Plane rejects the flight it is sent while running, the launch dialog now stays open and shows X-Plane's own reason, such as an unknown ramp or a missing aircraft file, instead of closing as if the flight had started.
 - **Gates and runway ends could not be clicked on the first launch after installing.** The map waited for a ready signal that never came when a basemap tile failed to download, so clicking a start position did nothing until a relaunch. The map engine is updated to 6.14, which carries the fix.
 
