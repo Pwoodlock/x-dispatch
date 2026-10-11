@@ -5,6 +5,6 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 // empty string unless the origin is http(s). A packaged app loads the
 // renderer over file://, so the empty URL resolves to index.html and the
 // worker dies on the module MIME check, leaving the map blank. Point it at
-// the bundled worker chunk instead — ?worker&url pulls in the sibling
-// maplibre-gl-shared.mjs the worker imports.
+// the bundled worker chunk instead. Since 6.13 the worker is self-contained;
+// the former maplibre-gl-shared.mjs sibling is an empty deprecated stub.
 setWorkerUrl(workerUrl);
