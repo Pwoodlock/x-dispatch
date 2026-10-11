@@ -16,6 +16,7 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'app:getConfigPath',
   'app:getLoadingStatus',
   'app:getLogPath',
+  'app:reportStartupFailure',
   'app:getProcessMemory',
   'app:getSendCrashReports',
   'app:getThirdPartyNotices',

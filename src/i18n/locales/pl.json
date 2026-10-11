@@ -2142,6 +2142,11 @@
       "message": "Okno ponownie uległo awarii krótko po przeładowaniu. Przeładować je jeszcze raz czy zakończyć?",
       "reload": "Przeładuj",
       "quit": "Zakończ"
+    },
+    "unresponsive": {
+      "title": "X-Dispatch nie odpowiada",
+      "message": "Okno przestało odpowiadać. Możesz je przeładować, poczekać dalej lub zakończyć.",
+      "wait": "Czekaj dalej"
     }
   },
   "weatherRadar": {

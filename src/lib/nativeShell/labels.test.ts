@@ -6,6 +6,7 @@ describe('parseNativeLabels', () => {
     const labels = {
       menu: { ...DEFAULT_NATIVE_LABELS.menu, settings: 'Einstellungen…' },
       crash: { ...DEFAULT_NATIVE_LABELS.crash, reload: 'Neu laden' },
+      unresponsive: { ...DEFAULT_NATIVE_LABELS.unresponsive, wait: 'Weiter warten' },
     };
     expect(parseNativeLabels(labels)).toEqual(labels);
   });
@@ -15,6 +16,7 @@ describe('parseNativeLabels', () => {
     expect(parsed.menu.settings).toBe('Réglages…');
     expect(parsed.menu.help).toBe(DEFAULT_NATIVE_LABELS.menu.help);
     expect(parsed.crash).toEqual(DEFAULT_NATIVE_LABELS.crash);
+    expect(parsed.unresponsive).toEqual(DEFAULT_NATIVE_LABELS.unresponsive);
   });
 
   it('returns the defaults for garbage input', () => {

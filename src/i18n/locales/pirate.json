@@ -2142,6 +2142,11 @@
       "message": "The porthole went down again right after hoistin' it back. Hoist it once more, or abandon ship?",
       "reload": "Hoist Again",
       "quit": "Abandon Ship"
+    },
+    "unresponsive": {
+      "title": "X-Dispatch be becalmed",
+      "message": "The porthole's stopped answerin' the helm. Hoist it again, hold fast, or abandon ship?",
+      "wait": "Hold Fast"
     }
   },
   "weatherRadar": {

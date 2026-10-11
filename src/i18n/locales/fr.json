@@ -2142,6 +2142,11 @@
       "message": "La fenêtre a de nouveau planté peu après le rechargement. La recharger encore une fois ou quitter ?",
       "reload": "Recharger",
       "quit": "Quitter"
+    },
+    "unresponsive": {
+      "title": "X-Dispatch ne répond pas",
+      "message": "La fenêtre ne répond plus. Vous pouvez la recharger, continuer d'attendre ou quitter.",
+      "wait": "Continuer d'attendre"
     }
   },
   "weatherRadar": {

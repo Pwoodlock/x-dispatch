@@ -2142,6 +2142,11 @@
       "message": "La ventana volvió a fallar poco después de recargarse. ¿Recargar una vez más o salir?",
       "reload": "Recargar",
       "quit": "Salir"
+    },
+    "unresponsive": {
+      "title": "X-Dispatch no responde",
+      "message": "La ventana ha dejado de responder. Puedes recargarla, seguir esperando o salir.",
+      "wait": "Seguir esperando"
     }
   },
   "weatherRadar": {

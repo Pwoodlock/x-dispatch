@@ -17,6 +17,7 @@ import type {
 } from '@/lib/flightplan/builder/types';
 import type { AppAction } from '@/lib/nativeShell/appUrl';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
+import type { StartupFailureReport } from '@/lib/startup/startupFallback';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from '@/lib/xplaneServices/dataService/XPlaneDataManager';
 import type { NavDataSources } from '@/lib/xplaneServices/dataService/cycleInfo';
@@ -106,6 +107,8 @@ declare global {
         info: (message: string, ...args: unknown[]) => void;
       };
       getLogPath: () => Promise<string>;
+      /** A start that failed or hung, for the log and Sentry. Optional: older desktops lack it. */
+      reportStartupFailure?: (report: StartupFailureReport) => Promise<void>;
       openLogFile: () => Promise<void>;
       openLogFolder: () => Promise<void>;
       getConfigPath: () => Promise<string>;

@@ -2142,6 +2142,11 @@
       "message": "La finestra si è bloccata di nuovo poco dopo il ricaricamento. Ricaricarla ancora una volta o uscire?",
       "reload": "Ricarica",
       "quit": "Esci"
+    },
+    "unresponsive": {
+      "title": "X-Dispatch non risponde",
+      "message": "La finestra non risponde più. Puoi ricaricarla, continuare ad attendere o uscire.",
+      "wait": "Continua ad attendere"
     }
   },
   "weatherRadar": {

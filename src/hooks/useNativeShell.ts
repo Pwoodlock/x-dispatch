@@ -46,6 +46,11 @@ function translatedLabels(): NativeLabels {
       reload: t('nativeShell.crash.reload'),
       quit: t('nativeShell.crash.quit'),
     },
+    unresponsive: {
+      title: t('nativeShell.unresponsive.title'),
+      message: t('nativeShell.unresponsive.message'),
+      wait: t('nativeShell.unresponsive.wait'),
+    },
   };
 }
 
