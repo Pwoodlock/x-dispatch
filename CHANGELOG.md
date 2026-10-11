@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Readable labels over imagery.** On satellite and other image basemaps, place names are white with a dark halo, countries and states in bold, water in light blue. A new Map labels block under Graphics, shown for image basemaps only, lets you hide label categories and set their brightness and size, applied live.
+
+### Fixed
+
+- **Upper airways and holds were missing.** Airway segments published up to FL660 and holds with no ceiling were dropped when the database was built, so typed routes on European upper airways such as `PINAR N870 PONEN T600 CASPE` failed with "airway does not connect the points". The airways database rebuilds on first start.
+- **A start that goes wrong is no longer a black window.** If X-Dispatch cannot load, or an error takes the whole window down, you now see what happened with Reload and Open log file buttons and the log path. A window that stops responding asks whether to reload it, keep waiting or quit. On a tablet, a browser that cannot reach the computer shows the app with a reconnecting notice after a few seconds instead of a blank page.
+
 ## [2.4.1] - 2026-10-10
 
 ### Added
