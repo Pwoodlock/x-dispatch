@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.2] - 2026-10-11
+
 ### Added
 
 - **Readable labels over imagery.** On satellite and other image basemaps, place names are white with a dark halo, countries and states in bold, water in light blue. A new Map labels block under Graphics, shown for image basemaps only, lets you hide label categories and set their brightness and size, applied live.
@@ -177,7 +179,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.1...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.2...HEAD
+[2.4.2]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.3.0...v2.3.1
