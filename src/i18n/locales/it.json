@@ -1902,6 +1902,7 @@
     "errorDetails": "Dettagli errore",
     "tryAgain": "Riprova",
     "reloadApp": "Ricarica app",
+    "noWebgl": "La mappa richiede la grafica hardware e non è riuscita a ottenerla. Di solito dipende da una sessione Desktop remoto, dall’accelerazione hardware disattivata per X-Dispatch o da un driver grafico che non si è avviato. Riavvia X-Dispatch; se continua, riavvia il PC.",
     "sectionFailed": "Caricamento di {{name}} non riuscito",
     "retry": "Riprova"
   },

@@ -1,4 +1,5 @@
 import { app, screen } from 'electron';
+import * as Sentry from '@sentry/electron/main';
 import os from 'os';
 import logger, { getLogPath } from './logger';
 
@@ -53,6 +54,10 @@ export function logStartupEnvironment(shouldInitSentry: boolean): void {
     logger.main.info(
       `GPU compositing: ${f.gpu_compositing}, webgl: ${f.webgl}, rasterization: ${f.rasterization}, video decode: ${f.video_decode}`
     );
+    // Renderer events inherit this scope, so a "WebGL2 is required" report
+    // says whether Chromium had a GPU at all in that session.
+    Sentry.setTag('webgl', f.webgl);
+    Sentry.setContext('gpu_features', { ...f });
   });
 
   // Per-display details

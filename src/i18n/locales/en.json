@@ -1902,6 +1902,7 @@
     "errorDetails": "Error details",
     "tryAgain": "Try Again",
     "reloadApp": "Reload App",
+    "noWebgl": "The map needs hardware graphics and could not get them. This usually means a Remote Desktop session, hardware acceleration turned off for X-Dispatch, or a graphics driver that failed to start. Relaunch X-Dispatch; if it keeps happening, restart the PC.",
     "sectionFailed": "{{name}} failed to load",
     "retry": "Retry"
   },

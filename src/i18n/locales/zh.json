@@ -1902,6 +1902,7 @@
     "errorDetails": "错误详情",
     "tryAgain": "重试",
     "reloadApp": "重新加载应用",
+    "noWebgl": "地图需要硬件图形加速，但无法获取。通常原因是远程桌面会话、X-Dispatch 的硬件加速被关闭，或显卡驱动未能启动。请重新启动 X-Dispatch；如果仍然出现，请重启电脑。",
     "sectionFailed": "{{name}} 加载失败",
     "retry": "重试"
   },

@@ -1902,6 +1902,7 @@
     "errorDetails": "Szczegóły błędu",
     "tryAgain": "Spróbuj ponownie",
     "reloadApp": "Przeładuj aplikację",
+    "noWebgl": "Mapa wymaga grafiki sprzętowej i nie mogła jej uzyskać. Zwykle oznacza to sesję Pulpitu zdalnego, wyłączone przyspieszenie sprzętowe dla X-Dispatch lub sterownik graficzny, który się nie uruchomił. Uruchom X-Dispatch ponownie; jeśli problem się powtarza, uruchom ponownie komputer.",
     "sectionFailed": "Nie udało się załadować {{name}}",
     "retry": "Spróbuj ponownie"
   },

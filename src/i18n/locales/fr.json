@@ -1902,6 +1902,7 @@
     "errorDetails": "Détails de l'erreur",
     "tryAgain": "Réessayer",
     "reloadApp": "Recharger l'application",
+    "noWebgl": "La carte a besoin de l’accélération graphique matérielle et n’a pas pu l’obtenir. C’est généralement dû à une session Bureau à distance, à l’accélération matérielle désactivée pour X-Dispatch ou à un pilote graphique qui n’a pas démarré. Relancez X-Dispatch ; si cela se reproduit, redémarrez le PC.",
     "sectionFailed": "{{name}} n'a pas pu se charger",
     "retry": "Réessayer"
   },
