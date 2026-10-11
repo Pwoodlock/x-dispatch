@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import '@/lib/map/maplibreWorker';
-import { toTileCacheUrl } from '@/lib/map/tileCacheUrl';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import type { DistanceUnit } from '@/lib/utils/units';
 import { Airport } from '@/lib/xplaneServices/dataService';
@@ -91,6 +90,18 @@ function createSafeMapProxy(map: maplibregl.Map): maplibregl.Map {
   };
 
   return new Proxy(map, handler);
+}
+
+/**
+ * MapLibre caps the canvas at 4096px per side and silently lowers the pixel
+ * ratio to fit, which blurs the map on large HiDPI windows. Lift the cap to
+ * what the GPU can actually back.
+ */
+function maxCanvasSizeForGpu(): [number, number] {
+  const gl = document.createElement('canvas').getContext('webgl2');
+  const size = gl?.getParameter(gl.MAX_TEXTURE_SIZE);
+  gl?.getExtension('WEBGL_lose_context')?.loseContext();
+  return typeof size === 'number' && size > 4096 ? [size, size] : [4096, 4096];
 }
 
 export type MapRef = React.RefObject<maplibregl.Map | null>;
@@ -182,24 +193,15 @@ export function useMapSetup({
       // without (typically) crossing into the broken range; revisit when
       // the underlying high-pitch hit-testing bug is fixed.
       maxPitch: 70,
-      fadeDuration: 0,
+      maxCanvasSize: maxCanvasSizeForGpu(),
+      // Keep parsed tiles for more zoom levels so zooming out and back in or
+      // panning back does not re-parse them; MapLibre defaults to 5.
+      maxTileCacheZoomLevels: 10,
+      // Let tiles from the zoom being left finish loading so detail arrives
+      // progressively while zooming in instead of all at once at the end.
+      cancelPendingTileRequestsWhileZooming: false,
       trackResize: true,
       refreshExpiredTiles: false,
-      transformRequest: (url, resourceType) => {
-        // Only cache tile data — skip style JSON, glyphs, and sprites
-        if (resourceType !== 'Tile') return { url };
-        if (
-          url.startsWith('https://') &&
-          (url.includes('tiles.openfreemap.org') ||
-            url.includes('basemaps.cartocdn.com') ||
-            url.includes('tiles.mapterhorn.com') ||
-            url.includes('arcgisonline.com') ||
-            url.includes('rainviewer.com'))
-        ) {
-          return { url: toTileCacheUrl(url) };
-        }
-        return { url };
-      },
     });
 
     // Wrap with proxy for safe access after destruction
@@ -222,10 +224,9 @@ export function useMapSetup({
     });
 
     map.on('error', (e) => {
-      // TODO: DEM tiles served as .webp via tile-cache:// trigger spurious "Could not
-      // load image" errors in MapLibre's raster-dem decoder. The tiles decode correctly
-      // for terrain/hillshade — this is log noise. Revisit when upgrading MapLibre or
-      // switching DEM tile providers.
+      // TODO: .webp DEM tiles trigger spurious "Could not load image" errors in
+      // MapLibre's raster-dem decoder. The tiles decode correctly for terrain and
+      // hillshade, so this is log noise. Revisit when switching DEM tile providers.
       const ev = e as unknown as Record<string, unknown>;
       if (ev.sourceId === 'terrain-dem' || ev.sourceId === 'terrain-hillshade-dem') return;
 

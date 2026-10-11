@@ -104,19 +104,6 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         /* ignore */
       }
 
-      let tileCacheEntries = 0;
-      let tileCacheSize = '—';
-      let tileCacheHitRate = '—';
-      try {
-        const cacheStats = await window.appAPI.getTileCacheStats();
-        tileCacheEntries = cacheStats.entryCount;
-        tileCacheSize = `${(cacheStats.totalSize / 1024 / 1024).toFixed(0)}MB`;
-        tileCacheHitRate =
-          cacheStats.hitRate > 0 ? `${(cacheStats.hitRate * 100).toFixed(0)}%` : '—';
-      } catch {
-        /* ignore */
-      }
-
       let xplaneWs = 'off';
       try {
         const connected = await window.xplaneServiceAPI.isStreamConnected();
@@ -160,9 +147,6 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         terrainActive: map.getTerrain() != null,
         terrainSourceLoaded: !!map.getSource('terrain-dem'),
         hillshadeSourceLoaded: !!map.getSource('terrain-hillshade-dem'),
-        tileCacheEntries,
-        tileCacheSize,
-        tileCacheHitRate,
         xplaneWs,
         vatsimEnabled,
         ivaoEnabled,

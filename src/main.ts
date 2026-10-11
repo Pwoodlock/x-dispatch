@@ -71,14 +71,6 @@ import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import { isSimbriefUser, parseOfpResponse, simbriefFetchUrl } from './lib/simbrief/ofp';
 import type { StartupFailureReport } from './lib/startup/startupFallback';
-import {
-  closeTileCache,
-  getTileCache,
-  initTileCache,
-  registerTileCacheHandler,
-  registerTileCacheScheme,
-} from './lib/tileCache';
-import { fetchCachedTile } from './lib/tileCache/fetchTile';
 import { createUpdateStatusStore, parseLatestStableVersion } from './lib/updater/updateStatus';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
@@ -171,6 +163,9 @@ if (shouldInitSentry) {
     dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
     environment: app.isPackaged ? 'production' : 'development',
     release: `x-dispatch@${app.getVersion()}`,
+    // The default depth of 3 flattens a refused flight payload's aircraft,
+    // weight and start objects to "[Object]" in the flight_rejection context.
+    normalizeDepth: 7,
     tracesSampleRate: 1.0,
     integrations: [Sentry.startupTracingIntegration()],
     ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
@@ -1176,11 +1171,9 @@ function registerIpcHandlers() {
   handle('app:clearCache', () => {
     logger.main.info('Clearing cache via IPC');
     dataManager.clearCache();
-    getTileCache().clear();
+    void session.defaultSession.clearCache();
     return { success: true };
   });
-
-  handle('app:getTileCacheStats', () => getTileCache().getStats());
 
   // Debug: DB inspection (table list + paginated rows)
   handle('debug:dbTables', () => {
@@ -2092,7 +2085,24 @@ function registerIpcHandlers() {
   handle('xplaneService:startFlight', async (_, payload) => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().startFlight(payload);
+      const result = await getXPlaneService().startFlight(payload);
+      if (!result.success && result.code) {
+        const { reportFlightRejection } =
+          await import('./lib/xplaneServices/launch/flightRejection');
+        const version = dataManager.getXPlaneVersion();
+        reportFlightRejection(
+          analytics,
+          payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit,
+          { code: result.code, message: result.error ?? '' },
+          {
+            xplaneVersion: version?.raw ?? null,
+            xplaneSteam: version?.isSteam ?? false,
+            appVersion: app.getVersion(),
+            platform: process.platform,
+          }
+        );
+      }
+      return result;
     } catch (error) {
       logger.main.error('Failed to start X-Plane flight', error);
       return { success: false, error: (error as Error).message };
@@ -2251,9 +2261,6 @@ function registerIpcHandlers() {
 if (!app.isPackaged) {
   app.commandLine.appendSwitch('remote-debugging-port', '9222');
 }
-
-// Must register custom scheme before app is ready
-registerTileCacheScheme();
 
 // Deep links: xdispatch://airport/ICAO, xdispatch://route?from=…, see lib/nativeShell/appUrl.
 const PROTOCOL = APP_URL_SCHEME;
@@ -2529,9 +2536,6 @@ async function bootstrap(): Promise<void> {
     });
   });
 
-  initTileCache();
-  registerTileCacheHandler();
-
   // Last night's NAT track set stays on offer after a restart, until a new one is published.
   void import('./lib/flightplan/builder/oceanicTracks').then((tracks) => {
     tracks.configureOceanicTracksCache(path.join(app.getPath('userData'), 'nat-tracks.json'));
@@ -2542,7 +2546,6 @@ async function bootstrap(): Promise<void> {
   initRemoteAccess({
     rendererDir: path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`),
     devServerUrl: MAIN_WINDOW_VITE_DEV_SERVER_URL || undefined,
-    fetchTile: fetchCachedTile,
     onClientDisconnected: (clientId) => {
       void getXPlaneModule().then(({ getXPlaneService }) =>
         getXPlaneService().unsubscribe(clientId)
@@ -2592,8 +2595,7 @@ app.on('before-quit', () => {
   logger.main.info(`Session ended - Duration: ${sessionDuration} minutes`);
   logger.main.info('════════════════════════════════════════════════════════════════');
 
-  // Close DB and tile cache when app is actually quitting (handles macOS Cmd+Q)
-  closeTileCache();
+  // Close DB when app is actually quitting (handles macOS Cmd+Q)
   dataManager?.close();
 });
 

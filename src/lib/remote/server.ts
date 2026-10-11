@@ -6,16 +6,9 @@ import { randomUUID } from 'crypto';
 import * as http from 'http';
 import type { Duplex } from 'stream';
 import { type WebSocket, WebSocketServer } from 'ws';
-import type { TileResponse } from '@/lib/tileCache/fetchTile';
 import { RemoteAuth } from './auth';
 import { type RemoteSender, invokeRemote, sendRemote } from './handlerRegistry';
-import {
-  CLOSE_UNAUTHORIZED,
-  type ClientFrame,
-  type ServerFrame,
-  TILE_PATH_PREFIX,
-  WS_PATH,
-} from './protocol';
+import { CLOSE_UNAUTHORIZED, type ClientFrame, type ServerFrame, WS_PATH } from './protocol';
 import type { RouteHandler } from './staticRoute';
 import type { RemoteClientInfo } from './types';
 
@@ -23,7 +16,6 @@ export interface RemoteServerOptions {
   getToken: () => string;
   /** Serves the page and its assets (built bundle, or the Vite dev proxy). */
   servePage: RouteHandler;
-  fetchTile: (httpsUrl: string) => Promise<TileResponse>;
   onClientsChanged?: (clients: RemoteClientInfo[]) => void;
   onClientConnected?: (clients: RemoteClientInfo[]) => void;
   onClientDisconnected?: (clientId: string) => void;
@@ -117,25 +109,7 @@ export class RemoteServer {
     if (url.searchParams.has('token')) {
       res.setHeader('Set-Cookie', this.auth.cookieHeader());
     }
-    if (url.pathname.startsWith(TILE_PATH_PREFIX)) {
-      void this.serveTile(url.pathname.slice(TILE_PATH_PREFIX.length), res);
-      return;
-    }
     this.opts.servePage(req, res);
-  }
-
-  private async serveTile(hostAndPath: string, res: http.ServerResponse): Promise<void> {
-    const tile = await this.opts.fetchTile(`https://${hostAndPath}`);
-    if (!tile.body) {
-      res.writeHead(tile.status || 502).end();
-      return;
-    }
-    res.writeHead(200, {
-      'Content-Type': tile.contentType,
-      'Cache-Control': 'public, max-age=86400',
-      'X-Tile-Cache': tile.cacheHit ? 'HIT' : 'MISS',
-    });
-    res.end(Buffer.from(tile.body));
   }
 
   private handleUpgrade(

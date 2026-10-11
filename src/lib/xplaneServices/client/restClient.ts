@@ -17,6 +17,39 @@ interface ApiCapabilities {
   'x-plane': { version: string };
 }
 
+export interface StartFlightResult {
+  success: boolean;
+  error?: string;
+  /** X-Plane's `error_code` when it refused the flight, e.g. `missing_ramp`. */
+  code?: string;
+}
+
+/**
+ * X-Plane answers a refused flight with `{ error_code, error_message }`. Keep
+ * both: the code groups reports, the message is what the user gets to read.
+ */
+function rejectionFromBody(body: string, fallback: string): StartFlightResult {
+  try {
+    const parsed: unknown = JSON.parse(body);
+    if (parsed && typeof parsed === 'object' && 'error_code' in parsed) {
+      const { error_code, error_message } = parsed as {
+        error_code: unknown;
+        error_message?: unknown;
+      };
+      if (typeof error_code === 'string') {
+        return {
+          success: false,
+          code: error_code,
+          error: typeof error_message === 'string' ? error_message : fallback,
+        };
+      }
+    }
+  } catch {
+    // Not JSON: an HTML error page or an empty body.
+  }
+  return { success: false, error: body || fallback };
+}
+
 export class XPlaneRestClient {
   private port: number;
   // Per X-Plane local web API docs: dataref id is stable within a session
@@ -79,7 +112,7 @@ export class XPlaneRestClient {
     }
   }
 
-  async startFlight(payload: FlightInit): Promise<{ success: boolean; error?: string }> {
+  async startFlight(payload: FlightInit): Promise<StartFlightResult> {
     try {
       payload = validateNewFlight(payload);
       const response = await fetch(`${this.baseUrl}/flight`, {
@@ -92,8 +125,7 @@ export class XPlaneRestClient {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+        return rejectionFromBody(await response.text(), `HTTP ${response.status}`);
       }
 
       // Flight endpoints return a result code, unlike dataref endpoints.
@@ -103,16 +135,14 @@ export class XPlaneRestClient {
         result && typeof result === 'object' && 'error_code' in result
           ? result.error_code
           : undefined;
-      if (code !== 'success') {
-        return {
-          success: false,
-          error:
-            typeof code === 'string'
-              ? `X-Plane rejected the flight: ${code}`
-              : 'X-Plane returned an invalid flight initialization response.',
-        };
+      if (code === 'success') return { success: true };
+      if (typeof code === 'string') {
+        return rejectionFromBody(JSON.stringify(result), `X-Plane rejected the flight: ${code}`);
       }
-      return { success: true };
+      return {
+        success: false,
+        error: 'X-Plane returned an invalid flight initialization response.',
+      };
     } catch (err) {
       return { success: false, error: String(err) };
     }

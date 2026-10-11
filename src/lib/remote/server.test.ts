@@ -40,12 +40,6 @@ beforeEach(async () => {
   server = new RemoteServer({
     getToken: () => TOKEN,
     servePage: (_req, res) => res.writeHead(200, { 'Content-Type': 'text/plain' }).end('page'),
-    fetchTile: async (url) => ({
-      status: 200,
-      contentType: 'image/webp',
-      body: new TextEncoder().encode(url),
-      cacheHit: true,
-    }),
     onClientDisconnected: (id) => disconnected.push(id),
     log: { info: () => undefined, warn: () => undefined },
   });
@@ -71,15 +65,6 @@ describe('RemoteServer http', () => {
     const second = await get('/assets/app.js', { cookie: `xd_remote=${TOKEN}` });
     expect(second.status).toBe(200);
     expect(await second.text()).toBe('page');
-  });
-
-  it('serves cached tiles under /tile-cache/', async () => {
-    const res = await get('/tile-cache/tiles.example.com/1/2/3.webp', {
-      cookie: `xd_remote=${TOKEN}`,
-    });
-    expect(res.status).toBe(200);
-    expect(res.headers.get('content-type')).toBe('image/webp');
-    expect(await res.text()).toBe('https://tiles.example.com/1/2/3.webp');
   });
 
   it('rate-limits an address after repeated bad tokens', async () => {

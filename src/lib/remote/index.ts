@@ -11,7 +11,7 @@ import {
 } from '@/lib/xplaneServices/dataService/config';
 import { broadcast, handle, setRemoteBroadcaster } from './handlerRegistry';
 import { parsePort } from './port';
-import { RemoteServer, type RemoteServerOptions } from './server';
+import { RemoteServer } from './server';
 import { createDevProxyHandler, createStaticHandler } from './staticRoute';
 import type { RemoteAccessStatus } from './types';
 
@@ -20,7 +20,6 @@ export interface RemoteAccessDeps {
   rendererDir: string;
   /** Vite dev server URL in development, undefined when packaged. */
   devServerUrl: string | undefined;
-  fetchTile: RemoteServerOptions['fetchTile'];
   /** Called when a tablet goes away so main-side subscriptions are dropped. */
   onClientDisconnected: (clientId: string) => void;
   analytics: {
@@ -74,7 +73,6 @@ async function startServer(): Promise<void> {
     servePage: deps.devServerUrl
       ? createDevProxyHandler(deps.devServerUrl)
       : createStaticHandler(deps.rendererDir),
-    fetchTile: deps.fetchTile,
     onClientsChanged: (clients) => {
       deps?.analytics.recordTabletClients(clients.length);
       publishStatus();

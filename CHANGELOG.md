@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A refused Change Flight no longer looks like a success.** When X-Plane rejects the flight it is sent while running, the launch dialog now stays open and shows X-Plane's own reason, such as an unknown ramp or a missing aircraft file, instead of closing as if the flight had started.
+- **Gates and runway ends could not be clicked on the first launch after installing.** The map waited for a ready signal that never came when a basemap tile failed to download, so clicking a start position did nothing until a relaunch. The map engine is updated to 6.14, which carries the fix.
+
+### Changed
+
+- **Smoother map tiles.** Tiles fade in instead of popping, parsed tiles are kept for more zoom levels so panning back or zooming out and in no longer reloads them, and zooming in shows coarser tiles while the sharper ones arrive.
+- **Sharper map on large high-DPI windows.** The map canvas is no longer capped at 4096 pixels per side, which silently reduced the resolution on 4K and scaled displays.
+
+### Removed
+
+- **The on-disk map tile cache.** Tiles now use the system HTTP cache, which follows each provider's own caching rules. The old `tile-cache` folder in the app data directory is no longer used and can be deleted to free up to 500 MB.
+
 ## [2.4.2] - 2026-10-11
 
 ### Added
