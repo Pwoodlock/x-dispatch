@@ -121,15 +121,15 @@ export function withTimeout<T>(
 const RETRY_FLAG_KEY = 'x-dispatch-startup-retried';
 
 /**
- * In development the Vite server rebuilds while the window is open; the first import after a
- * rebuild can fail to fetch. A reload fixes it, once: a second failure is a real one.
+ * A module that fails to load is usually transient: the dev server rebuilding, a tablet page
+ * served before the desktop updated its chunks, or a dropped fetch. A reload fixes it, once:
+ * a second failure is a real one.
  */
 export function shouldRetryLoad(
   err: unknown,
-  storage: Pick<Storage, 'getItem' | 'setItem'>,
-  dev: boolean
+  storage: Pick<Storage, 'getItem' | 'setItem'>
 ): boolean {
-  if (!dev || !isModuleLoadError(err)) return false;
+  if (!isModuleLoadError(err)) return false;
   if (storage.getItem(RETRY_FLAG_KEY)) return false;
   storage.setItem(RETRY_FLAG_KEY, '1');
   return true;

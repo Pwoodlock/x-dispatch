@@ -4,6 +4,11 @@ import * as Sentry from '@sentry/react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+/** MapLibre throws this when Chromium refuses a WebGL2 context: no GPU for this session. */
+function isNoWebglError(error: Error): boolean {
+  return error.name === 'GPUInitializationError' || /WebGL/.test(error.message);
+}
+
 interface SectionErrorBoundaryProps extends WithTranslation {
   children: ReactNode;
   name: string;
@@ -60,7 +65,9 @@ class SectionErrorBoundaryInner extends Component<
           </div>
           {this.state.error && (
             <p className="text-muted-foreground max-w-xs text-center text-sm">
-              {this.state.error.message}
+              {isNoWebglError(this.state.error)
+                ? t('errorBoundary.noWebgl')
+                : this.state.error.message}
             </p>
           )}
           <Button variant="outline" size="sm" onClick={this.handleReset} className="gap-2">

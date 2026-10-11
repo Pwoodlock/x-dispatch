@@ -1902,6 +1902,7 @@
     "errorDetails": "Fehlerdetails",
     "tryAgain": "Erneut versuchen",
     "reloadApp": "App neu laden",
+    "noWebgl": "Die Karte benötigt Hardwaregrafik und hat sie nicht erhalten. Meist liegt das an einer Remotedesktop-Sitzung, an deaktivierter Hardwarebeschleunigung für X-Dispatch oder an einem Grafiktreiber, der nicht gestartet ist. Starten Sie X-Dispatch neu; wenn es weiterhin passiert, starten Sie den PC neu.",
     "sectionFailed": "{{name}} konnte nicht geladen werden",
     "retry": "Wiederholen"
   },

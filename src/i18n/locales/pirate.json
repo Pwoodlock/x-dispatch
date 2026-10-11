@@ -1902,6 +1902,7 @@
     "errorDetails": "Error details",
     "tryAgain": "Try again",
     "reloadApp": "Reload app",
+    "noWebgl": "Th’ map needs proper graphics an’ couldn’t get ’em. Usually ’tis a Remote Desktop session, hardware acceleration turned off fer X-Dispatch, or a graphics driver that never weighed anchor. Relaunch X-Dispatch; if it keeps happenin’, restart th’ PC.",
     "sectionFailed": "{{name}} failed to load",
     "retry": "Try again"
   },

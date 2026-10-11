@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Startup no longer fails when Windows is still holding the old database.** After an update that changes the database layout, a virus scanner or the previous instance could keep the old file open for a moment, and X-Dispatch quit with a "Failed to initialize the database" error. It now starts with a fresh database and overwrites the old file once it is released.
+- **A tablet that opened X-Dispatch before an update no longer gets stuck on "could not load".** The page reloads itself once when a part of the app fails to download, which is what happens when the desktop was updated while the tablet still had the old page.
+- **A clear message when the map has no graphics acceleration.** Instead of a technical WebGL error, the map panel now says what usually causes it, a Remote Desktop session, hardware acceleration turned off, or a graphics driver that failed to start, and what to try.
 
 ### Fixed
 

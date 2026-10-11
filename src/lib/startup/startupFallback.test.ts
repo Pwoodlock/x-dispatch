@@ -94,15 +94,14 @@ describe('shouldRetryLoad', () => {
   }
   const fetchError = new TypeError('Failed to fetch dynamically imported module: x');
 
-  it('reloads once in development for a failed module fetch', () => {
+  it('reloads once for a failed module fetch', () => {
     const s = storage();
-    expect(shouldRetryLoad(fetchError, s, true)).toBe(true);
-    expect(shouldRetryLoad(fetchError, s, true)).toBe(false);
+    expect(shouldRetryLoad(fetchError, s)).toBe(true);
+    expect(shouldRetryLoad(fetchError, s)).toBe(false);
   });
 
-  it('never retries a packaged build or another kind of error', () => {
-    expect(shouldRetryLoad(fetchError, storage(), false)).toBe(false);
-    expect(shouldRetryLoad(new Error('boom'), storage(), true)).toBe(false);
+  it('never retries another kind of error', () => {
+    expect(shouldRetryLoad(new Error('boom'), storage())).toBe(false);
   });
 });
 

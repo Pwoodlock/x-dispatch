@@ -27,9 +27,10 @@ try {
   clearRetryFlag(sessionStorage);
 } catch (err) {
   // Nothing has rendered yet, so a failed import or a bootstrap error would leave a blank
-  // page. In development the Vite server rebuilding is the usual cause and a reload fixes
-  // it; otherwise say what happened and what to do, and let main log it.
-  if (shouldRetryLoad(err, sessionStorage, import.meta.env.DEV)) {
+  // page. A module that fails to load is usually transient: the dev server rebuilding, a
+  // tablet page served before the desktop updated its chunks, or a dropped fetch. One reload
+  // covers those; a second failure says what happened and what to do, and main logs it.
+  if (shouldRetryLoad(err, sessionStorage)) {
     window.location.reload();
   } else {
     showStartupFailure(err, 'load');

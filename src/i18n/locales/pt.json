@@ -1902,6 +1902,7 @@
     "errorDetails": "Detalhes do erro",
     "tryAgain": "Tentar novamente",
     "reloadApp": "Recarregar aplicação",
+    "noWebgl": "O mapa precisa de gráficos por hardware e não os conseguiu obter. Normalmente isto significa uma sessão de Ambiente de Trabalho Remoto, aceleração por hardware desativada para o X-Dispatch ou um controlador gráfico que não arrancou. Reinicie o X-Dispatch; se continuar a acontecer, reinicie o PC.",
     "sectionFailed": "Não foi possível carregar {{name}}",
     "retry": "Tentar novamente"
   },
