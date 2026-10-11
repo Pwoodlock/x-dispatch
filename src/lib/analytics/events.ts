@@ -115,6 +115,16 @@ export const ANALYTICS_LAUNCH_ERRORS = [
   'change_flight_failed',
   'unknown',
 ] as const;
+/** X-Plane's own error codes for a refused flight, plus a bucket for new ones. */
+export const ANALYTICS_FLIGHT_REJECTIONS = [
+  'json_invalid',
+  'missing_aircraft',
+  'missing_livery',
+  'missing_airport',
+  'missing_ramp',
+  'missing_runway',
+  'other',
+] as const;
 export const ANALYTICS_DIALOG_TIME_BUCKETS = ['under_10s', '10_60s', '1_5m', 'over_5m'] as const;
 
 /** Add-on types the installer recognises. */
@@ -314,6 +324,12 @@ const EVENT_SCHEMA = {
   layer_disabled: { layer: oneOf(ANALYTICS_LAYERS) },
   widget_opened: { widget: oneOf(ANALYTICS_WIDGETS) },
   airport_selected: { airport: { kind: 'code' } },
+  /** X-Plane's flight API refused a payload we validated. */
+  flight_rejected: {
+    error_code: oneOf(ANALYTICS_FLIGHT_REJECTIONS),
+    airport: { kind: 'code', optional: true },
+    start_type: oneOf(['runway', 'ramp', 'custom']),
+  },
   flight_launched: {
     mode: oneOf(['cold_start', 'change_flight']),
     airport: { kind: 'code' },

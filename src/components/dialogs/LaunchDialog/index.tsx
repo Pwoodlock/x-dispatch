@@ -348,7 +348,17 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       if (isXPlaneRunning) {
         // X-Plane running → send via REST API
         try {
-          await startFlightMutation.mutateAsync(flightConfig);
+          const result = await startFlightMutation.mutateAsync(flightConfig);
+          if (!result.success) {
+            window.appAPI.log.error('X-Plane refused the flight change', result.error);
+            reportLaunch('change_flight', false, 'CHANGE_FLIGHT_FAILED');
+            setLaunchError(
+              result.code
+                ? t('launcher.changeFlightRejected', { message: result.error })
+                : result.error || t('launcher.spawnErrorGeneric')
+            );
+            return;
+          }
           reportLaunch('change_flight', true);
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           // NOTE: intentionally NOT clearing `startPosition` here —

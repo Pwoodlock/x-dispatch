@@ -317,7 +317,9 @@ declare global {
         api: { versions: string[] };
         'x-plane': { version: string };
       } | null>;
-      startFlight: (payload: unknown) => Promise<{ success: boolean; error?: string }>;
+      startFlight: (
+        payload: unknown
+      ) => Promise<{ success: boolean; error?: string; code?: string }>;
       getDataref: (name: string) => Promise<number | number[] | null>;
       setDataref: (
         name: string,

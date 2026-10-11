@@ -2082,7 +2082,24 @@ function registerIpcHandlers() {
   handle('xplaneService:startFlight', async (_, payload) => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().startFlight(payload);
+      const result = await getXPlaneService().startFlight(payload);
+      if (!result.success && result.code) {
+        const { reportFlightRejection } =
+          await import('./lib/xplaneServices/launch/flightRejection');
+        const version = dataManager.getXPlaneVersion();
+        reportFlightRejection(
+          analytics,
+          payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit,
+          { code: result.code, message: result.error ?? '' },
+          {
+            xplaneVersion: version?.raw ?? null,
+            xplaneSteam: version?.isSteam ?? false,
+            appVersion: app.getVersion(),
+            platform: process.platform,
+          }
+        );
+      }
+      return result;
     } catch (error) {
       logger.main.error('Failed to start X-Plane flight', error);
       return { success: false, error: (error as Error).message };
