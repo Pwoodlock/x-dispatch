@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.3] - 2026-10-11
+
 ### Fixed
 
 - **Gates and runway ends could not be clicked on the first launch after installing.** The map waited for a ready signal that never came when a basemap tile failed to download, so clicking a start position did nothing until a relaunch. The map engine is updated to 6.14, which carries the fix.
@@ -196,7 +198,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.2...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.3...HEAD
+[2.4.3]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.3.1...v2.4.0
