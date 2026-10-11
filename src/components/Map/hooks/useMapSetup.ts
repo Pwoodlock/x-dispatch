@@ -92,6 +92,18 @@ function createSafeMapProxy(map: maplibregl.Map): maplibregl.Map {
   return new Proxy(map, handler);
 }
 
+/**
+ * MapLibre caps the canvas at 4096px per side and silently lowers the pixel
+ * ratio to fit, which blurs the map on large HiDPI windows. Lift the cap to
+ * what the GPU can actually back.
+ */
+function maxCanvasSizeForGpu(): [number, number] {
+  const gl = document.createElement('canvas').getContext('webgl2');
+  const size = gl?.getParameter(gl.MAX_TEXTURE_SIZE);
+  gl?.getExtension('WEBGL_lose_context')?.loseContext();
+  return typeof size === 'number' && size > 4096 ? [size, size] : [4096, 4096];
+}
+
 export type MapRef = React.RefObject<maplibregl.Map | null>;
 export type PopupRef = React.MutableRefObject<maplibregl.Popup | null>;
 
@@ -181,6 +193,13 @@ export function useMapSetup({
       // without (typically) crossing into the broken range; revisit when
       // the underlying high-pitch hit-testing bug is fixed.
       maxPitch: 70,
+      maxCanvasSize: maxCanvasSizeForGpu(),
+      // Keep parsed tiles for more zoom levels so zooming out and back in or
+      // panning back does not re-parse them; MapLibre defaults to 5.
+      maxTileCacheZoomLevels: 10,
+      // Let tiles from the zoom being left finish loading so detail arrives
+      // progressively while zooming in instead of all at once at the end.
+      cancelPendingTileRequestsWhileZooming: false,
       trackResize: true,
       refreshExpiredTiles: false,
     });
