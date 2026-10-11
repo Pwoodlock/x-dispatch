@@ -182,7 +182,6 @@ export function useMapSetup({
       // without (typically) crossing into the broken range; revisit when
       // the underlying high-pitch hit-testing bug is fixed.
       maxPitch: 70,
-      fadeDuration: 0,
       trackResize: true,
       refreshExpiredTiles: false,
       transformRequest: (url, resourceType) => {
