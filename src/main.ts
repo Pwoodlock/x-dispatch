@@ -163,6 +163,9 @@ if (shouldInitSentry) {
     dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
     environment: app.isPackaged ? 'production' : 'development',
     release: `x-dispatch@${app.getVersion()}`,
+    // The default depth of 3 flattens a refused flight payload's aircraft,
+    // weight and start objects to "[Object]" in the flight_rejection context.
+    normalizeDepth: 7,
     tracesSampleRate: 1.0,
     integrations: [Sentry.startupTracingIntegration()],
     ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
