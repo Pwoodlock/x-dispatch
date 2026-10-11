@@ -138,7 +138,6 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getSendCrashReports: () => t.invoke('app:getSendCrashReports'),
       setSendCrashReports: (enabled: boolean) => t.invoke('app:setSendCrashReports', enabled),
       getXPlaneVersion: () => t.invoke('app:getXPlaneVersion'),
-      getTileCacheStats: () => t.invoke('app:getTileCacheStats'),
       setZoomFactor: x.setZoomFactor,
       getZoomFactor: x.getZoomFactor,
       getFilePathForDrop: x.getFilePathForDrop,

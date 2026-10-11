@@ -19,9 +19,6 @@ export interface DebugStats {
   terrainActive: boolean;
   terrainSourceLoaded: boolean;
   hillshadeSourceLoaded: boolean;
-  tileCacheEntries: number;
-  tileCacheSize: string;
-  tileCacheHitRate: string;
   xplaneWs: string;
   vatsimEnabled: boolean;
   ivaoEnabled: boolean;

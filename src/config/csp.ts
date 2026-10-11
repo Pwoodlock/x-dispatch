@@ -8,6 +8,7 @@
  */
 
 const TILE_HOSTS = [
+  'https://tiles.openfreemap.org',
   'https://*.tile.openstreetmap.org',
   'https://basemaps.cartocdn.com',
   'https://*.basemaps.cartocdn.com',
@@ -39,7 +40,6 @@ const DIRECTIVES: Record<string, string[]> = {
     'https://avwx.rest',
     'https://gateway.x-plane.com',
     'https://api.maptiler.com',
-    'https://tiles.openfreemap.org',
     ...TILE_HOSTS,
   ],
   'worker-src': ["'self'", 'blob:'],

@@ -129,11 +129,6 @@ declare global {
         commit: string;
         isSteam: boolean;
       } | null>;
-      getTileCacheStats: () => Promise<{
-        totalSize: number;
-        entryCount: number;
-        hitRate: number;
-      }>;
       setZoomFactor: (factor: number) => void;
       getZoomFactor: () => number;
       getFilePathForDrop: (file: File) => string;

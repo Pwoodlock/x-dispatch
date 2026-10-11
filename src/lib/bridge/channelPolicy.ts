@@ -20,7 +20,6 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'app:getProcessMemory',
   'app:getSendCrashReports',
   'app:getThirdPartyNotices',
-  'app:getTileCacheStats',
   'app:getUpdateStatus',
   'app:getVersion',
   'app:getXPlaneVersion',

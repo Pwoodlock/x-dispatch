@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import '@/lib/map/maplibreWorker';
-import { toTileCacheUrl } from '@/lib/map/tileCacheUrl';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import type { DistanceUnit } from '@/lib/utils/units';
 import { Airport } from '@/lib/xplaneServices/dataService';
@@ -184,21 +183,6 @@ export function useMapSetup({
       maxPitch: 70,
       trackResize: true,
       refreshExpiredTiles: false,
-      transformRequest: (url, resourceType) => {
-        // Only cache tile data — skip style JSON, glyphs, and sprites
-        if (resourceType !== 'Tile') return { url };
-        if (
-          url.startsWith('https://') &&
-          (url.includes('tiles.openfreemap.org') ||
-            url.includes('basemaps.cartocdn.com') ||
-            url.includes('tiles.mapterhorn.com') ||
-            url.includes('arcgisonline.com') ||
-            url.includes('rainviewer.com'))
-        ) {
-          return { url: toTileCacheUrl(url) };
-        }
-        return { url };
-      },
     });
 
     // Wrap with proxy for safe access after destruction
@@ -221,10 +205,9 @@ export function useMapSetup({
     });
 
     map.on('error', (e) => {
-      // TODO: DEM tiles served as .webp via tile-cache:// trigger spurious "Could not
-      // load image" errors in MapLibre's raster-dem decoder. The tiles decode correctly
-      // for terrain/hillshade — this is log noise. Revisit when upgrading MapLibre or
-      // switching DEM tile providers.
+      // TODO: .webp DEM tiles trigger spurious "Could not load image" errors in
+      // MapLibre's raster-dem decoder. The tiles decode correctly for terrain and
+      // hillshade, so this is log noise. Revisit when switching DEM tile providers.
       const ev = e as unknown as Record<string, unknown>;
       if (ev.sourceId === 'terrain-dem' || ev.sourceId === 'terrain-hillshade-dem') return;
 

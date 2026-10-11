@@ -9,6 +9,5 @@ export type ServerFrame =
   | { t: 'ev'; ch: string; args: unknown[] };
 
 export const WS_PATH = '/ws';
-export const TILE_PATH_PREFIX = '/tile-cache/';
 /** Close code sent when the pairing token no longer matches. */
 export const CLOSE_UNAUTHORIZED = 4401;
