@@ -23,6 +23,17 @@ function token(tokens: string[], index: number): string {
   return tokens[index] ?? '';
 }
 
+/**
+ * Text after the first `count` fields of a raw line, kept as written.
+ * X-Plane matches ramp_start against the exact start location name, trailing
+ * and doubled spaces included, so collapsing them makes the launch fall back
+ * to the main menu without an error.
+ */
+function restOfLine(raw: string, count: number): string {
+  const match = raw.match(new RegExp(`^\\s*(?:\\S+\\s+){${count}}`));
+  return match ? raw.slice(match[0].length) : '';
+}
+
 const RunwayEndSchema = z.object({
   name: z.string(),
   lat: latitude,
@@ -45,14 +56,17 @@ const StartupLocationSchema = z.object({
 
 export class AirportParser {
   private lines: string[];
+  /** Same rows as `lines`, untrimmed apart from the CR of CRLF files. */
+  private rawLines: string[];
   private errors: ParseError[] = [];
   private skipped = 0;
 
   constructor(data: string) {
-    this.lines = data
+    this.rawLines = data
       .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
+      .map((l) => l.replace(/\r$/, ''))
+      .filter((l) => l.trim().length > 0);
+    this.lines = this.rawLines.map((l) => l.trim());
   }
 
   /**
@@ -136,7 +150,11 @@ export class AirportParser {
     };
   }
 
-  private parseStartupLocation(tokens: string[], lineNum: number): StartupLocation | null {
+  private parseStartupLocation(
+    tokens: string[],
+    raw: string,
+    lineNum: number
+  ): StartupLocation | null {
     if (tokens.length < 6) {
       this.skipped++;
       return null;
@@ -149,7 +167,7 @@ export class AirportParser {
       heading: Number.isFinite(rawHeading) ? ((rawHeading % 360) + 360) % 360 : 0,
       location_type: token(tokens, 4),
       airplane_types: token(tokens, 5),
-      name: tokens.slice(6).join(' '),
+      name: restOfLine(raw, 6),
     });
 
     if (!result.success) {
@@ -167,7 +185,11 @@ export class AirportParser {
     };
   }
 
-  private parseStartupLocationLegacy(tokens: string[], lineNum: number): StartupLocation | null {
+  private parseStartupLocationLegacy(
+    tokens: string[],
+    raw: string,
+    lineNum: number
+  ): StartupLocation | null {
     if (tokens.length < 4) {
       this.skipped++;
       return null;
@@ -180,7 +202,7 @@ export class AirportParser {
       heading: Number.isFinite(rawHeading) ? ((rawHeading % 360) + 360) % 360 : 0,
       location_type: 'misc',
       airplane_types: 'ABCDEF',
-      name: tokens.slice(4).join(' ') || 'Startup',
+      name: restOfLine(raw, 4) || 'Startup',
     });
 
     if (!result.success) {
@@ -637,13 +659,21 @@ export class AirportParser {
         }
 
         case RowCode.START_LOCATION_LEGACY: {
-          const startupLocation = this.parseStartupLocationLegacy(tokens, lineNum);
+          const startupLocation = this.parseStartupLocationLegacy(
+            tokens,
+            this.rawLines[i] ?? line,
+            lineNum
+          );
           if (startupLocation) airport.startupLocations.push(startupLocation);
           break;
         }
 
         case RowCode.START_LOCATION_NEW: {
-          const startupLocation = this.parseStartupLocation(tokens, lineNum);
+          const startupLocation = this.parseStartupLocation(
+            tokens,
+            this.rawLines[i] ?? line,
+            lineNum
+          );
           if (startupLocation) airport.startupLocations.push(startupLocation);
           break;
         }
