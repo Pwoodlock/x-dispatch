@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **One Flight Strip at a time.** Popping the strip out hides it on the map, and closing the window brings it back.
 - **The Flight Strip window keeps the strip's shape** when you resize it, and can no longer be maximized.
 - **Flight Strip size and opacity moved** from Appearance to the new Flight Strip tab.
+- **Clearer VATSIM pilot and ATC cards.** Clicking a pilot shows the route, altitude, filed altitude, ground speed and heading in your units and language, with the full filed route. The airport ATC card lists each position with its frequency and ATIS text without being cut off. Both update with each VATSIM refresh, and a pilot's card follows the aircraft.
 
 ### Fixed
 
