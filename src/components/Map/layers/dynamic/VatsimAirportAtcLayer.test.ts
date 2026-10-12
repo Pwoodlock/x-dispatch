@@ -155,15 +155,8 @@ describe('buildAirportAtcFeatureCollection', () => {
         (feature) => feature.geometry.coordinates[1] === airports[0]!.lat
       )
     ).toBe(true);
-    expect(
-      result.collection.features.map((feature) =>
-        feature.properties.iconOffset.map((value) => Number(value.toFixed(1)))
-      )
-    ).toEqual([
-      [-27, -22],
-      [-9, -22],
-      [9, -22],
-      [27, -22],
+    expect(result.collection.features.map((feature) => feature.properties.offsetX)).toEqual([
+      -27, -9, 9, 27,
     ]);
 
     const entry = result.popupMap.get('EGLL');

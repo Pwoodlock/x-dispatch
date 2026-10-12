@@ -13,7 +13,7 @@ type AirportAtcFeatureProperties = {
   icao: string;
   badgeLetter: AirportBadgeLetter;
   imageId: string;
-  iconOffset: [number, number];
+  offsetX: number;
 };
 
 type AirportAtcFeatureCollection = GeoJSON.FeatureCollection<
@@ -64,10 +64,12 @@ export function getAirportAtcBadgeImageId(letter: AirportBadgeLetter): string {
   return `vatsim-airport-atc-badge-${letter.toLowerCase()}`;
 }
 
-function badgeOffset(index: number, total: number): [number, number] {
-  const width = 18;
-  const horizontal = (index - (total - 1) / 2) * width;
-  return [horizontal, -22];
+const BADGE_WIDTH = 18;
+const BADGE_OFFSET_Y = -22;
+const BADGE_OFFSET_RANGE = 1000;
+
+function badgeOffsetX(index: number, total: number): number {
+  return (index - (total - 1) / 2) * BADGE_WIDTH;
 }
 
 export function getAirportAtcBadgeOptions(letter: AirportBadgeLetter): PillImageOptions {
@@ -133,7 +135,7 @@ export function buildAirportAtcFeatureCollection(
           icao: summary.icao,
           badgeLetter: badge.letter,
           imageId: getAirportAtcBadgeImageId(badge.letter),
-          iconOffset: badgeOffset(index, summary.badges.length),
+          offsetX: badgeOffsetX(index, summary.badges.length),
         },
       };
     });
@@ -180,7 +182,17 @@ export function updateVatsimAirportAtcLayer(
         'icon-image': ['get', 'imageId'],
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
-        'icon-offset': ['get', 'iconOffset'],
+        // MapLibre stringifies array-valued GeoJSON properties, so the offset
+        // array is rebuilt from a numeric property.
+        'icon-offset': [
+          'interpolate',
+          ['linear'],
+          ['get', 'offsetX'],
+          -BADGE_OFFSET_RANGE,
+          ['literal', [-BADGE_OFFSET_RANGE, BADGE_OFFSET_Y]],
+          BADGE_OFFSET_RANGE,
+          ['literal', [BADGE_OFFSET_RANGE, BADGE_OFFSET_Y]],
+        ],
         'icon-size': AIRPORT_ATC_ICON_SIZE,
       },
     });
