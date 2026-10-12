@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tablets show the same flight plan as the desktop.** Each device used to keep its own copy, so a tablet opened the plan it last had. Edits on any device now reach all of them, and the latest edit wins.
 - **The update notice's Download and Later buttons work while a dialog is open.**
 - **X-Dispatch starts again after quitting with the Flight Strip window open.** Closing X-Dispatch now closes the strip window too.
+- **VATSIM sectors load reliably.** The approach boundaries came through a GitHub service that refuses requests after a few per hour from the same network, which left the sector overlay stale or empty. They now come from a direct download without that limit.
+- **VATSIM ATC badges at an airport sit side by side.** Delivery, Ground, Tower and Approach badges were drawn on top of each other, so only one was visible.
 
 ## [2.4.3] - 2026-10-11
 
