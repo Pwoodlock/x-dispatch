@@ -2,6 +2,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import {
+  DEFAULT_FLIGHT_STRIP_FIELDS,
+  type FlightStripField,
+  type FlightStripFields,
+  withFieldVisible,
+} from '@/lib/flightStrip/fields';
+import {
+  DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS,
+  clampFlightStripOpacity,
+} from '@/lib/flightStrip/windowOptions';
+import {
   DEFAULT_REFERENCE_LABEL_SETTINGS,
   type ReferenceLabelSettings,
 } from '@/lib/map/referenceLabelSettings';
@@ -108,10 +118,23 @@ export interface AppearanceSettings {
   debugOverlay: boolean;
   /** Toolbar clock readout: Zulu (UTC) or the machine's local time. */
   clockMode: ClockMode;
-  /** Size of the live aircraft strip, 1 to 2 times its base size. */
-  flightStripScale: number;
-  /** Opacity of the detached flight strip window, 0.3 to 1. */
-  flightStripOpacity: number;
+}
+
+export interface FlightStripSettings {
+  /** Size of the strip on the map, 1 to 2 times its base size. */
+  scale: number;
+  /** Opacity of the detached strip window, 0.3 to 1. */
+  opacity: number;
+  /** The detached window lets clicks through to the simulator. */
+  locked: boolean;
+  /** The detached window stays above a fullscreen simulator. */
+  alwaysOnTop: boolean;
+  /** Open the detached window when X-Plane connects. */
+  autoOpen: boolean;
+  /** Show made-up readings while X-Plane is not connected, to set the strip up. */
+  preview: boolean;
+  /** Readouts shown on the map strip and in the detached window. */
+  fields: FlightStripFields;
 }
 
 export interface GraphicsSettings {
@@ -179,6 +202,7 @@ interface SettingsState {
   support: SupportSettings;
   airports: AirportsSettings;
   desktop: DesktopSettings;
+  flightStrip: FlightStripSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   addUserMapStyle: (style: MapStyle) => void;
   removeUserMapStyle: (id: string) => void;
@@ -201,6 +225,12 @@ interface SettingsState {
   setClockMode: (mode: ClockMode) => void;
   setFlightStripScale: (scale: number) => void;
   setFlightStripOpacity: (opacity: number) => void;
+  updateFlightStripSettings: (
+    settings: Partial<Pick<FlightStripSettings, 'alwaysOnTop' | 'autoOpen' | 'locked' | 'preview'>>
+  ) => void;
+  toggleFlightStripLock: () => void;
+  /** Ignored when it would hide the last readout. */
+  setFlightStripField: (field: FlightStripField, visible: boolean) => void;
   resetToDefaults: () => void;
 }
 
@@ -232,8 +262,6 @@ const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
   zoomLevel: 1.0,
   debugOverlay: false,
   clockMode: 'zulu',
-  flightStripScale: 1,
-  flightStripOpacity: 1,
 };
 
 function applyZoomLevel(level: number) {
@@ -271,6 +299,21 @@ const DEFAULT_DESKTOP_SETTINGS: DesktopSettings = {
   recentAirportsMenu: true,
 };
 
+const DEFAULT_FLIGHT_STRIP_SETTINGS: FlightStripSettings = {
+  scale: 1,
+  opacity: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.opacity,
+  locked: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.locked,
+  alwaysOnTop: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.alwaysOnTop,
+  autoOpen: false,
+  preview: false,
+  fields: DEFAULT_FLIGHT_STRIP_FIELDS,
+};
+
+function clampFlightStripScale(scale: number): number {
+  const safe = Number.isFinite(scale) ? scale : 1;
+  return Math.round(Math.max(1, Math.min(2, safe)) * 100) / 100;
+}
+
 const DEFAULT_AIRPORTS_SETTINGS: AirportsSettings = {
   favoriteIcaos: [],
   homeIcao: null,
@@ -289,6 +332,7 @@ export const useSettingsStore = create<SettingsState>()(
       support: DEFAULT_SUPPORT_SETTINGS,
       airports: DEFAULT_AIRPORTS_SETTINGS,
       desktop: DEFAULT_DESKTOP_SETTINGS,
+      flightStrip: DEFAULT_FLIGHT_STRIP_SETTINGS,
 
       updateMapSettings: (settings) =>
         set((state) => ({
@@ -438,17 +482,31 @@ export const useSettingsStore = create<SettingsState>()(
       setClockMode: (mode: ClockMode) =>
         set((state) => ({ appearance: { ...state.appearance, clockMode: mode } })),
 
-      setFlightStripScale: (scale: number) => {
-        const safe = Number.isFinite(scale) ? scale : 1;
-        const clamped = Math.round(Math.max(1, Math.min(2, safe)) * 100) / 100;
-        set((state) => ({ appearance: { ...state.appearance, flightStripScale: clamped } }));
-      },
+      setFlightStripScale: (scale: number) =>
+        set((state) => ({
+          flightStrip: { ...state.flightStrip, scale: clampFlightStripScale(scale) },
+        })),
 
-      setFlightStripOpacity: (opacity: number) => {
-        const safe = Number.isFinite(opacity) ? opacity : 1;
-        const clamped = Math.round(Math.max(0.3, Math.min(1, safe)) * 100) / 100;
-        set((state) => ({ appearance: { ...state.appearance, flightStripOpacity: clamped } }));
-      },
+      setFlightStripOpacity: (opacity: number) =>
+        set((state) => ({
+          flightStrip: { ...state.flightStrip, opacity: clampFlightStripOpacity(opacity) },
+        })),
+
+      updateFlightStripSettings: (settings) =>
+        set((state) => ({ flightStrip: { ...state.flightStrip, ...settings } })),
+
+      toggleFlightStripLock: () =>
+        set((state) => ({
+          flightStrip: { ...state.flightStrip, locked: !state.flightStrip.locked },
+        })),
+
+      setFlightStripField: (field, visible) =>
+        set((state) => ({
+          flightStrip: {
+            ...state.flightStrip,
+            fields: withFieldVisible(state.flightStrip.fields, field, visible),
+          },
+        })),
 
       resetToDefaults: () => {
         applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
@@ -463,12 +521,13 @@ export const useSettingsStore = create<SettingsState>()(
           support: DEFAULT_SUPPORT_SETTINGS,
           airports: DEFAULT_AIRPORTS_SETTINGS,
           desktop: DEFAULT_DESKTOP_SETTINGS,
+          flightStrip: DEFAULT_FLIGHT_STRIP_SETTINGS,
         });
       },
     }),
     {
       name: 'xplane-viz-settings',
-      version: 36,
+      version: 37,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -658,7 +717,8 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
   if (version < 31) {
     state = {
       ...state,
-      appearance: { ...state.appearance!, flightStripScale: 1 },
+      // Moved into `flightStrip` at v37.
+      appearance: { ...state.appearance!, flightStripScale: 1 } as AppearanceSettings,
     };
   }
 
@@ -677,7 +737,8 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
   if (version < 33) {
     state = {
       ...state,
-      appearance: { ...state.appearance!, flightStripOpacity: 1 },
+      // Moved into `flightStrip` at v37.
+      appearance: { ...state.appearance!, flightStripOpacity: 1 } as AppearanceSettings,
     };
   }
 
@@ -699,6 +760,27 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     state = {
       ...state,
       map: { ...state.map!, referenceLabels: DEFAULT_REFERENCE_LABEL_SETTINGS },
+    };
+  }
+
+  if (version < 37) {
+    // The strip's size and opacity leave Appearance for the strip's own settings.
+    const {
+      flightStripScale: scale,
+      flightStripOpacity: opacity,
+      ...appearance
+    } = (state.appearance ?? {}) as AppearanceSettings & {
+      flightStripScale?: unknown;
+      flightStripOpacity?: unknown;
+    };
+    state = {
+      ...state,
+      appearance,
+      flightStrip: {
+        ...DEFAULT_FLIGHT_STRIP_SETTINGS,
+        scale: typeof scale === 'number' ? clampFlightStripScale(scale) : 1,
+        opacity: typeof opacity === 'number' ? clampFlightStripOpacity(opacity) : 1,
+      },
     };
   }
 

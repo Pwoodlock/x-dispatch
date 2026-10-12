@@ -48,12 +48,7 @@ function UpdateToast({
             {action}
             {ActionIcon && <ActionIcon className="h-3 w-3" />}
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-muted-foreground"
-            onClick={() => toast.dismiss(id)}
-          >
+          <Button size="sm" variant="ghost" onClick={() => toast.dismiss(id)}>
             {dismiss}
           </Button>
         </div>

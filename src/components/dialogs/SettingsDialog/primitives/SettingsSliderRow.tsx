@@ -14,6 +14,8 @@ interface SettingsSliderRowProps {
   max: number;
   step: number;
   onCommit: (value: number) => void;
+  /** Called while dragging, before the value is saved. */
+  onPreview?: (value: number) => void;
   resetLabel: string;
   disabled?: boolean;
   className?: string;
@@ -33,6 +35,7 @@ export function SettingsSliderRow({
   max,
   step,
   onCommit,
+  onPreview,
   resetLabel,
   disabled,
   className,
@@ -54,7 +57,9 @@ export function SettingsSliderRow({
           aria-labelledby={titleId}
           value={[display]}
           onValueChange={(v) => {
-            if (v[0] !== undefined) setPreview(v[0]);
+            if (v[0] === undefined) return;
+            setPreview(v[0]);
+            onPreview?.(v[0]);
           }}
           onValueCommit={(v) => {
             setPreview(null);

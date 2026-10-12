@@ -16,6 +16,7 @@ export const MENU_COMMANDS = [
   'zoomReset',
   'toggleSidebar',
   'flightStripWindow',
+  'flightStripLock',
   'keyboardShortcuts',
   'closeWindow',
   'openLogs',
@@ -140,6 +141,7 @@ export function buildAppMenuTemplate({
       { type: 'separator' },
       command('toggleSidebar', labels.toggleSidebar, 'CmdOrCtrl+B'),
       command('flightStripWindow', labels.flightStripWindow, 'CmdOrCtrl+Shift+S'),
+      command('flightStripLock', labels.flightStripLock, 'CmdOrCtrl+Shift+K'),
       { type: 'separator' },
       {
         id: 'toggleFullScreen',

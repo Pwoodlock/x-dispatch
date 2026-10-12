@@ -318,10 +318,56 @@ describe('migrateSettings', () => {
       zoomLevel: 1.1,
       debugOverlay: true,
       clockMode: 'zulu',
-      flightStripScale: 1,
-      flightStripOpacity: 1,
     });
+    expect(result.flightStrip.scale).toBe(1);
     expect(result.graphics.followSimTime).toBe(false);
+  });
+
+  it('moves the strip size and opacity into their own settings at v37', () => {
+    const v36Blob = {
+      appearance: {
+        fontSize: 'medium' as const,
+        zoomLevel: 1.2,
+        debugOverlay: false,
+        clockMode: 'local' as const,
+        flightStripScale: 1.4,
+        flightStripOpacity: 0.6,
+      },
+      airports: { favoriteIcaos: ['LFPG'], homeIcao: null, autoNavigateHomeOnStart: true },
+    };
+    const result = migrateSettings(v36Blob, 36);
+    expect(result.flightStrip).toEqual({
+      scale: 1.4,
+      opacity: 0.6,
+      locked: false,
+      alwaysOnTop: true,
+      autoOpen: false,
+      preview: false,
+      fields: {
+        aircraft: true,
+        attitude: true,
+        speed: true,
+        altitude: true,
+        verticalSpeed: true,
+        heading: true,
+        wind: true,
+        targets: true,
+        details: true,
+      },
+    });
+    expect(result.appearance).toEqual({
+      fontSize: 'medium',
+      zoomLevel: 1.2,
+      debugOverlay: false,
+      clockMode: 'local',
+    });
+    expect(result.airports.favoriteIcaos).toEqual(['LFPG']);
+  });
+
+  it('gives the strip defaults at v37 when the old values are missing or broken', () => {
+    const result = migrateSettings({ appearance: { flightStripScale: 'big' } }, 36);
+    expect(result.flightStrip.scale).toBe(1);
+    expect(result.flightStrip.opacity).toBe(1);
   });
 
   it('adds the desktop window settings at v34 with every behaviour on', () => {
@@ -558,5 +604,32 @@ describe('userMapStyles actions', () => {
 
     removeUserMapStyle('u1');
     expect(useSettingsStore.getState().map.mapStyleUrl).toBe(presetUrl);
+  });
+});
+
+describe('flight strip settings', () => {
+  beforeEach(() => useSettingsStore.getState().resetToDefaults());
+
+  it('never hides the last readout', () => {
+    const { setFlightStripField } = useSettingsStore.getState();
+    for (const field of ['attitude', 'speed', 'altitude', 'verticalSpeed', 'heading'] as const) {
+      setFlightStripField(field, false);
+    }
+    setFlightStripField('wind', false);
+    expect(useSettingsStore.getState().flightStrip.fields.wind).toBe(true);
+  });
+
+  it('toggles the lock', () => {
+    useSettingsStore.getState().toggleFlightStripLock();
+    expect(useSettingsStore.getState().flightStrip.locked).toBe(true);
+    useSettingsStore.getState().toggleFlightStripLock();
+    expect(useSettingsStore.getState().flightStrip.locked).toBe(false);
+  });
+
+  it('clamps size and opacity', () => {
+    const { setFlightStripScale, setFlightStripOpacity } = useSettingsStore.getState();
+    setFlightStripScale(5);
+    setFlightStripOpacity(0);
+    expect(useSettingsStore.getState().flightStrip).toMatchObject({ scale: 2, opacity: 0.3 });
   });
 });

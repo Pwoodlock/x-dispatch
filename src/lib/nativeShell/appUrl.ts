@@ -20,6 +20,7 @@ export const SETTINGS_TABS = [
   'xplane',
   'data',
   'appearance',
+  'flight-strip',
   'units',
   'graphics',
   'flights',

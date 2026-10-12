@@ -24,6 +24,7 @@ export interface NativeLabels {
     zoomReset: string;
     toggleSidebar: string;
     flightStripWindow: string;
+    flightStripLock: string;
     toggleFullScreen: string;
     close: string;
     keyboardShortcuts: string;
@@ -64,6 +65,7 @@ export const DEFAULT_NATIVE_LABELS: NativeLabels = {
     zoomReset: 'Actual Size',
     toggleSidebar: 'Toggle Sidebar',
     flightStripWindow: 'Flight Strip Window',
+    flightStripLock: 'Lock Flight Strip',
     toggleFullScreen: 'Toggle Full Screen',
     close: 'Close Window',
     keyboardShortcuts: 'Keyboard Shortcuts',

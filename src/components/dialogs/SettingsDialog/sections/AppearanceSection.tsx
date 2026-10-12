@@ -13,7 +13,7 @@ import { Slider } from '@/components/ui/slider';
 import { changeLanguage, languages } from '@/i18n';
 import { cn } from '@/lib/utils/helpers';
 import type { FontSize } from '@/stores/settingsStore';
-import { useSettingsStore } from '@/stores/settingsStore';
+import { ZOOM_LEVEL_RANGE, useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
@@ -22,23 +22,19 @@ const FONT_SIZES = ['small', 'medium', 'large'] as const;
 const isLinux = window.appAPI?.platform === 'linux';
 const isMac = window.appAPI?.platform === 'darwin';
 
+/** The slider works in percent of the Interface Zoom range. */
+const ZOOM_MIN = Math.round(ZOOM_LEVEL_RANGE.min * 100);
+const ZOOM_MAX = Math.round(ZOOM_LEVEL_RANGE.max * 100);
+const ZOOM_STEP = Math.round(ZOOM_LEVEL_RANGE.step * 100);
+
 function ZoomSlider({
   zoomLevel,
   onCommit,
-  onPreview,
   resetLabel,
-  min = 70,
-  max = 130,
-  step = 10,
 }: {
   zoomLevel: number;
   onCommit: (level: number) => void;
-  /** Called while dragging, before the value is saved. */
-  onPreview?: (level: number) => void;
   resetLabel: string;
-  min?: number;
-  max?: number;
-  step?: number;
 }) {
   const persisted = Math.round((zoomLevel || 1) * 100);
   const [preview, setPreview] = useState<number | null>(null);
@@ -46,14 +42,13 @@ function ZoomSlider({
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-muted-foreground text-xs">{min}%</span>
+      <span className="text-muted-foreground text-xs">{ZOOM_MIN}%</span>
       <Slider
         value={[display]}
         onValueChange={(v) => {
           const val = v[0];
           if (val === undefined) return;
           setPreview(val);
-          onPreview?.(val / 100);
         }}
         onValueCommit={(v) => {
           const val = v[0];
@@ -61,12 +56,12 @@ function ZoomSlider({
           setPreview(null);
           onCommit(val / 100);
         }}
-        min={min}
-        max={max}
-        step={step}
+        min={ZOOM_MIN}
+        max={ZOOM_MAX}
+        step={ZOOM_STEP}
         className="flex-1"
       />
-      <span className="text-muted-foreground text-xs">{max}%</span>
+      <span className="text-muted-foreground text-xs">{ZOOM_MAX}%</span>
       <span className="min-w-[4ch] text-center font-mono text-sm">{display}%</span>
       {persisted !== 100 && (
         <Button
@@ -85,16 +80,8 @@ function ZoomSlider({
 
 export default function AppearanceSection({ className }: SettingsSectionProps) {
   const { t, i18n } = useTranslation();
-  const {
-    appearance,
-    setFontSize,
-    setZoomLevel,
-    setFlightStripScale,
-    setFlightStripOpacity,
-    setDebugOverlay,
-    desktop,
-    updateDesktopSettings,
-  } = useSettingsStore();
+  const { appearance, setFontSize, setZoomLevel, setDebugOverlay, desktop, updateDesktopSettings } =
+    useSettingsStore();
 
   const handleLanguageChange = (langCode: string) => {
     changeLanguage(langCode);
@@ -159,39 +146,6 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           resetLabel={t('settings.appearance.zoomReset')}
         />
       </SettingsSectionBlock>
-
-      {/* Flight strip size */}
-      <SettingsSectionBlock
-        title={t('settings.appearance.flightStripScale')}
-        description={t('settings.appearance.flightStripScaleDescription')}
-      >
-        <ZoomSlider
-          zoomLevel={appearance.flightStripScale}
-          onCommit={setFlightStripScale}
-          resetLabel={t('settings.appearance.zoomReset')}
-          min={100}
-          max={200}
-          step={10}
-        />
-      </SettingsSectionBlock>
-
-      {/* Detached flight strip opacity; Electron cannot change window opacity on Linux */}
-      {!isLinux && (
-        <SettingsSectionBlock
-          title={t('settings.appearance.flightStripOpacity')}
-          description={t('settings.appearance.flightStripOpacityDescription')}
-        >
-          <ZoomSlider
-            zoomLevel={appearance.flightStripOpacity}
-            onCommit={setFlightStripOpacity}
-            onPreview={(opacity) => void window.appAPI.setFlightStripOpacity(opacity)}
-            resetLabel={t('settings.appearance.zoomReset')}
-            min={30}
-            max={100}
-            step={5}
-          />
-        </SettingsSectionBlock>
-      )}
 
       {/* Desktop window behaviour; main applies these */}
       <SettingsSectionBlock

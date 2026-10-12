@@ -77,6 +77,7 @@ describe('buildAppMenuTemplate', () => {
       [labels.zoomReset, 'zoomReset', 'CmdOrCtrl+0'],
       [labels.toggleSidebar, 'toggleSidebar', 'CmdOrCtrl+B'],
       [labels.flightStripWindow, 'flightStripWindow', 'CmdOrCtrl+Shift+S'],
+      [labels.flightStripLock, 'flightStripLock', 'CmdOrCtrl+Shift+K'],
       [labels.keyboardShortcuts, 'keyboardShortcuts', 'CmdOrCtrl+/'],
       [labels.openLogs, 'openLogs', undefined],
     ];

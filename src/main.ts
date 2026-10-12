@@ -29,7 +29,15 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
+import { type Size, fitWindowToContent, parseContentSize } from './lib/flightStrip/windowFit';
+import {
+  DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS,
+  type FlightStripWindowOptions,
+  applyFlightStripWindowOptions,
+  parseFlightStripWindowOptions,
+} from './lib/flightStrip/windowOptions';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
+import { registerSharedPlanIpc } from './lib/flightplan/sharedPlanIpc';
 import { MENU_COMMANDS, type MenuCommand, buildAppMenuTemplate } from './lib/nativeShell/appMenu';
 import {
   APP_URL_SCHEME,
@@ -408,7 +416,8 @@ function runMenuCommand(command: MenuCommand): void {
   }
   const win = mainWindow;
   if (!win || win.isDestroyed()) return;
-  if (command !== 'closeWindow') focusMainWindow();
+  // Locking the strip happens over the simulator; X-Dispatch stays in the background.
+  if (command !== 'closeWindow' && command !== 'flightStripLock') focusMainWindow();
   win.webContents.send('app:menuCommand', command);
 }
 
@@ -568,19 +577,40 @@ async function proxyDownload(
 }
 
 let flightStripWindow: BrowserWindow | null = null;
-/** Set by the main window from the Appearance setting; window opacity is not supported on Linux. */
-let flightStripOpacity = 1;
+/** From the Flight Strip settings; defaults until the main window's first push. */
+let flightStripOptions: FlightStripWindowOptions = DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS;
+/** The pointer is on the lock grip, so a locked strip takes clicks for now. */
+let flightStripCapture = false;
+const FLIGHT_STRIP_MIN_SIZE = { width: 260, height: 40 };
+/** The strip size the window was last fitted to; null until the new window reports one. */
+let flightStripContent: Size | null = null;
+
+function applyFlightStripOptions(): void {
+  if (!isFlightStripWindowOpen()) return;
+  applyFlightStripWindowOptions(flightStripWindow!, flightStripOptions, {
+    capture: flightStripCapture,
+    platform: process.platform,
+  });
+  flightStripWindow!.webContents.send('app:flightStripWindowOptions', flightStripOptions);
+}
+
+/** The same button closes it again. */
+function toggleFlightStripWindow(): void {
+  if (isFlightStripWindowOpen()) flightStripWindow!.close();
+  else openFlightStripWindow();
+}
+
+function closeFlightStripWindow(): void {
+  if (isFlightStripWindowOpen()) flightStripWindow!.close();
+}
 
 /**
  * A small frameless window with only the flight strip, kept above the simulator.
- * Not owned by the main window, so minimizing X-Dispatch leaves it on screen.
+ * Not owned by the main window, so minimizing X-Dispatch leaves it on screen;
+ * closing X-Dispatch closes it too.
  */
-function toggleFlightStripWindow(): void {
-  // The same button closes it again.
-  if (isFlightStripWindowOpen()) {
-    flightStripWindow!.close();
-    return;
-  }
+function openFlightStripWindow(): void {
+  if (isFlightStripWindowOpen()) return;
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets', 'icon.png')
     : path.join(__dirname, '..', '..', 'assets', 'icon.png');
@@ -595,11 +625,12 @@ function toggleFlightStripWindow(): void {
     y: windowState.y,
     width: windowState.width,
     height: windowState.height,
-    minWidth: 260,
-    minHeight: 40,
+    minWidth: FLIGHT_STRIP_MIN_SIZE.width,
+    minHeight: FLIGHT_STRIP_MIN_SIZE.height,
+    // A double-click on the drag area would otherwise maximize it into a screen of empty bars.
+    maximizable: false,
+    fullscreenable: false,
     frame: false,
-    opacity: flightStripOpacity,
-    alwaysOnTop: true,
     autoHideMenuBar: true,
     show: false,
     backgroundColor: '#06090D',
@@ -615,16 +646,19 @@ function toggleFlightStripWindow(): void {
     },
   });
   windowState.manage(win);
-  // The default level sits below a fullscreen simulator.
-  const keepOnTop = () => {
-    if (win.isDestroyed()) return;
-    win.setAlwaysOnTop(true, 'screen-saver');
-    win.moveTop();
-  };
-  keepOnTop();
+  // Older versions could save a maximized strip window; it never comes back that way.
+  if (win.isMaximized()) win.unmaximize();
+  flightStripWindow = win;
+  flightStripCapture = false;
+  flightStripContent = null;
+  applyFlightStripOptions();
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   // Another topmost window (the sim going fullscreen) can push it down; take the top back.
-  win.on('blur', keepOnTop);
+  win.on('blur', () => {
+    if (win.isDestroyed() || !flightStripOptions.alwaysOnTop) return;
+    win.setAlwaysOnTop(true, 'screen-saver');
+    win.moveTop();
+  });
   win.once('ready-to-show', () => win.show());
   win.on('page-title-updated', (e) => e.preventDefault());
   win.webContents.on('will-navigate', (event, url) => {
@@ -642,10 +676,9 @@ function toggleFlightStripWindow(): void {
     });
   }
   win.on('closed', () => {
-    flightStripWindow = null;
+    if (flightStripWindow === win) flightStripWindow = null;
     broadcast('app:flightStripWindowOpen', false);
   });
-  flightStripWindow = win;
   broadcast('app:flightStripWindowOpen', true);
 }
 
@@ -762,6 +795,10 @@ function createWindow(): BrowserWindow {
       window.hide();
     }
   });
+
+  // A strip left open would keep the app running with no main window, holding the
+  // single-instance lock so the next launch shows nothing.
+  window.on('closed', () => closeFlightStripWindow());
 
   // Native sheets (the crash dialog) attach below the custom title bar, not over it.
   if (isMac) window.setSheetOffset(TITLE_BAR_OVERLAY.height);
@@ -971,11 +1008,40 @@ function registerIpcHandlers() {
     return true;
   });
   handle('app:openFlightStripWindow', () => toggleFlightStripWindow());
+  handle('app:showFlightStripWindow', () => openFlightStripWindow());
   handle('app:isFlightStripWindowOpen', () => isFlightStripWindowOpen());
-  handle('app:setFlightStripOpacity', (_, opacity: unknown) => {
-    if (typeof opacity !== 'number' || !Number.isFinite(opacity)) return;
-    flightStripOpacity = Math.max(0.3, Math.min(1, opacity));
-    if (isFlightStripWindowOpen()) flightStripWindow!.setOpacity(flightStripOpacity);
+  handle('app:getFlightStripWindowOptions', () => flightStripOptions);
+  on('app:setFlightStripWindowOptions', (event, options: unknown) => {
+    // The main window owns the settings; the strip only asks for a change.
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    flightStripOptions = parseFlightStripWindowOptions(options);
+    applyFlightStripOptions();
+  });
+  on('app:setFlightStripMouseCapture', (event, capture: unknown) => {
+    if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
+    flightStripCapture = capture === true;
+    applyFlightStripOptions();
+  });
+  on('app:setFlightStripContentSize', (event, size: unknown) => {
+    if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
+    const content = parseContentSize(size);
+    if (!content) return;
+    // The window takes the strip's shape, so resizing scales the strip without empty bars.
+    const win = flightStripWindow!;
+    const [width, height] = win.getContentSize();
+    const next = fitWindowToContent(
+      { width: width!, height: height! },
+      flightStripContent ?? content,
+      content,
+      FLIGHT_STRIP_MIN_SIZE
+    );
+    flightStripContent = content;
+    win.setAspectRatio(content.width / content.height);
+    win.setContentSize(next.width, next.height);
+  });
+  on('app:toggleFlightStripLock', (event) => {
+    if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
+    runMenuCommand('flightStripLock');
   });
   handle('app:getCliFlags', () => getCliFlags());
   handle('app:getProcessMemory', () => {
@@ -2220,6 +2286,7 @@ function registerIpcHandlers() {
   // Addon Manager IPC handlers (extracted to separate module)
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
+  registerSharedPlanIpc({ handle, on, broadcast });
   registerFlightRecorderIPC({
     getAirportsInBounds: (minLat, maxLat, minLon, maxLon) =>
       dataManager.getAirportsInBounds(minLat, maxLat, minLon, maxLon),
@@ -2281,6 +2348,17 @@ function focusMainWindow(): void {
   if (mainWindow.isMinimized()) mainWindow.restore();
   if (!mainWindow.isVisible()) mainWindow.show();
   mainWindow.focus();
+}
+
+/** Brings the main window up, opening a new one when it is gone (the app outlived it). */
+function showOrCreateMainWindow(): void {
+  // createWindow() touches `screen` via electron-window-state, which throws until ready.
+  if (!app.isReady()) return;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    focusMainWindow();
+    return;
+  }
+  mainWindow = createWindow();
 }
 
 function dispatchAppAction(action: AppAction): void {
@@ -2384,7 +2462,7 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on('second-instance', (_event, commandLine) => {
-  focusMainWindow();
+  showOrCreateMainWindow();
   // Windows/Linux: the link or file the second instance was launched with
   const url = findAppUrlInArgv(commandLine);
   if (url) handleAppUrl(url);
@@ -2608,5 +2686,6 @@ app.on('activate', () => {
     if (!mainWindow.isVisible()) mainWindow.show();
     return;
   }
-  if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
+  // The flight strip may still be open; the main window comes back regardless.
+  mainWindow = createWindow();
 });
