@@ -156,7 +156,6 @@ export default function Map({ airports }: MapProps) {
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const flightTrailEnabled = useMapStore((s) => s.flightTrailEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
-  const flightStripPreview = useSettingsStore((s) => s.flightStrip.preview);
   const followPlane = useMapStore((s) => s.followPlane);
   const setFollowPlane = useMapStore((s) => s.setFollowPlane);
   const toggleNavLayer = useMapStore((s) => s.toggleNavLayer);
@@ -967,10 +966,7 @@ export default function Map({ airports }: MapProps) {
       <CompassWidget />
       <DevDebugOverlay mapRef={mapRef} />
 
-      {/* The preview shows sample readings before X-Plane has ever connected */}
-      {(showPlaneTracker || flightStripPreview) && (
-        <FlightStrip onCenterPlane={handleCenterPlane} />
-      )}
+      {showPlaneTracker && <FlightStrip onCenterPlane={handleCenterPlane} />}
 
       {/* Vertical profile of the loaded plan: along the bottom edge by default, draggable */}
       <ProfileStrip airports={airports} />

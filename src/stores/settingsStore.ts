@@ -131,8 +131,6 @@ export interface FlightStripSettings {
   alwaysOnTop: boolean;
   /** Open the detached window when X-Plane connects. */
   autoOpen: boolean;
-  /** Show made-up readings while X-Plane is not connected, to set the strip up. */
-  preview: boolean;
   /** Readouts shown on the map strip and in the detached window. */
   fields: FlightStripFields;
 }
@@ -226,7 +224,7 @@ interface SettingsState {
   setFlightStripScale: (scale: number) => void;
   setFlightStripOpacity: (opacity: number) => void;
   updateFlightStripSettings: (
-    settings: Partial<Pick<FlightStripSettings, 'alwaysOnTop' | 'autoOpen' | 'locked' | 'preview'>>
+    settings: Partial<Pick<FlightStripSettings, 'alwaysOnTop' | 'autoOpen' | 'locked'>>
   ) => void;
   toggleFlightStripLock: () => void;
   /** Ignored when it would hide the last readout. */
@@ -305,7 +303,6 @@ const DEFAULT_FLIGHT_STRIP_SETTINGS: FlightStripSettings = {
   locked: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.locked,
   alwaysOnTop: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.alwaysOnTop,
   autoOpen: false,
-  preview: false,
   fields: DEFAULT_FLIGHT_STRIP_FIELDS,
 };
 

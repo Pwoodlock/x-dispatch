@@ -7,7 +7,6 @@ import {
   withFieldVisible,
 } from '@/lib/flightStrip/fields';
 import { cn } from '@/lib/utils/helpers';
-import { useFlightStripWindowOpen } from '@/queries';
 import { useSettingsStore } from '@/stores/settingsStore';
 import {
   SettingsHeader,
@@ -37,7 +36,6 @@ export default function FlightStripSection({ className }: SettingsSectionProps) 
   const setFlightStripScale = useSettingsStore((s) => s.setFlightStripScale);
   const setFlightStripOpacity = useSettingsStore((s) => s.setFlightStripOpacity);
   const setFlightStripField = useSettingsStore((s) => s.setFlightStripField);
-  const windowOpen = useFlightStripWindowOpen();
 
   const previewOpacity = (percent: number) =>
     window.appAPI.setFlightStripWindowOptions({
@@ -61,12 +59,6 @@ export default function FlightStripSection({ className }: SettingsSectionProps) 
           description={t('settings.flightStrip.windowDescription')}
         >
           <div className="space-y-3">
-            <SettingsToggleRow
-              title={t('settings.flightStrip.showWindow')}
-              description={t('settings.flightStrip.showWindowDescription')}
-              checked={windowOpen}
-              onCheckedChange={() => void window.appAPI.openFlightStripWindow()}
-            />
             <SettingsToggleRow
               title={t('settings.flightStrip.lock')}
               description={t(
@@ -128,12 +120,6 @@ export default function FlightStripSection({ className }: SettingsSectionProps) 
         title={t('settings.flightStrip.readouts')}
         description={t('settings.flightStrip.readoutsDescription')}
       >
-        <SettingsToggleRow
-          title={t('settings.flightStrip.preview')}
-          description={t('settings.flightStrip.previewDescription')}
-          checked={flightStrip.preview}
-          onCheckedChange={(preview) => updateFlightStripSettings({ preview })}
-        />
         <div className="grid gap-3 sm:grid-cols-2">
           {FLIGHT_STRIP_FIELDS.map((field) => {
             const visible = flightStrip.fields[field];
