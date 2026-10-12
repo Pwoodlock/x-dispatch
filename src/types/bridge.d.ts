@@ -107,8 +107,13 @@ declare global {
           options: import('@/lib/flightStrip/windowOptions').FlightStripWindowOptions
         ) => void
       ) => () => void;
-      /** Strip window only: the pointer is on the lock grip, so a locked window takes clicks. */
-      setFlightStripMouseCapture: (capture: boolean) => void;
+      /**
+       * Strip window only: the pointer is on the lock grip (its rect in the window), so a
+       * locked window takes clicks until main sees the cursor leave it.
+       */
+      setFlightStripMouseCapture: (
+        grip: import('@/lib/flightStrip/windowOptions').FlightStripGripRect | null
+      ) => void;
       /** Strip window only: asks the main window to flip the lock setting. */
       toggleFlightStripLock: () => void;
       /** Strip window only: the strip's natural size, so main keeps the window the same shape. */

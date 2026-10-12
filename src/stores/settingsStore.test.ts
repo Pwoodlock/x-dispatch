@@ -342,7 +342,6 @@ describe('migrateSettings', () => {
       locked: false,
       alwaysOnTop: true,
       autoOpen: false,
-      preview: false,
       fields: {
         aircraft: true,
         attitude: true,

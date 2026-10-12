@@ -1,11 +1,10 @@
 import { Fragment, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Crosshair, PictureInPicture2, Plane, X } from 'lucide-react';
+import { ChevronRight, Crosshair, PictureInPicture2, Plane } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
 import { useUnits } from '@/hooks/useUnits';
-import { SAMPLE_PLANE_STATE } from '@/lib/flightStrip/sampleState';
 import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
 import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -103,11 +102,8 @@ function useStripDrag(detached: boolean) {
 // --- Main component ---
 
 export default function FlightStrip({ onCenterPlane, detached = false }: FlightStripProps) {
-  const liveState = usePlaneStore((s) => s.state);
+  const planeState = usePlaneStore((s) => s.state);
   const connected = usePlaneStore((s) => s.connected);
-  // Sample readings while X-Plane is away, so the strip can be set up before a flight.
-  const previewing = useSettingsStore((s) => s.flightStrip.preview) && !connected;
-  const planeState = previewing ? SAMPLE_PLANE_STATE : liveState;
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
   const stripWindowOpen = useFlightStripWindowOpen();
@@ -228,7 +224,8 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
 
   return (
     <AnimatePresence>
-      {(connected || detached || previewing) && (
+      {/* Popped out, the window replaces the map strip; closing it brings the strip back */}
+      {(detached || (connected && !stripWindowOpen)) && (
         <motion.div
           ref={stripRef}
           className={cn(
@@ -259,13 +256,7 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
           >
             {/* Status indicator */}
             <div className="flex items-center gap-1.5 px-3 py-2">
-              {previewing ? (
-                <span className="text-2xs text-muted-foreground border-border rounded-sm border px-1 tracking-wider uppercase">
-                  {t('flightStrip.sample')}
-                </span>
-              ) : (
-                <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
-              )}
+              <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
               <Plane className="text-primary h-3.5 w-3.5" />
               {fields.aircraft && (planeState?.icaoType || planeState?.tailNumber) && (
                 <div
@@ -331,15 +322,9 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
                     size="sm"
                     className="text-muted-foreground h-8 rounded-lg px-2"
                     onClick={() => void window.appAPI.openFlightStripWindow()}
-                    tooltip={
-                      stripWindowOpen ? t('flightStrip.closeWindow') : t('flightStrip.detach')
-                    }
+                    tooltip={t('flightStrip.detach')}
                   >
-                    {stripWindowOpen ? (
-                      <X className="h-3.5 w-3.5" />
-                    ) : (
-                      <PictureInPicture2 className="h-3.5 w-3.5" />
-                    )}
+                    <PictureInPicture2 className="h-3.5 w-3.5" />
                   </Button>
                 </DesktopOnly>
               </div>

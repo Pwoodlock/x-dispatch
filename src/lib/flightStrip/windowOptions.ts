@@ -42,6 +42,25 @@ export function parseFlightStripWindowOptions(input: unknown): FlightStripWindow
   return out;
 }
 
+/** The lock grip in the strip window's content area, in screen (DIP) pixels. */
+export interface FlightStripGripRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** IPC input is untrusted: a plausible rect inside a window, or null. */
+export function parseGripRect(input: unknown): FlightStripGripRect | null {
+  if (typeof input !== 'object' || input === null) return null;
+  const { x, y, width, height } = input as Record<string, unknown>;
+  const valid = (v: unknown, min: number): v is number =>
+    typeof v === 'number' && Number.isFinite(v) && v >= min && v < 10_000;
+  return valid(x, 0) && valid(y, 0) && valid(width, 1) && valid(height, 1)
+    ? { x, y, width, height }
+    : null;
+}
+
 /** Locked passes clicks through, except while the pointer is on the grip (`capture`). */
 export function ignoresMouse(options: FlightStripWindowOptions, capture: boolean): boolean {
   return options.locked && !capture;

@@ -32,9 +32,11 @@ import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { type Size, fitWindowToContent, parseContentSize } from './lib/flightStrip/windowFit';
 import {
   DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS,
+  type FlightStripGripRect,
   type FlightStripWindowOptions,
   applyFlightStripWindowOptions,
   parseFlightStripWindowOptions,
+  parseGripRect,
 } from './lib/flightStrip/windowOptions';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
 import { registerSharedPlanIpc } from './lib/flightplan/sharedPlanIpc';
@@ -585,6 +587,42 @@ const FLIGHT_STRIP_MIN_SIZE = { width: 260, height: 40 };
 /** The strip size the window was last fitted to; null until the new window reports one. */
 let flightStripContent: Size | null = null;
 
+/**
+ * Windows sends no mouse leave to a window that ignores the mouse, so a pointer
+ * that exits over the grip would leave the strip taking clicks. Main checks the
+ * cursor itself while capturing.
+ */
+let flightStripCaptureWatch: ReturnType<typeof setInterval> | null = null;
+/** Chromium's own leave events are unreliable while the window flips click-through. */
+let flightStripGrip: FlightStripGripRect | null = null;
+
+function setFlightStripCapture(grip: FlightStripGripRect | null): void {
+  flightStripGrip = grip;
+  const capture = grip !== null;
+  if (flightStripCapture === capture) return;
+  flightStripCapture = capture;
+  if (flightStripCaptureWatch) clearInterval(flightStripCaptureWatch);
+  flightStripCaptureWatch = null;
+  if (capture) {
+    flightStripCaptureWatch = setInterval(() => {
+      if (!isFlightStripWindowOpen() || !flightStripGrip) return setFlightStripCapture(null);
+      const { x, y } = screen.getCursorScreenPoint();
+      const content = flightStripWindow!.getContentBounds();
+      const left = content.x + flightStripGrip.x;
+      const top = content.y + flightStripGrip.y;
+      if (
+        x < left ||
+        y < top ||
+        x >= left + flightStripGrip.width ||
+        y >= top + flightStripGrip.height
+      ) {
+        setFlightStripCapture(null);
+      }
+    }, 100);
+  }
+  applyFlightStripOptions();
+}
+
 function applyFlightStripOptions(): void {
   if (!isFlightStripWindowOpen()) return;
   applyFlightStripWindowOptions(flightStripWindow!, flightStripOptions, {
@@ -676,7 +714,10 @@ function openFlightStripWindow(): void {
     });
   }
   win.on('closed', () => {
-    if (flightStripWindow === win) flightStripWindow = null;
+    if (flightStripWindow === win) {
+      flightStripWindow = null;
+      setFlightStripCapture(null);
+    }
     broadcast('app:flightStripWindowOpen', false);
   });
   broadcast('app:flightStripWindowOpen', true);
@@ -1017,10 +1058,9 @@ function registerIpcHandlers() {
     flightStripOptions = parseFlightStripWindowOptions(options);
     applyFlightStripOptions();
   });
-  on('app:setFlightStripMouseCapture', (event, capture: unknown) => {
+  on('app:setFlightStripMouseCapture', (event, grip: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
-    flightStripCapture = capture === true;
-    applyFlightStripOptions();
+    setFlightStripCapture(parseGripRect(grip));
   });
   on('app:setFlightStripContentSize', (event, size: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
