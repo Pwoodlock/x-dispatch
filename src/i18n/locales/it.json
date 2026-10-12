@@ -2085,6 +2085,16 @@
     "distance": "Distanza",
     "noPlane": "Posizione aereo non disponibile"
   },
+  "vatsimPopup": {
+    "altitude": "Altitudine",
+    "filedAltitude": "Quota pianificata",
+    "groundSpeed": "Velocità al suolo",
+    "heading": "Prua",
+    "aircraft": "Aeromobile",
+    "squawk": "Squawk",
+    "route": "Rotta",
+    "noFlightPlan": "Nessun piano di volo presentato"
+  },
   "mapContextMenu": {
     "startHere": "Avvia qui",
     "copyCoordinates": "Copia coordinate",

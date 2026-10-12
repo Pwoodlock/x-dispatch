@@ -2085,6 +2085,16 @@
     "distance": "Entfernung",
     "noPlane": "Keine Flugzeugposition"
   },
+  "vatsimPopup": {
+    "altitude": "Höhe",
+    "filedAltitude": "Geplante Flughöhe",
+    "groundSpeed": "Geschwindigkeit über Grund",
+    "heading": "Steuerkurs",
+    "aircraft": "Luftfahrzeug",
+    "squawk": "Squawk",
+    "route": "Route",
+    "noFlightPlan": "Kein Flugplan aufgegeben"
+  },
   "mapContextMenu": {
     "startHere": "Hier starten",
     "copyCoordinates": "Koordinaten kopieren",

@@ -1,9 +1,9 @@
 import * as maplibregl from 'maplibre-gl';
 import { buildAirportAtcSummaries } from '@/lib/vatsimSectors/match';
 import type { Airport } from '@/lib/xplaneServices/dataService';
+import { useMapStore } from '@/stores/mapStore';
 import type { VatsimData } from '@/types/vatsim';
 import { moveLayersToTop, safeAddGeoJSONSource } from '../types';
-import { renderVatsimAirportAtcPopup } from './VatsimAirportAtcPopup';
 import { type PillImageOptions, ensurePillImage } from './badgeImages';
 
 type AirportBadgeLetter = 'A' | 'D' | 'G' | 'T';
@@ -34,13 +34,6 @@ const BADGE_STYLES: Record<
   A: { backgroundColor: '#39280f', borderColor: '#fbbf24', textColor: '#fef3c7' },
 };
 
-/** Popup content is rendered on click, not per refresh — this holds the data. */
-export type AirportAtcPopupEntry = {
-  airport: Airport;
-  controllers: Parameters<typeof renderVatsimAirportAtcPopup>[1];
-};
-
-const popupSummaryCache = new WeakMap<maplibregl.Map, Map<string, AirportAtcPopupEntry>>();
 const clickHandlerSetup = new WeakSet<maplibregl.Map>();
 /** Badge signature of the last upload, so the periodic VATSIM refresh skips
  * the setData when no airport's staffing changed. */
@@ -110,21 +103,15 @@ function ensureAirportBadgeImages(map: maplibregl.Map): void {
 export function buildAirportAtcFeatureCollection(
   airports: Airport[],
   vatsimData: VatsimData | undefined
-): {
-  collection: AirportAtcFeatureCollection;
-  popupMap: Map<string, AirportAtcPopupEntry>;
-} {
+): AirportAtcFeatureCollection {
   const airportByIcao = getAirportByIcao(airports);
   const summaries = buildAirportAtcSummaries(vatsimData, airports);
-  const popupMap = new Map<string, AirportAtcPopupEntry>();
 
   const features = summaries.flatMap((summary) => {
     const airport = airportByIcao.get(summary.icao);
     if (!airport || !summary.badges.length) {
       return [];
     }
-
-    popupMap.set(summary.icao, { airport, controllers: summary.controllers });
 
     return summary.badges.map((badge, index) => {
       return {
@@ -141,13 +128,7 @@ export function buildAirportAtcFeatureCollection(
     });
   });
 
-  return {
-    collection: {
-      type: 'FeatureCollection',
-      features,
-    },
-    popupMap,
-  };
+  return { type: 'FeatureCollection', features };
 }
 
 export function updateVatsimAirportAtcLayer(
@@ -155,11 +136,8 @@ export function updateVatsimAirportAtcLayer(
   airports: Airport[],
   vatsimData: VatsimData | undefined
 ): void {
-  const { collection, popupMap } = buildAirportAtcFeatureCollection(airports, vatsimData);
-  // Popup data always refreshes (ATIS text changes without moving a badge)…
-  popupSummaryCache.set(map, popupMap);
-
-  // …but the badge upload is skipped when no airport's staffing changed.
+  const collection = buildAirportAtcFeatureCollection(airports, vatsimData);
+  // The badge upload is skipped when no airport's staffing changed.
   const uploadKey = collection.features.map((f) => f.properties.id).join('|');
   if (
     badgeUploadMemo.get(map) === uploadKey &&
@@ -209,27 +187,7 @@ export function bringVatsimAirportAtcLayersToTop(map: maplibregl.Map): void {
   moveLayersToTop(map, [BADGE_LAYER_ID]);
 }
 
-function handlePopupOpen(
-  map: maplibregl.Map,
-  feature: maplibregl.MapGeoJSONFeature,
-  popup: maplibregl.Popup
-): void {
-  const icao = String(feature.properties?.icao ?? '');
-  const entry = popupSummaryCache.get(map)?.get(icao);
-  if (!entry || feature.geometry.type !== 'Point') {
-    return;
-  }
-
-  popup
-    .setLngLat(feature.geometry.coordinates as [number, number])
-    .setHTML(renderVatsimAirportAtcPopup(entry.airport, entry.controllers))
-    .addTo(map);
-}
-
-export function setupVatsimAirportAtcClickHandler(
-  map: maplibregl.Map,
-  popup: maplibregl.Popup
-): void {
+export function setupVatsimAirportAtcClickHandler(map: maplibregl.Map): void {
   if (clickHandlerSetup.has(map)) {
     return;
   }
@@ -237,11 +195,10 @@ export function setupVatsimAirportAtcClickHandler(
   clickHandlerSetup.add(map);
 
   map.on('click', BADGE_LAYER_ID, (event) => {
-    const feature = event.features?.[0];
-    if (!feature) {
-      return;
+    const icao = event.features?.[0]?.properties.icao;
+    if (typeof icao === 'string' && icao) {
+      useMapStore.getState().setVatsimSelection({ kind: 'airport', icao });
     }
-    handlePopupOpen(map, feature, popup);
   });
 
   map.on('mouseenter', BADGE_LAYER_ID, () => {

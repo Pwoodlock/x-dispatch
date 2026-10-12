@@ -7,7 +7,6 @@ import {
   getAirportAtcBadgeImageId,
   getAirportAtcBadgeOptions,
 } from './VatsimAirportAtcLayer';
-import { renderVatsimAirportAtcPopup } from './VatsimAirportAtcPopup';
 
 const airports = [
   {
@@ -127,45 +126,30 @@ describe('buildAirportAtcFeatureCollection', () => {
     ]);
   });
 
-  it('creates text badges for staffed airport positions and builds a structured popup summary', () => {
-    const result = buildAirportAtcFeatureCollection(airports, liveData);
+  it('creates text badges for staffed airport positions', () => {
+    const collection = buildAirportAtcFeatureCollection(airports, liveData);
 
-    expect(result.collection.features.map((feature) => feature.properties.badgeLetter)).toEqual([
+    expect(collection.features.map((feature) => feature.properties.badgeLetter)).toEqual([
       'D',
       'G',
       'T',
       'A',
     ]);
-    expect(result.collection.features.map((feature) => feature.properties.imageId)).toEqual([
+    expect(collection.features.map((feature) => feature.properties.imageId)).toEqual([
       getAirportAtcBadgeImageId('D'),
       getAirportAtcBadgeImageId('G'),
       getAirportAtcBadgeImageId('T'),
       getAirportAtcBadgeImageId('A'),
     ]);
-    expect(result.collection.features.every((feature) => feature.properties.icao === 'EGLL')).toBe(
-      true
-    );
+    expect(collection.features.every((feature) => feature.properties.icao === 'EGLL')).toBe(true);
     expect(
-      result.collection.features.every(
-        (feature) => feature.geometry.coordinates[0] === airports[0]!.lon
-      )
+      collection.features.every((feature) => feature.geometry.coordinates[0] === airports[0]!.lon)
     ).toBe(true);
     expect(
-      result.collection.features.every(
-        (feature) => feature.geometry.coordinates[1] === airports[0]!.lat
-      )
+      collection.features.every((feature) => feature.geometry.coordinates[1] === airports[0]!.lat)
     ).toBe(true);
-    expect(result.collection.features.map((feature) => feature.properties.offsetX)).toEqual([
+    expect(collection.features.map((feature) => feature.properties.offsetX)).toEqual([
       -27, -9, 9, 27,
     ]);
-
-    const entry = result.popupMap.get('EGLL');
-    expect(entry).toBeDefined();
-    const popup = renderVatsimAirportAtcPopup(entry!.airport, entry!.controllers);
-    expect(popup).toContain('London Heathrow');
-    expect(popup).toContain('EGLL_APP');
-    expect(popup).toContain('Heathrow Delivery');
-    expect(popup).toContain('ATIS B');
-    expect(popup).toContain('ATIS INFO B');
   });
 });

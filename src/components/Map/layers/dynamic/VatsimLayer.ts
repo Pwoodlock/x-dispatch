@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import { labelFont } from '@/lib/map/labelFonts';
+import { useMapStore } from '@/stores/mapStore';
 import type { VatsimPilot } from '@/types/vatsim';
 import { safeAddGeoJSONSource } from '../types';
 import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';
@@ -254,58 +255,13 @@ export function bringVatsimLayersToTop(map: maplibregl.Map): void {
 
 const clickHandlerSetup = new WeakSet<maplibregl.Map>();
 
-export function setupVatsimClickHandler(map: maplibregl.Map, popup: maplibregl.Popup): void {
+export function setupVatsimClickHandler(map: maplibregl.Map): void {
   if (clickHandlerSetup.has(map)) return;
   clickHandlerSetup.add(map);
 
   map.on('click', PILOT_LAYER_ID, (e) => {
-    const feature = e.features?.[0];
-    if (!feature) return;
-    const props = feature.properties;
-    const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
-
-    const routeTruncated = props.route
-      ? props.route.length > 40
-        ? props.route.slice(0, 40) + '...'
-        : props.route
-      : '';
-    const html = `
-      <div class="bg-card text-foreground p-4 rounded-lg border border-success/30 min-w-[260px] shadow-xl">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-border">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full bg-success animate-pulse"></div>
-            <span class="text-success font-bold font-mono text-sm">${props.callsign}</span>
-          </div>
-          <span class="text-sm px-1.5 py-0.5 rounded bg-muted font-mono">${props.flightRules || 'N/A'}</span>
-        </div>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-          <div class="flex justify-between"><span class="text-muted-foreground">Aircraft</span><span class="font-mono">${props.aircraft || 'N/A'}</span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Squawk</span><span class="font-mono">${props.transponder || 'N/A'}</span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Altitude</span><span class="font-mono">${props.altitude?.toLocaleString() || 0} ft</span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Filed</span><span class="font-mono">${props.filedAlt || 'N/A'}</span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">GS</span><span class="font-mono">${props.groundspeed || 0} kts</span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">TAS</span><span class="font-mono">${props.cruiseTas || 'N/A'} kts</span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Heading</span><span class="font-mono">${props.heading || 0}°</span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">CID</span><span class="font-mono">${props.cid}</span></div>
-        </div>
-        ${
-          props.departure || props.arrival
-            ? `
-        <div class="mt-3 pt-2 border-t border-border">
-          <div class="flex items-center justify-center gap-2 text-sm">
-            <span class="font-mono font-bold text-info">${props.departure || '????'}</span>
-            <span class="text-muted-foreground">→</span>
-            <span class="font-mono font-bold text-info">${props.arrival || '????'}</span>
-            ${props.alternate ? `<span class="text-muted-foreground text-xs">(${props.alternate})</span>` : ''}
-          </div>
-          ${routeTruncated ? `<div class="mt-1.5 text-xs text-muted-foreground font-mono text-center">${routeTruncated}</div>` : ''}
-        </div>`
-            : ''
-        }
-        <div class="mt-3 pt-2 border-t border-border text-sm text-muted-foreground">${props.name}</div>
-      </div>
-    `;
-    popup.setLngLat(coords).setHTML(html).addTo(map);
+    const cid = Number(e.features?.[0]?.properties.cid);
+    if (Number.isFinite(cid)) useMapStore.getState().setVatsimSelection({ kind: 'pilot', cid });
   });
 
   map.on('mouseenter', PILOT_LAYER_ID, () => {

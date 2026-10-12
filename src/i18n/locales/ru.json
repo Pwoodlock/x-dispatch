@@ -2085,6 +2085,16 @@
     "distance": "Расстояние",
     "noPlane": "Нет позиции самолёта"
   },
+  "vatsimPopup": {
+    "altitude": "Высота",
+    "filedAltitude": "Заявленная высота",
+    "groundSpeed": "Путевая скорость",
+    "heading": "Курс",
+    "aircraft": "Тип ВС",
+    "squawk": "Код ответчика",
+    "route": "Маршрут",
+    "noFlightPlan": "План полёта не подан"
+  },
   "mapContextMenu": {
     "startHere": "Начать здесь",
     "copyCoordinates": "Копировать координаты",

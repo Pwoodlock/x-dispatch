@@ -2085,6 +2085,16 @@
     "distance": "距离",
     "noPlane": "无飞机位置"
   },
+  "vatsimPopup": {
+    "altitude": "高度",
+    "filedAltitude": "申报高度",
+    "groundSpeed": "地速",
+    "heading": "航向",
+    "aircraft": "机型",
+    "squawk": "应答机",
+    "route": "航路",
+    "noFlightPlan": "未提交飞行计划"
+  },
   "mapContextMenu": {
     "startHere": "从此处开始",
     "copyCoordinates": "复制坐标",

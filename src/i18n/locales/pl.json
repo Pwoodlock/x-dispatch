@@ -2085,6 +2085,16 @@
     "distance": "Odległość",
     "noPlane": "Brak pozycji samolotu"
   },
+  "vatsimPopup": {
+    "altitude": "Wysokość",
+    "filedAltitude": "Planowana wysokość",
+    "groundSpeed": "Prędkość względem ziemi",
+    "heading": "Kurs",
+    "aircraft": "Statek powietrzny",
+    "squawk": "Squawk",
+    "route": "Trasa",
+    "noFlightPlan": "Brak złożonego planu lotu"
+  },
   "mapContextMenu": {
     "startHere": "Zacznij tutaj",
     "copyCoordinates": "Kopiuj współrzędne",

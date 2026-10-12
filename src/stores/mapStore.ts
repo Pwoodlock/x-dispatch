@@ -57,6 +57,9 @@ export interface NavInfoSelection {
   longitude: number;
 }
 
+/** A VATSIM pilot or staffed airport the user clicked on the map. */
+export type VatsimSelection = { kind: 'pilot'; cid: number } | { kind: 'airport'; icao: string };
+
 export interface CursorElevation {
   /**
    * True when the map has terrain set (mercator + user toggle on). Callers
@@ -104,6 +107,7 @@ interface MapState {
   debugEnabled: boolean;
   selectedFeature: FeatureDebugInfo | null;
   navInfo: NavInfoSelection | null;
+  vatsimSelection: VatsimSelection | null;
   contextMenuPoint: MapContextPoint | null;
   vatsimEnabled: boolean;
   ivaoEnabled: boolean;
@@ -151,6 +155,7 @@ interface MapState {
   setDebugEnabled: (enabled: boolean) => void;
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setNavInfo: (info: NavInfoSelection | null) => void;
+  setVatsimSelection: (selection: VatsimSelection | null) => void;
   setContextMenuPoint: (point: MapContextPoint | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
   setIvaoEnabled: (enabled: boolean) => void;
@@ -220,6 +225,7 @@ export const useMapStore = create<MapState>()(
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
       navInfo: null as NavInfoSelection | null,
+      vatsimSelection: null as VatsimSelection | null,
       contextMenuPoint: null as MapContextPoint | null,
       vatsimEnabled: false,
       simTrafficEnabled: false,
@@ -295,6 +301,7 @@ export const useMapStore = create<MapState>()(
       setDebugEnabled: (enabled) => set({ debugEnabled: enabled }),
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
       setNavInfo: (info) => set({ navInfo: info }),
+      setVatsimSelection: (selection) => set({ vatsimSelection: selection }),
       setContextMenuPoint: (point) => set({ contextMenuPoint: point }),
       setVatsimEnabled: (enabled) =>
         set((state) => ({

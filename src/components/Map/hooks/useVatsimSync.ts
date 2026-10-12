@@ -1,21 +1,15 @@
 import { useEffect } from 'react';
 import { VatsimData, getPilotsInBounds } from '@/queries/useVatsimQuery';
 import { removeVatsimPilotLayer, setupVatsimClickHandler, updateVatsimPilotLayer } from '../layers';
-import type { MapRef, PopupRef } from './useMapSetup';
+import type { MapRef } from './useMapSetup';
 
 interface UseVatsimSyncOptions {
   mapRef: MapRef;
-  vatsimPopupRef: PopupRef;
   vatsimData: VatsimData | undefined;
   vatsimEnabled: boolean;
 }
 
-export function useVatsimSync({
-  mapRef,
-  vatsimPopupRef,
-  vatsimData,
-  vatsimEnabled,
-}: UseVatsimSyncOptions): void {
+export function useVatsimSync({ mapRef, vatsimData, vatsimEnabled }: UseVatsimSyncOptions): void {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -44,9 +38,7 @@ export function useVatsimSync({
       });
 
       updateVatsimPilotLayer(map, pilotsInView);
-      if (vatsimPopupRef.current) {
-        setupVatsimClickHandler(map, vatsimPopupRef.current);
-      }
+      setupVatsimClickHandler(map);
     };
 
     const handleMoveEnd = () => {
@@ -62,16 +54,16 @@ export function useVatsimSync({
       // deferred-load path so a late style.load can't bring the layer back.
       map.off('styledata', updateVatsim);
     };
-  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled]);
+  }, [mapRef, vatsimData, vatsimEnabled]);
 }
 
-export function toggleVatsimLayer(mapRef: MapRef, vatsimPopupRef: PopupRef, enable: boolean): void {
+export function toggleVatsimLayer(mapRef: MapRef, enable: boolean): void {
   const map = mapRef.current;
   if (!map) return;
 
   if (!enable) {
     removeVatsimPilotLayer(map);
-  } else if (vatsimPopupRef.current) {
-    setupVatsimClickHandler(map, vatsimPopupRef.current);
+  } else {
+    setupVatsimClickHandler(map);
   }
 }

@@ -2085,6 +2085,16 @@
     "distance": "Distance",
     "noPlane": "No ship position"
   },
+  "vatsimPopup": {
+    "altitude": "Height",
+    "filedAltitude": "Plotted height",
+    "groundSpeed": "Speed o'er the ground",
+    "heading": "Headin'",
+    "aircraft": "Ship",
+    "squawk": "Squawk",
+    "route": "Course plotted",
+    "noFlightPlan": "No sailin' plan filed"
+  },
   "mapContextMenu": {
     "startHere": "Set sail from here",
     "copyCoordinates": "Copy the bearings",

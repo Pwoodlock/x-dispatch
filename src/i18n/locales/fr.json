@@ -2085,6 +2085,16 @@
     "distance": "Distance",
     "noPlane": "Position avion inconnue"
   },
+  "vatsimPopup": {
+    "altitude": "Altitude",
+    "filedAltitude": "Altitude déposée",
+    "groundSpeed": "Vitesse sol",
+    "heading": "Cap",
+    "aircraft": "Appareil",
+    "squawk": "Transpondeur",
+    "route": "Route",
+    "noFlightPlan": "Aucun plan de vol déposé"
+  },
   "mapContextMenu": {
     "startHere": "Démarrer ici",
     "copyCoordinates": "Copier les coordonnées",
