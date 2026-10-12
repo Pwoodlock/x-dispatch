@@ -58,6 +58,8 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'log:error',
   'log:info',
   'log:warn',
+  'plan:get',
+  'plan:set',
   'nav:getATCByFacility',
   'nav:getAirportMetadata',
   'nav:getAirportProcedures',

@@ -37,6 +37,7 @@ import {
   parseFlightStripWindowOptions,
 } from './lib/flightStrip/windowOptions';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
+import { registerSharedPlanIpc } from './lib/flightplan/sharedPlanIpc';
 import { MENU_COMMANDS, type MenuCommand, buildAppMenuTemplate } from './lib/nativeShell/appMenu';
 import {
   APP_URL_SCHEME,
@@ -2285,6 +2286,7 @@ function registerIpcHandlers() {
   // Addon Manager IPC handlers (extracted to separate module)
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
+  registerSharedPlanIpc({ handle, on, broadcast });
   registerFlightRecorderIPC({
     getAirportsInBounds: (minLat, maxLat, minLon, maxLon) =>
       dataManager.getAirportsInBounds(minLat, maxLat, minLon, maxLon),

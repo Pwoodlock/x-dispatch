@@ -6,6 +6,7 @@
  */
 import type { FlightStripWindowOptions } from '@/lib/flightStrip/windowOptions';
 import type { AutoRouteRequest, PlanDraft } from '@/lib/flightplan/builder/types';
+import type { SharedPlanDoc } from '@/lib/flightplan/sharedPlan';
 import type { MenuCommand } from '@/lib/nativeShell/appMenu';
 import type { AppAction } from '@/lib/nativeShell/appUrl';
 import type { DesktopPrefs } from '@/lib/nativeShell/desktopPrefs';
@@ -290,6 +291,9 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       autoRoute: (request: AutoRouteRequest) => t.invoke('flightplan:autoRoute', request),
       oceanicTracks: () => t.invoke('flightplan:oceanicTracks'),
       saveFms: (args: { stem: string; content: string }) => t.invoke('flightplan:saveFms', args),
+      getShared: () => t.invoke('plan:get'),
+      setShared: (doc: SharedPlanDoc) => t.send('plan:set', doc),
+      onSharedChanged: (callback: (doc: SharedPlanDoc) => void) => t.on('plan:changed', callback),
     },
 
     simbriefAPI: {

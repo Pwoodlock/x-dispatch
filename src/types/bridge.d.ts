@@ -296,6 +296,12 @@ declare global {
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
     flightPlanAPI: {
+      /** The plan every device shows; null until a renderer has pushed one. */
+      getShared: () => Promise<import('@/lib/flightplan/sharedPlan').SharedPlanDoc | null>;
+      setShared: (doc: import('@/lib/flightplan/sharedPlan').SharedPlanDoc) => void;
+      onSharedChanged: (
+        callback: (doc: import('@/lib/flightplan/sharedPlan').SharedPlanDoc) => void
+      ) => () => void;
       openFile: () => Promise<{ content: string; fileName: string } | null>;
       /** Reads a .fms the OS handed to main (double-click, Open With); other paths are refused. */
       readFile: (

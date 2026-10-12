@@ -22,6 +22,7 @@ import { TooltipProvider } from './components/ui/tooltip';
 import { useAppActions } from './hooks/useAppActions';
 import { useFlightStripWindowSync } from './hooks/useFlightStripWindowSync';
 import { useNativeShell } from './hooks/useNativeShell';
+import { useSharedPlanSync } from './hooks/useSharedPlanSync';
 import './i18n';
 import { startupBucket } from './lib/analytics/buckets';
 import type { Airport } from './lib/xplaneServices/dataService';
@@ -38,6 +39,7 @@ initializeFontSize();
 
 function AppContent() {
   useFlightStripWindowSync();
+  useSharedPlanSync();
   useNativeShell();
   const queryClient = useQueryClient();
   const [appState, setAppState] = useState<AppState>('checking');
