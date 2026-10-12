@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { exitEase, overlayFade, panelSpring } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
+import { isInsideToaster } from './toasterTarget';
 
 // Motion needs the open state (Radix keeps it internal) to run exit
 // animations before unmount, so the root mirrors it into context.
@@ -69,14 +70,24 @@ interface DialogPanelProps extends React.ComponentPropsWithoutRef<typeof DialogP
 const DialogPanel = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogPanelProps
->(({ className, children, centered, ...props }, ref) => {
+>(({ className, children, centered, onInteractOutside, ...props }, ref) => {
   const open = React.useContext(DialogOpenContext);
   return (
     <AnimatePresence>
       {open && (
         <DialogPortal forceMount>
           <DialogOverlay />
-          <DialogPrimitive.Content ref={ref} forceMount asChild {...props}>
+          <DialogPrimitive.Content
+            ref={ref}
+            forceMount
+            asChild
+            onInteractOutside={(event) => {
+              // A toast's buttons must not close the dialog underneath.
+              if (isInsideToaster(event.target)) event.preventDefault();
+              onInteractOutside?.(event);
+            }}
+            {...props}
+          >
             <motion.div
               className={className}
               initial={{
