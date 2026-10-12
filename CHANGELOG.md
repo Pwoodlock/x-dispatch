@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **One Flight Strip at a time.** Popping the strip out hides it on the map, and closing the window brings it back.
 - **The Flight Strip window keeps the strip's shape** when you resize it, and can no longer be maximized.
 - **Flight Strip size and opacity moved** from Appearance to the new Flight Strip tab.
-- **Clearer VATSIM pilot and ATC cards.** Clicking a pilot shows the route, altitude, filed altitude, ground speed and heading in your units and language, with the full filed route. The airport ATC card lists each position with its frequency and ATIS text without being cut off. Both update with each VATSIM refresh, and a pilot's card follows the aircraft.
+- **Clearer VATSIM pilot and ATC cards.** Click a pilot to see where they are flying, their altitude, speed and full route, in your units and language. Click an airport's ATC badges to see every position with its frequency and ATIS. Both stay up to date while open.
 
 ### Fixed
 
@@ -25,8 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tablets show the same flight plan as the desktop.** Each device used to keep its own copy, so a tablet opened the plan it last had. Edits on any device now reach all of them, and the latest edit wins.
 - **The update notice's Download and Later buttons work while a dialog is open.**
 - **X-Dispatch starts again after quitting with the Flight Strip window open.** Closing X-Dispatch now closes the strip window too.
-- **VATSIM sectors load reliably.** The approach boundaries came through a GitHub service that refuses requests after a few per hour from the same network, which left the sector overlay stale or empty. They now come from a direct download without that limit.
-- **VATSIM ATC badges at an airport sit side by side.** Delivery, Ground, Tower and Approach badges were drawn on top of each other, so only one was visible.
+- **VATSIM controller sectors no longer go missing.** The sector overlay could stay empty or out of date.
+- **Every staffed ATC position at an airport shows on the map.** Delivery, Ground, Tower and Approach badges were stacked on top of each other, so only one was visible.
 
 ## [2.4.3] - 2026-10-11
 
