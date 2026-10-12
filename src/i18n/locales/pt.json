@@ -2085,6 +2085,16 @@
     "distance": "Distância",
     "noPlane": "Sem posição da aeronave"
   },
+  "vatsimPopup": {
+    "altitude": "Altitude",
+    "filedAltitude": "Altitude planejada",
+    "groundSpeed": "Velocidade em relação ao solo",
+    "heading": "Proa",
+    "aircraft": "Aeronave",
+    "squawk": "Transponder",
+    "route": "Rota",
+    "noFlightPlan": "Nenhum plano de voo apresentado"
+  },
   "mapContextMenu": {
     "startHere": "Iniciar aqui",
     "copyCoordinates": "Copiar coordenadas",

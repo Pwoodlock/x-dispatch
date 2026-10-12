@@ -117,7 +117,6 @@ interface UseMapSetupReturn {
   mapRef: MapRef;
   mapContainerRef: React.RefObject<HTMLDivElement>;
   airportPopupRef: PopupRef;
-  vatsimPopupRef: PopupRef;
 }
 
 export function useMapSetup({
@@ -128,7 +127,6 @@ export function useMapSetup({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const airportPopupRef = useRef<maplibregl.Popup | null>(null);
-  const vatsimPopupRef = useRef<maplibregl.Popup | null>(null);
   const scaleControlRef = useRef<maplibregl.ScaleControl | null>(null);
 
   // Per the unit system (CLAUDE.md "unit display" rule): the scale bar
@@ -255,7 +253,6 @@ export function useMapSetup({
       setupAirportPopup(map, airportPopupRef, (icao: string, coords: [number, number]) =>
         onAirportClickRef.current(icao, coords)
       );
-      setupVatsimPopup(vatsimPopupRef);
       setupNavInfoClicks(map);
       setupMapEvents(
         map,
@@ -317,7 +314,6 @@ export function useMapSetup({
     mapRef,
     mapContainerRef: mapContainerRef as React.RefObject<HTMLDivElement>,
     airportPopupRef,
-    vatsimPopupRef,
   };
 }
 
@@ -360,15 +356,6 @@ export function setupAirportPopup(
     const icao = feature.properties.icao as string;
     const coords = feature.geometry.coordinates.slice() as [number, number];
     await onAirportClick(icao, coords);
-  });
-}
-
-function setupVatsimPopup(popupRef: PopupRef) {
-  popupRef.current = new maplibregl.Popup({
-    closeButton: true,
-    closeOnClick: true,
-    className: 'vatsim-popup',
-    maxWidth: '300px',
   });
 }
 

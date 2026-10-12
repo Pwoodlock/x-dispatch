@@ -59,20 +59,22 @@ export async function downloadSimawareBundle(): Promise<{
   version: string;
   rawText: string;
 }> {
-  const release = await fetchJson<{
-    tag_name?: string;
-    name?: string;
-    assets?: { name?: string; browser_download_url?: string }[];
-  }>('https://api.github.com/repos/vatsimnetwork/simaware-tracon-project/releases/latest');
-
-  const assetUrl = release.assets?.find(
-    (asset) => asset.name === 'TRACONBoundaries.geojson'
-  )?.browser_download_url;
+  // The releases/latest/download redirect is not subject to the GitHub API's
+  // unauthenticated rate limit, and its Location header carries the tag.
+  const latestUrl =
+    'https://github.com/vatsimnetwork/simaware-tracon-project/releases/latest/download/TRACONBoundaries.geojson';
+  const redirect = await fetch(latestUrl, {
+    headers: { 'User-Agent': `X-Dispatch/${app.getVersion()}` },
+    redirect: 'manual',
+    signal: createSignal(DEFAULT_TIMEOUT_MS),
+  });
+  const assetUrl = redirect.headers.get('location');
   if (!assetUrl) {
-    throw new Error('TRACONBoundaries.geojson asset not found');
+    throw new Error(`HTTP ${redirect.status} for ${latestUrl}`);
   }
 
-  const version = release.tag_name ?? release.name ?? 'unknown';
+  const tag = assetUrl.match(/\/releases\/download\/([^/]+)\//)?.[1];
+  const version = tag ? decodeURIComponent(tag) : 'unknown';
   logger.main.info(`Downloading SimAware TRACON ${version}`);
 
   return {

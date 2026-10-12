@@ -7,17 +7,15 @@ import {
   setupVatsimAirportAtcClickHandler,
   updateVatsimAirportAtcLayer,
 } from '../layers';
-import type { MapRef, PopupRef } from './useMapSetup';
+import type { MapRef } from './useMapSetup';
 
 export function useVatsimAirportAtcSync({
   mapRef,
-  vatsimPopupRef,
   airports,
   vatsimData,
   vatsimEnabled,
 }: {
   mapRef: MapRef;
-  vatsimPopupRef: PopupRef;
   airports: Airport[];
   vatsimData: VatsimData | undefined;
   vatsimEnabled: boolean;
@@ -39,11 +37,9 @@ export function useVatsimAirportAtcSync({
 
       updateVatsimAirportAtcLayer(map, airports, vatsimData);
       bringVatsimAirportAtcLayersToTop(map);
-      if (vatsimPopupRef.current) {
-        setupVatsimAirportAtcClickHandler(map, vatsimPopupRef.current);
-      }
+      setupVatsimAirportAtcClickHandler(map);
     };
 
     render();
-  }, [mapRef, vatsimPopupRef, airports, vatsimData, vatsimEnabled]);
+  }, [mapRef, airports, vatsimData, vatsimEnabled]);
 }

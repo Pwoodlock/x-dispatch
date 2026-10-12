@@ -113,6 +113,7 @@ import MeasureLabel from './widgets/MeasureLabel';
 import NavInfoPopup from './widgets/NavInfoPopup';
 import ReplayWidget from './widgets/ReplayWidget';
 import StandHoverCard from './widgets/StandHoverCard';
+import VatsimPopup from './widgets/VatsimPopup';
 
 interface MapProps {
   airports: Airport[];
@@ -211,7 +212,7 @@ export default function Map({ airports }: MapProps) {
   const ivaoPopupRef = useRef<maplibregl.Popup | null>(null);
 
   // Map initialization
-  const { mapRef, mapContainerRef, vatsimPopupRef } = useMapSetup({
+  const { mapRef, mapContainerRef } = useMapSetup({
     airports,
     mapStyleUrl,
     onAirportClick: handleAirportClick,
@@ -369,7 +370,6 @@ export default function Map({ airports }: MapProps) {
   // Vatsim sync
   useVatsimSync({
     mapRef,
-    vatsimPopupRef,
     vatsimData,
     vatsimEnabled,
   });
@@ -383,7 +383,6 @@ export default function Map({ airports }: MapProps) {
 
   useVatsimAirportAtcSync({
     mapRef,
-    vatsimPopupRef,
     airports,
     vatsimData,
     vatsimEnabled,
@@ -811,9 +810,9 @@ export default function Map({ airports }: MapProps) {
         if (mapRef.current) removeIvaoPilotLayer(mapRef.current);
       }
       setVatsimEnabled(true);
-      toggleVatsimLayer(mapRef, vatsimPopupRef, true);
+      toggleVatsimLayer(mapRef, true);
     }
-  }, [mapRef, vatsimPopupRef, vatsimEnabled, ivaoEnabled, setVatsimEnabled, setIvaoEnabled]);
+  }, [mapRef, vatsimEnabled, ivaoEnabled, setVatsimEnabled, setIvaoEnabled]);
 
   const handleToggleIvao = useCallback(() => {
     if (ivaoEnabled) {
@@ -986,6 +985,7 @@ export default function Map({ airports }: MapProps) {
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
       <StandHoverCard />
       <NavInfoPopup mapRef={mapRef} airports={airports} />
+      {vatsimEnabled && <VatsimPopup mapRef={mapRef} airports={airports} vatsimData={vatsimData} />}
       <MapContextMenu mapRef={mapRef} onStartHere={handleStartHere} />
       <MeasureLabel mapRef={mapRef} />
 

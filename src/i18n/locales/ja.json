@@ -2085,6 +2085,16 @@
     "distance": "距離",
     "noPlane": "機体位置なし"
   },
+  "vatsimPopup": {
+    "altitude": "高度",
+    "filedAltitude": "申請高度",
+    "groundSpeed": "対地速度",
+    "heading": "機首方位",
+    "aircraft": "機種",
+    "squawk": "スコーク",
+    "route": "ルート",
+    "noFlightPlan": "飛行計画の提出なし"
+  },
   "mapContextMenu": {
     "startHere": "ここから開始",
     "copyCoordinates": "座標をコピー",
