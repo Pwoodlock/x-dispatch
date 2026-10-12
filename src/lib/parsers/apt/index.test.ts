@@ -357,3 +357,27 @@ describe('start rows', () => {
     expect(airport.helipads.map((h) => h.startRow)).toEqual([2]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Start location names — X-Plane matches ramp_start against the exact name
+// ---------------------------------------------------------------------------
+
+describe('start location names', () => {
+  const chunk = [
+    '1 896 1 0 KCVG Cincinnati Northern Kentucky Intl',
+    '1300 39.031897 -84.652537 297.5 gate heavy DHL 28 ',
+    '1300 39.033941 -84.650641 54.0 gate heavy DHL 22\r',
+    '1300 39.030000 -84.650000 54.0 gate heavy Cargo  Apron  1',
+    '15 39.040000 -84.660000 90.0 Old Ramp ',
+  ].join('\n');
+
+  it('keeps trailing and inner whitespace X-Plane uses to match the ramp', () => {
+    const airport = new AirportParser(chunk).parse().data;
+    expect(airport.startupLocations.map((s) => s.name)).toEqual([
+      'DHL 28 ',
+      'DHL 22',
+      'Cargo  Apron  1',
+      'Old Ramp ',
+    ]);
+  });
+});
