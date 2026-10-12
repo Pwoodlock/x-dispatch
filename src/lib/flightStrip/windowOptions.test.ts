@@ -5,6 +5,7 @@ import {
   applyFlightStripWindowOptions,
   ignoresMouse,
   parseFlightStripWindowOptions,
+  parseGripRect,
 } from './windowOptions';
 
 function fakeWindow() {
@@ -92,5 +93,28 @@ describe('applyFlightStripWindowOptions', () => {
       platform: 'win32',
     });
     expect(calls).toEqual([]);
+  });
+});
+
+describe('parseGripRect', () => {
+  it('keeps a valid rect', () => {
+    expect(parseGripRect({ x: 1400, y: 4, width: 28, height: 24 })).toEqual({
+      x: 1400,
+      y: 4,
+      width: 28,
+      height: 24,
+    });
+  });
+
+  it('rejects anything else', () => {
+    for (const input of [
+      null,
+      true,
+      {},
+      { x: 1, y: 1, width: 0, height: 5 },
+      { x: -1, y: 0, width: 5, height: 5 },
+    ]) {
+      expect(parseGripRect(input)).toBeNull();
+    }
   });
 });

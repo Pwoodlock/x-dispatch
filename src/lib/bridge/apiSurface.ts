@@ -4,7 +4,10 @@
  * Both build the same objects from a transport; the channel names live only here,
  * so the desktop and a tablet cannot drift apart.
  */
-import type { FlightStripWindowOptions } from '@/lib/flightStrip/windowOptions';
+import type {
+  FlightStripGripRect,
+  FlightStripWindowOptions,
+} from '@/lib/flightStrip/windowOptions';
 import type { AutoRouteRequest, PlanDraft } from '@/lib/flightplan/builder/types';
 import type { SharedPlanDoc } from '@/lib/flightplan/sharedPlan';
 import type { MenuCommand } from '@/lib/nativeShell/appMenu';
@@ -112,8 +115,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getFlightStripWindowOptions: () => t.invoke('app:getFlightStripWindowOptions'),
       onFlightStripWindowOptions: (callback: (options: FlightStripWindowOptions) => void) =>
         t.on('app:flightStripWindowOptions', callback),
-      setFlightStripMouseCapture: (capture: boolean) =>
-        t.send('app:setFlightStripMouseCapture', capture),
+      setFlightStripMouseCapture: (grip: FlightStripGripRect | null) =>
+        t.send('app:setFlightStripMouseCapture', grip),
       toggleFlightStripLock: () => t.send('app:toggleFlightStripLock'),
       setFlightStripContentSize: (size: { width: number; height: number }) =>
         t.send('app:setFlightStripContentSize', size),

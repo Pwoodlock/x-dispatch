@@ -104,9 +104,20 @@ export function FlightStripWindow() {
           locked ? 'opacity-60' : 'opacity-0'
         )}
         style={noDragStyle}
-        // While the pointer is here a locked window takes clicks, so the grip works.
-        onMouseEnter={() => window.appAPI.setFlightStripMouseCapture(true)}
-        onMouseLeave={() => window.appAPI.setFlightStripMouseCapture(false)}
+        // While the pointer is here a locked window takes clicks, so the grip works. Chromium
+        // misses enter and leave as the window flips click-through, so moves report the
+        // grip and main drops capture once the cursor is off it. The rect goes to main in
+        // screen pixels: Interface Zoom scales CSS pixels.
+        onMouseMove={(event) => {
+          const zoom = window.outerWidth / window.innerWidth || 1;
+          const { x, y, width, height } = event.currentTarget.getBoundingClientRect();
+          window.appAPI.setFlightStripMouseCapture({
+            x: x * zoom,
+            y: y * zoom,
+            width: width * zoom,
+            height: height * zoom,
+          });
+        }}
       >
         <Button
           variant="ghost"
