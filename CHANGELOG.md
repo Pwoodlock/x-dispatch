@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Lock the Flight Strip window so clicks pass through to X-Plane.** Use the padlock in the strip's corner, Settings, View > Lock Flight Strip, or Ctrl+Shift+K (Cmd+Shift+K on macOS). Click the padlock again to unlock it. On Linux the padlock stays hidden while locked, so unlock from the menu or the shortcut.
+- **A Flight Strip tab in Settings.** Lock the window, keep it on top, open it automatically when X-Plane connects, and choose its size, opacity and which readouts it shows.
+
+### Changed
+
+- **One Flight Strip at a time.** Popping the strip out hides it on the map, and closing the window brings it back.
+- **The Flight Strip window keeps the strip's shape** when you resize it, and can no longer be maximized.
+- **Flight Strip size and opacity moved** from Appearance to the new Flight Strip tab.
+
+### Fixed
+
+- **Launching at a gate whose name has extra spaces no longer stops at X-Plane's main menu.** Gate names are now sent exactly as the scenery writes them.
+- **Tablets show the same flight plan as the desktop.** Each device used to keep its own copy, so a tablet opened the plan it last had. Edits on any device now reach all of them, and the latest edit wins.
+- **The update notice's Download and Later buttons work while a dialog is open.**
+- **X-Dispatch starts again after quitting with the Flight Strip window open.** Closing X-Dispatch now closes the strip window too.
+
 ## [2.4.3] - 2026-10-11
 
 ### Fixed
