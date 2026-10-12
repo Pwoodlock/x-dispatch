@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-10-12
+
 ### Added
 
 - **Lock the Flight Strip window so clicks pass through to X-Plane.** Use the padlock in the strip's corner, Settings, View > Lock Flight Strip, or Ctrl+Shift+K (Cmd+Shift+K on macOS). Click the padlock again to unlock it. On Linux the padlock stays hidden while locked, so unlock from the menu or the shortcut.
@@ -219,7 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.3...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.3...v2.5.0
 [2.4.3]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.0...v2.4.1
