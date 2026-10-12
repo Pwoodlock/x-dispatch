@@ -4,6 +4,7 @@ import {
   Boxes,
   CloudDownload,
   Database,
+  GalleryHorizontal,
   Info,
   LifeBuoy,
   Monitor,
@@ -34,6 +35,7 @@ import {
   AirportsSection,
   AppearanceSection,
   CompanionAppsSection,
+  FlightStripSection,
   FlightsSection,
   GraphicsSection,
   LogsSection,
@@ -54,6 +56,7 @@ type TabId =
   | 'xplane'
   | 'data'
   | 'appearance'
+  | 'flight-strip'
   | 'units'
   | 'graphics'
   | 'flights'
@@ -75,6 +78,7 @@ const TABS: TabConfig[] = [
   { id: 'xplane', icon: Plane, labelKey: 'settings.tabs.xplane' },
   { id: 'data', icon: Database, labelKey: 'settings.tabs.data' },
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
+  { id: 'flight-strip', icon: GalleryHorizontal, labelKey: 'settings.tabs.flightStrip' },
   { id: 'units', icon: Ruler, labelKey: 'settings.tabs.units' },
   { id: 'graphics', icon: Monitor, labelKey: 'settings.tabs.graphics' },
   { id: 'flights', icon: PlaneLanding, labelKey: 'settings.tabs.flights' },
@@ -184,6 +188,17 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="p-6">
                 <SectionErrorBoundary name="Appearance">
                   <AppearanceSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="flight-strip"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="FlightStrip">
+                  <FlightStripSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>

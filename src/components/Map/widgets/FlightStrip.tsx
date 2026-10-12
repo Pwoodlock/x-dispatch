@@ -1,14 +1,16 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Crosshair, PictureInPicture2, Plane, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
 import { useUnits } from '@/hooks/useUnits';
+import { SAMPLE_PLANE_STATE } from '@/lib/flightStrip/sampleState';
 import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
 import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import type { FeetPerMinute, Knots } from '@/lib/utils/units';
+import { useFlightStripWindowOpen } from '@/queries';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -91,19 +93,6 @@ function isLowAGL(agl: number | undefined): boolean {
 
 const noopPosition = () => {};
 
-/** Whether the detached strip window is open; main pushes every change. */
-function useStripWindowOpen(): boolean {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    window.appAPI
-      .isFlightStripWindowOpen()
-      .then(setOpen)
-      .catch(() => {});
-    return window.appAPI.onFlightStripWindowOpen(setOpen);
-  }, []);
-  return open;
-}
-
 /** The detached window shows the strip in place and must never rewrite the saved map position. */
 function useStripDrag(detached: boolean) {
   const position = useMapStore((s) => s.flightStripPosition);
@@ -114,15 +103,19 @@ function useStripDrag(detached: boolean) {
 // --- Main component ---
 
 export default function FlightStrip({ onCenterPlane, detached = false }: FlightStripProps) {
-  const planeState = usePlaneStore((s) => s.state);
+  const liveState = usePlaneStore((s) => s.state);
   const connected = usePlaneStore((s) => s.connected);
+  // Sample readings while X-Plane is away, so the strip can be set up before a flight.
+  const previewing = useSettingsStore((s) => s.flightStrip.preview) && !connected;
+  const planeState = previewing ? SAMPLE_PLANE_STATE : liveState;
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
-  const stripWindowOpen = useStripWindowOpen();
+  const stripWindowOpen = useFlightStripWindowOpen();
+  const fields = useSettingsStore((s) => s.flightStrip.fields);
   const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } =
     useStripDrag(detached);
   const units = useSettingsStore((s) => s.map.units);
-  const settingsScale = useSettingsStore((s) => s.appearance.flightStripScale);
+  const settingsScale = useSettingsStore((s) => s.flightStrip.scale);
   // The detached window scales the strip to its own size instead.
   const scale = detached ? 1 : settingsScale;
   const { speedF, altitudeF, verticalSpeedF } = useUnits();
@@ -141,9 +134,101 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
 
   const isDefault = detached || position === null;
 
+  // Autopilot bugs and the muted line under each value follow their own toggles.
+  const target = (value: string | undefined) => (fields.targets ? value : undefined);
+  const details = fields.details;
+  const columns: { key: string; node: ReactNode }[] = [];
+  if (fields.speed) {
+    columns.push({
+      key: 'speed',
+      node: (
+        <DataColumn
+          label={t('flightStrip.ias')}
+          target={target(
+            planeState?.apAirspeedIsMach
+              ? formatTarget(formatMach, planeState.apAirspeed)
+              : formatTarget(formatValue, speed(planeState?.apAirspeed))
+          )}
+          value={formatValue(speed(planeState?.indicatedAirspeed))}
+          unit={t(`units.${units.speed}`)}
+          valueColor={PRIMARY_COLOR_CLASS}
+          showDetails={details}
+          secondary={`${t('flightStrip.gs')} ${formatValue(speed(planeState?.groundspeed))} · ${t('flightStrip.mach')} ${formatMach(planeState?.mach)}`}
+        />
+      ),
+    });
+  }
+  if (fields.altitude) {
+    columns.push({
+      key: 'altitude',
+      node: (
+        <DataColumn
+          label={t('flightStrip.alt')}
+          target={target(formatTarget(formatValue, altitude(planeState?.apAltitude)))}
+          value={formatValue(altitude(planeState?.altitudeMSL))}
+          unit={t(`units.${units.altitude}`)}
+          valueColor={PRIMARY_COLOR_CLASS}
+          showDetails={details}
+          secondary={
+            <span className={cn(isLowAGL(planeState?.altitudeAGL) && 'text-warning')}>
+              {t('flightStrip.agl')} {formatValue(altitude(planeState?.altitudeAGL))}
+            </span>
+          }
+        />
+      ),
+    });
+  }
+  if (fields.verticalSpeed) {
+    columns.push({
+      key: 'verticalSpeed',
+      node: (
+        <DataColumn
+          label={t('flightStrip.vs')}
+          target={target(
+            formatTarget(formatVerticalSpeed, verticalSpeed(planeState?.apVerticalSpeed))
+          )}
+          value={formatVerticalSpeed(verticalSpeed(planeState?.verticalSpeed))}
+          unit={t(`units.${units.verticalSpeed}`)}
+          valueColor={getVSColor(planeState?.verticalSpeed)}
+          showDetails={details}
+        />
+      ),
+    });
+  }
+  if (fields.heading) {
+    columns.push({
+      key: 'heading',
+      node: (
+        <DataColumn
+          label={t('flightStrip.hdg')}
+          target={target(formatTarget(formatHeading, planeState?.apHeading))}
+          value={formatHeading(planeState?.heading)}
+          unit="°"
+          valueColor={PRIMARY_COLOR_CLASS}
+          showDetails={details}
+          secondary={`${t('flightStrip.crs')} ${formatHeading(planeState?.nav1Course)}° · ${t('flightStrip.nav1')} ${formatNavFrequency(planeState?.nav1Frequency)}`}
+        />
+      ),
+    });
+  }
+  if (fields.wind) {
+    columns.push({
+      key: 'wind',
+      node: (
+        <DataColumn
+          label={t('flightStrip.wind')}
+          value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
+          unit={t('units.kt')}
+          showDetails={details}
+          secondary={`${t('flightStrip.oat')} ${formatOAT(planeState?.oat)}°C`}
+        />
+      ),
+    });
+  }
+
   return (
     <AnimatePresence>
-      {(connected || detached) && (
+      {(connected || detached || previewing) && (
         <motion.div
           ref={stripRef}
           className={cn(
@@ -174,9 +259,15 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
           >
             {/* Status indicator */}
             <div className="flex items-center gap-1.5 px-3 py-2">
-              <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
+              {previewing ? (
+                <span className="text-2xs text-muted-foreground border-border rounded-sm border px-1 tracking-wider uppercase">
+                  {t('flightStrip.sample')}
+                </span>
+              ) : (
+                <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
+              )}
               <Plane className="text-primary h-3.5 w-3.5" />
-              {(planeState?.icaoType || planeState?.tailNumber) && (
+              {fields.aircraft && (planeState?.icaoType || planeState?.tailNumber) && (
                 <div
                   className="flex flex-col leading-tight"
                   title={planeState?.aircraftName || undefined}
@@ -193,81 +284,31 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
 
             <GroupSeparator />
 
-            {planeState?.pitch !== undefined && planeState?.roll !== undefined && (
-              <>
-                <div className="flex items-center px-2.5 py-1">
-                  <MiniAttitude pitch={planeState.pitch} roll={planeState.roll} />
-                </div>
-                <GroupSeparator />
-              </>
+            {fields.attitude &&
+              planeState?.pitch !== undefined &&
+              planeState?.roll !== undefined && (
+                <>
+                  <div className="flex items-center px-2.5 py-1">
+                    <MiniAttitude pitch={planeState.pitch} roll={planeState.roll} />
+                  </div>
+                  <GroupSeparator />
+                </>
+              )}
+
+            {/* Up to five columns: the values you fly with are large, related
+                secondary readings sit underneath in a muted line. */}
+            {columns.length > 0 && (
+              <div className="flex items-center gap-4 px-4 py-1.5">
+                {columns.map(({ key, node }, index) => (
+                  <Fragment key={key}>
+                    {index > 0 && <GroupSeparator />}
+                    {node}
+                  </Fragment>
+                ))}
+              </div>
             )}
 
-            {/* Five columns: the values you fly with are large, related
-                secondary readings sit underneath in a muted line. */}
-            <div className="flex items-center gap-4 px-4 py-1.5">
-              <DataColumn
-                label={t('flightStrip.ias')}
-                target={
-                  planeState?.apAirspeedIsMach
-                    ? formatTarget(formatMach, planeState.apAirspeed)
-                    : formatTarget(formatValue, speed(planeState?.apAirspeed))
-                }
-                value={formatValue(speed(planeState?.indicatedAirspeed))}
-                unit={t(`units.${units.speed}`)}
-                valueColor={PRIMARY_COLOR_CLASS}
-                secondary={`${t('flightStrip.gs')} ${formatValue(speed(planeState?.groundspeed))} · ${t('flightStrip.mach')} ${formatMach(planeState?.mach)}`}
-              />
-
-              <GroupSeparator />
-
-              <DataColumn
-                label={t('flightStrip.alt')}
-                target={formatTarget(formatValue, altitude(planeState?.apAltitude))}
-                value={formatValue(altitude(planeState?.altitudeMSL))}
-                unit={t(`units.${units.altitude}`)}
-                valueColor={PRIMARY_COLOR_CLASS}
-                secondary={
-                  <span className={cn(isLowAGL(planeState?.altitudeAGL) && 'text-warning')}>
-                    {t('flightStrip.agl')} {formatValue(altitude(planeState?.altitudeAGL))}
-                  </span>
-                }
-              />
-
-              <GroupSeparator />
-
-              <DataColumn
-                label={t('flightStrip.vs')}
-                target={formatTarget(
-                  formatVerticalSpeed,
-                  verticalSpeed(planeState?.apVerticalSpeed)
-                )}
-                value={formatVerticalSpeed(verticalSpeed(planeState?.verticalSpeed))}
-                unit={t(`units.${units.verticalSpeed}`)}
-                valueColor={getVSColor(planeState?.verticalSpeed)}
-              />
-
-              <GroupSeparator />
-
-              <DataColumn
-                label={t('flightStrip.hdg')}
-                target={formatTarget(formatHeading, planeState?.apHeading)}
-                value={formatHeading(planeState?.heading)}
-                unit="°"
-                valueColor={PRIMARY_COLOR_CLASS}
-                secondary={`${t('flightStrip.crs')} ${formatHeading(planeState?.nav1Course)}° · ${t('flightStrip.nav1')} ${formatNavFrequency(planeState?.nav1Frequency)}`}
-              />
-
-              <GroupSeparator />
-
-              <DataColumn
-                label={t('flightStrip.wind')}
-                value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
-                unit={t('units.kt')}
-                secondary={`${t('flightStrip.oat')} ${formatOAT(planeState?.oat)}°C`}
-              />
-            </div>
-
-            <GroupSeparator />
+            {!detached && <GroupSeparator />}
 
             {/* Center / Follow and pop-out buttons; the detached window has neither */}
             {!detached && (
@@ -396,9 +437,19 @@ interface DataColumnProps {
   target?: string;
   /** Related smaller reading rendered under the value. */
   secondary?: ReactNode;
+  /** Off drops the line under the value, so the strip gets shorter. */
+  showDetails?: boolean;
 }
 
-function DataColumn({ label, value, unit, valueColor, target, secondary }: DataColumnProps) {
+function DataColumn({
+  label,
+  value,
+  unit,
+  valueColor,
+  target,
+  secondary,
+  showDetails = true,
+}: DataColumnProps) {
   return (
     <div className="flex min-w-0 flex-col">
       <div className="text-2xs flex h-3.5 items-center gap-1.5 tracking-wider uppercase">
@@ -429,9 +480,11 @@ function DataColumn({ label, value, unit, valueColor, target, secondary }: DataC
         </span>
         <span className="text-muted-foreground text-2xs">{unit}</span>
       </div>
-      <div className="text-muted-foreground h-3.5 font-mono text-xs leading-tight tabular-nums">
-        {secondary}
-      </div>
+      {showDetails && (
+        <div className="text-muted-foreground h-3.5 font-mono text-xs leading-tight tabular-nums">
+          {secondary}
+        </div>
+      )}
     </div>
   );
 }

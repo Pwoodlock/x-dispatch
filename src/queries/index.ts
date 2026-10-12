@@ -82,3 +82,6 @@ export { useUsageTracking } from './useUsageTracking';
 
 // Update check hook
 export { useCheckForUpdates, useUpdateStatus } from './useUpdateStatus';
+
+// Detached flight strip window
+export { useFlightStripWindowOpen, useFlightStripWindowOptions } from './useFlightStripWindow';

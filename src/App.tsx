@@ -20,6 +20,7 @@ import { Toaster } from './components/ui/sonner';
 import { FullScreenSpinner } from './components/ui/spinner';
 import { TooltipProvider } from './components/ui/tooltip';
 import { useAppActions } from './hooks/useAppActions';
+import { useFlightStripWindowSync } from './hooks/useFlightStripWindowSync';
 import { useNativeShell } from './hooks/useNativeShell';
 import './i18n';
 import { startupBucket } from './lib/analytics/buckets';
@@ -35,17 +36,8 @@ type AppState = 'checking' | 'setup' | 'loading' | 'ready' | 'error';
 initializeTheme();
 initializeFontSize();
 
-/** The strip window lives in its own renderer, so main relays the opacity setting to it. */
-function useFlightStripOpacitySync() {
-  const opacity = useSettingsStore((s) => s.appearance.flightStripOpacity);
-  useEffect(() => {
-    if (window.appAPI.isRemoteClient) return;
-    void window.appAPI.setFlightStripOpacity(opacity);
-  }, [opacity]);
-}
-
 function AppContent() {
-  useFlightStripOpacitySync();
+  useFlightStripWindowSync();
   useNativeShell();
   const queryClient = useQueryClient();
   const [appState, setAppState] = useState<AppState>('checking');

@@ -35,6 +35,7 @@ function translatedLabels(): NativeLabels {
       zoomReset: t('nativeShell.menu.zoomReset'),
       toggleSidebar: t('nativeShell.menu.toggleSidebar'),
       flightStripWindow: t('nativeShell.menu.flightStripWindow'),
+      flightStripLock: t('nativeShell.menu.flightStripLock'),
       toggleFullScreen: t('nativeShell.menu.toggleFullScreen'),
       close: t('nativeShell.menu.close'),
       keyboardShortcuts: t('nativeShell.menu.keyboardShortcuts'),
@@ -108,6 +109,9 @@ async function runMenuCommand(command: MenuCommand): Promise<void> {
       return;
     case 'closeWindow':
       if (!closeTopmostOverlay()) await window.appAPI.closeWindow();
+      return;
+    case 'flightStripLock':
+      useSettingsStore.getState().toggleFlightStripLock();
       return;
     case 'flightStripWindow':
     case 'focusSearch':

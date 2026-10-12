@@ -91,10 +91,28 @@ declare global {
       onUpdateStatus: (callback: (status: UpdateStatus) => void) => () => void;
       /** Opens the detached flight strip window, or closes it when open. */
       openFlightStripWindow: () => Promise<void>;
+      /** Opens the detached flight strip window; nothing when it is already open. */
+      showFlightStripWindow: () => Promise<void>;
       isFlightStripWindowOpen: () => Promise<boolean>;
-      /** 0.3 to 1; applied live to the open window and to the next one. */
-      setFlightStripOpacity: (opacity: number) => Promise<void>;
       onFlightStripWindowOpen: (callback: (open: boolean) => void) => () => void;
+      /** Main window only: the strip window settings, applied live and to the next window. */
+      setFlightStripWindowOptions: (
+        options: import('@/lib/flightStrip/windowOptions').FlightStripWindowOptions
+      ) => void;
+      getFlightStripWindowOptions: () => Promise<
+        import('@/lib/flightStrip/windowOptions').FlightStripWindowOptions
+      >;
+      onFlightStripWindowOptions: (
+        callback: (
+          options: import('@/lib/flightStrip/windowOptions').FlightStripWindowOptions
+        ) => void
+      ) => () => void;
+      /** Strip window only: the pointer is on the lock grip, so a locked window takes clicks. */
+      setFlightStripMouseCapture: (capture: boolean) => void;
+      /** Strip window only: asks the main window to flip the lock setting. */
+      toggleFlightStripLock: () => void;
+      /** Strip window only: the strip's natural size, so main keeps the window the same shape. */
+      setFlightStripContentSize: (size: { width: number; height: number }) => void;
       getCliFlags: () => Promise<CliFlags>;
       getProcessMemory: () => Promise<{ rss: number; heapUsed: number; heapTotal: number }>;
       startLoading: () => Promise<{ success: boolean; status?: DataLoadStatus; error?: string }>;

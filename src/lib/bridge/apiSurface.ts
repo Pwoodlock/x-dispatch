@@ -4,6 +4,7 @@
  * Both build the same objects from a transport; the channel names live only here,
  * so the desktop and a tablet cannot drift apart.
  */
+import type { FlightStripWindowOptions } from '@/lib/flightStrip/windowOptions';
 import type { AutoRouteRequest, PlanDraft } from '@/lib/flightplan/builder/types';
 import type { MenuCommand } from '@/lib/nativeShell/appMenu';
 import type { AppAction } from '@/lib/nativeShell/appUrl';
@@ -101,10 +102,20 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       checkForUpdates: () => t.invoke('app:checkForUpdates'),
       installUpdate: () => t.invoke('app:installUpdate'),
       openFlightStripWindow: () => t.invoke('app:openFlightStripWindow'),
+      showFlightStripWindow: () => t.invoke('app:showFlightStripWindow'),
       isFlightStripWindowOpen: () => t.invoke('app:isFlightStripWindowOpen'),
-      setFlightStripOpacity: (opacity: number) => t.invoke('app:setFlightStripOpacity', opacity),
       onFlightStripWindowOpen: (callback: (open: boolean) => void) =>
         t.on('app:flightStripWindowOpen', callback),
+      setFlightStripWindowOptions: (options: FlightStripWindowOptions) =>
+        t.send('app:setFlightStripWindowOptions', options),
+      getFlightStripWindowOptions: () => t.invoke('app:getFlightStripWindowOptions'),
+      onFlightStripWindowOptions: (callback: (options: FlightStripWindowOptions) => void) =>
+        t.on('app:flightStripWindowOptions', callback),
+      setFlightStripMouseCapture: (capture: boolean) =>
+        t.send('app:setFlightStripMouseCapture', capture),
+      toggleFlightStripLock: () => t.send('app:toggleFlightStripLock'),
+      setFlightStripContentSize: (size: { width: number; height: number }) =>
+        t.send('app:setFlightStripContentSize', size),
       onUpdateStatus: (callback: (status: UpdateStatus) => void) =>
         t.on('app:updateStatus', callback),
       getCliFlags: () => t.invoke('app:getCliFlags'),
