@@ -244,7 +244,7 @@ export function useMapSetup({
       setup3DTerrain(map);
       setupAirportsLayer(
         map,
-        airports,
+        airportsRef.current,
         getBasemapTheme(mapStyleUrl),
         favoriteIcaoSetRef.current,
         homeIcaoRef.current,
@@ -278,11 +278,22 @@ export function useMapSetup({
       if (mapRef.current === map) mapRef.current = null;
       scaleControlRef.current = null;
     };
-    // Note: mapStyleUrl changes are handled by Map/index.tsx style change handler
-    // to preserve map state. Only recreate map when airports change. distanceUnit
-    // isn't a dep either — the effect below keeps an existing control's unit in
-    // sync without recreating the whole map.
+    // One map per mount. Hooks bind their events to the map once, through mapRef, so a
+    // new map would leave them on the destroyed one: after an X-Plane install switch the
+    // airport list changed after mount, and gates, the context menu and other clicks went
+    // dead. A new airport list updates the existing map instead (effect below);
+    // mapStyleUrl changes go through Map/index.tsx's style change handler and distanceUnit
+    // through the scale bar effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // A new airport list (another X-Plane install, a custom scenery resync) goes into the
+  // existing map's source. Until the map has loaded there is no source; `load` then
+  // reads the latest list from airportsRef.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    updateAirportFavoriteFlags(map, airports, favoriteIcaoSetRef.current, homeIcaoRef.current);
   }, [airports]);
 
   // Keep the scale bar's unit in sync with the user's distance preference.

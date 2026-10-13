@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Plane, Search, Star } from 'lucide-react';
+import { Folder, Plane, Search, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,11 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { quickFade } from '@/lib/motionPresets';
-import { aircraftStudio, aircraftVersionLabel } from '@/lib/utils/aircraftStudio';
+import {
+  aircraftCopyLabels,
+  aircraftStudio,
+  aircraftVersionLabel,
+} from '@/lib/utils/aircraftStudio';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
@@ -38,12 +42,15 @@ function AircraftListItem({
   aircraft,
   isSelected,
   isFavorite,
+  copyLabel,
   onSelect,
   onToggleFavorite,
 }: {
   aircraft: Aircraft;
   isSelected: boolean;
   isFavorite: boolean;
+  /** Another aircraft has the same name: what tells them apart (folder or file). */
+  copyLabel: string | undefined;
   onSelect: () => void;
   onToggleFavorite: () => void;
 }) {
@@ -61,9 +68,10 @@ function AircraftListItem({
           onSelect();
         }
       }}
-      title={[aircraft.name, aircraft.studio.trim(), aircraft.author.trim()]
-        .filter(Boolean)
-        .join(' · ')}
+      title={[
+        [aircraft.name, aircraft.studio.trim(), aircraft.author.trim()].filter(Boolean).join(' · '),
+        aircraft.path,
+      ].join('\n')}
       className={cn(
         'group focus-visible:ring-primary relative flex w-full items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:ring-2 focus-visible:outline-none',
         isSelected ? 'bg-primary/10' : 'bg-secondary hover:bg-accent'
@@ -114,6 +122,12 @@ function AircraftListItem({
             <span className="text-muted-foreground/70"> · {aircraftVersionLabel(aircraft)}</span>
           )}
         </div>
+        {copyLabel && (
+          <div className="text-muted-foreground flex min-w-0 items-center gap-1 font-mono text-xs">
+            <Folder className="h-3 w-3 shrink-0" />
+            <span className="truncate">{copyLabel}</span>
+          </div>
+        )}
       </div>
 
       {/* Favorite Button */}
@@ -157,6 +171,9 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
   const selectAircraft = useLaunchStore((s) => s.selectAircraft);
   const toggleFavorite = useLaunchStore((s) => s.toggleFavorite);
 
+  // Over the whole hangar, so a copy stays marked when a filter hides its twin.
+  const copyLabels = useMemo(() => aircraftCopyLabels(aircraftList), [aircraftList]);
+
   const manufacturers = useMemo(() => {
     const set = new Set(aircraftList.map((ac) => ac.manufacturer).filter(Boolean));
     return Array.from(set).sort();
@@ -182,7 +199,13 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
         (ac) =>
           ac.name.toLowerCase().includes(q) ||
           ac.manufacturer.toLowerCase().includes(q) ||
-          ac.icao.toLowerCase().includes(q)
+          ac.icao.toLowerCase().includes(q) ||
+          // Copies of one aircraft differ only by folder or file; the shared "Aircraft/"
+          // prefix is left out so "air" still narrows the list.
+          ac.path
+            .replace(/^Aircraft[\\/]/, '')
+            .toLowerCase()
+            .includes(q)
       );
     }
 
@@ -371,6 +394,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
                       aircraft={ac}
                       isSelected={selectedAircraft?.path === ac.path}
                       isFavorite={favoriteSet.has(ac.path)}
+                      copyLabel={copyLabels.get(ac.path)}
                       onSelect={() => selectAircraft(ac)}
                       onToggleFavorite={() => toggleFavorite(ac.path)}
                     />
