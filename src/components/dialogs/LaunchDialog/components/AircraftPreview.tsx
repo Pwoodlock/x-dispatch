@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, Fuel, Plane, Scale, Tag } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Folder, Fuel, Plane, Scale, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -217,6 +217,14 @@ export function AircraftPreview() {
                     </span>
                   </>
                 )}
+              </div>
+              {/* The file X-Plane loads: copies of one aircraft differ only here. */}
+              <div
+                className="text-muted-foreground mt-1 flex min-w-0 items-center gap-1 font-mono text-xs"
+                title={selectedAircraft.path}
+              >
+                <Folder className="h-3 w-3 shrink-0" />
+                <span className="truncate">{selectedAircraft.path}</span>
               </div>
             </div>
             <div className="bg-secondary/80 flex-shrink-0 rounded-lg px-2.5 py-1.5 backdrop-blur-sm">

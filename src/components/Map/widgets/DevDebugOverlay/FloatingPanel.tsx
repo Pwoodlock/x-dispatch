@@ -32,7 +32,9 @@ export function FloatingPanel({
   return (
     <div
       ref={panelRef}
-      className="border-border/40 bg-background text-muted-foreground fixed z-[60] max-h-[80vh] min-h-[120px] min-w-[280px] resize overflow-auto rounded-lg border font-mono text-sm shadow-2xl select-none"
+      // Stays usable above an open dialog, which blocks clicks outside itself.
+      data-floating-layer
+      className="border-border/40 bg-background text-muted-foreground pointer-events-auto fixed z-[60] max-h-[80vh] min-h-[120px] min-w-[280px] resize overflow-auto rounded-lg border font-mono text-sm shadow-2xl select-none"
       style={{ left: pos.x, top: pos.y }}
     >
       <div
