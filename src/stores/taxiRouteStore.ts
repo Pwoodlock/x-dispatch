@@ -81,6 +81,13 @@ interface TaxiRouteState {
   findAnchorSegment: (networkIndex: number) => number;
   /** Insert a via-point by splitting a segment */
   insertViaNode: (afterAnchorIndex: number, nodeId: number) => void;
+  /** Reopen a route planned earlier (kept for guidance after the planner closed). */
+  restoreRoute: (route: {
+    direction: TaxiRouteDirection;
+    anchorNodeIds: number[];
+    nodeIds: number[];
+    runway: string | null;
+  }) => void;
   removeLastWaypoint: () => void;
   removeLastNetworkNode: () => void;
   clearRoute: () => void;
@@ -133,6 +140,20 @@ export function resolveFullPath(clickedIds: number[], graph: TaxiGraph | null): 
   }
 
   return cleaned;
+}
+
+/** Distance and taxiway names of a path already resolved, for the route summary. */
+function summarizePath(graph: TaxiGraph | null, nodeIds: number[]): PathResult | null {
+  if (!graph || nodeIds.length < 2) return null;
+  let totalDistance = 0;
+  const taxiwayNames: string[] = [];
+  for (let i = 0; i < nodeIds.length - 1; i++) {
+    const edge = graph.adjacency.get(nodeIds[i]!)?.find((e) => e.toNodeId === nodeIds[i + 1]!);
+    if (!edge) continue;
+    totalDistance += edge.distance;
+    taxiwayNames.push(edge.edge.name);
+  }
+  return { nodeIds, totalDistance, taxiwayNames };
 }
 
 // ============================================================================
@@ -251,6 +272,16 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       autoRouteResult: null,
     });
   },
+
+  restoreRoute: ({ direction, anchorNodeIds, nodeIds, runway }) =>
+    set((state) => ({
+      mode: 'network',
+      direction,
+      clickedNodeIds: anchorNodeIds,
+      networkNodeIds: nodeIds,
+      autoRouteResult: summarizePath(state.graph, nodeIds),
+      selectedRunway: runway,
+    })),
 
   removeLastWaypoint: () =>
     set((state) => ({
