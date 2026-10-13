@@ -12,7 +12,7 @@ const on = (along: number, lateral = 2) => ({ segIndex: 0, along, lateral, joine
 describe('guidanceView', () => {
   it('shows the next instruction with the distance to it', () => {
     const view = guidanceView([turnB, turnC, arrive], on(50), 600);
-    expect(view.next).toEqual({ event: turnB, distance: 150 });
+    expect(view.next).toEqual({ event: turnB, distance: 150, now: false });
     expect(view.offRoute).toBe(false);
   });
 
@@ -27,7 +27,11 @@ describe('guidanceView', () => {
   });
 
   it('holds short until the aircraft has lined up, then has nothing left', () => {
-    expect(guidanceView([hold], on(452), 500).next).toEqual({ event: hold, distance: 0 });
+    expect(guidanceView([hold], on(452), 500).next).toEqual({
+      event: hold,
+      distance: 0,
+      now: true,
+    });
     expect(guidanceView([hold], on(490), 500).next).toBeNull();
   });
 
@@ -39,6 +43,13 @@ describe('guidanceView', () => {
     );
     expect(view.offRoute).toBe(false);
     expect(view.next?.distance).toBe(280);
+  });
+
+  it('calls a turn now when it is just ahead, and the hold once at the line', () => {
+    expect(guidanceView([turnB, arrive], on(190), 600).next?.now).toBe(true);
+    expect(guidanceView([turnB, arrive], on(150), 600).next?.now).toBe(false);
+    expect(guidanceView([hold], on(440), 500).next?.now).toBe(false);
+    expect(guidanceView([hold], on(446), 500).next?.now).toBe(true);
   });
 
   it('tells the pilot when the aircraft has left the route', () => {

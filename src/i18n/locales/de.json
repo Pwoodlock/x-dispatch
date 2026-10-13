@@ -1139,6 +1139,13 @@
     "unlock": "Entsperren zum Verschieben oder Ändern der Größe"
   },
   "taxiGuidance": {
+    "on": "Auf",
+    "now": "Jetzt",
+    "hold": "Halt",
+    "sourceAuto": "Auto",
+    "sourcePlanned": "Plan",
+    "sourceAutoHint": "Von X-Dispatch für die Flugplan-Piste vorgeschlagen",
+    "sourcePlannedHint": "Im Rollweg-Planer geplant",
     "direction": "Rollrichtung",
     "continue": "Geradeaus",
     "continueOnto": "Weiter auf {{name}}",

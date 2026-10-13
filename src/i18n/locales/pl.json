@@ -1139,6 +1139,13 @@
     "unlock": "Odblokuj, aby przesunąć lub zmienić rozmiar"
   },
   "taxiGuidance": {
+    "on": "Na",
+    "now": "Teraz",
+    "hold": "Stop",
+    "sourceAuto": "Auto",
+    "sourcePlanned": "Plan",
+    "sourceAutoHint": "Zaproponowana przez X-Dispatch dla drogi startowej z planu lotu",
+    "sourcePlannedHint": "Zaplanowana w planerze kołowania",
     "direction": "Kierunek kołowania",
     "continue": "Prosto",
     "continueOnto": "Dalej po {{name}}",

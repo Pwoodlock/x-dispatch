@@ -1139,6 +1139,13 @@
     "unlock": "Unlash to move or resize"
   },
   "taxiGuidance": {
+    "on": "On",
+    "now": "Now",
+    "hold": "Belay",
+    "sourceAuto": "Auto",
+    "sourcePlanned": "Chart",
+    "sourceAutoHint": "X-Dispatch reckoned this course to yer plotted runway",
+    "sourcePlannedHint": "Charted by yer own hand in the taxi planner",
     "direction": "Which way to sail",
     "continue": "Steady as she goes",
     "continueOnto": "Steady on {{name}}",

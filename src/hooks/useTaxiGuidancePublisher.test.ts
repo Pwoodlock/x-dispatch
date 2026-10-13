@@ -21,6 +21,10 @@ describe('guidanceSyncAction', () => {
     expect(guidanceSyncAction(prev, base)).toEqual({ type: 'publish' });
   });
 
+  it('publishes again when the pilot takes over a suggested route', () => {
+    expect(guidanceSyncAction({ ...base, source: 'auto' }, base)).toEqual({ type: 'publish' });
+  });
+
   it('ignores changes that do not touch the route', () => {
     expect(guidanceSyncAction(base, { ...base, clickModeEnabled: false })).toBeNull();
   });

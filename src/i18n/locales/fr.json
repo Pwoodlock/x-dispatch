@@ -1139,6 +1139,13 @@
     "unlock": "Déverrouiller pour déplacer ou redimensionner"
   },
   "taxiGuidance": {
+    "on": "Sur",
+    "now": "Maintenant",
+    "hold": "Arrêt",
+    "sourceAuto": "Auto",
+    "sourcePlanned": "Plan",
+    "sourceAutoHint": "Proposé par X-Dispatch pour la piste du plan de vol",
+    "sourcePlannedHint": "Préparé dans le planificateur de roulage",
     "direction": "Direction de roulage",
     "continue": "Continuez",
     "continueOnto": "Continuez sur {{name}}",

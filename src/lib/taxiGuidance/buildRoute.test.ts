@@ -40,6 +40,7 @@ const meta = {
   direction: 'departure' as const,
   runway: '14L',
   gateName: 'B12',
+  source: 'planned' as const,
   anchorNodeIds: [1, 5],
 };
 

@@ -71,6 +71,17 @@ function statusColor(status: RowStatus): string {
   }
 }
 
+/** Distance to the next instruction, or NOW / HOLD once the aircraft is there. */
+function distanceText(
+  next: { event: GuidanceEvent; distance: number; now: boolean },
+  t: TFunction,
+  format: (m: number) => string
+): string | null {
+  if (next.now)
+    return next.event.kind === 'holdShort' ? t('taxiGuidance.hold') : t('taxiGuidance.now');
+  return next.distance > 0 ? format(next.distance) : null;
+}
+
 function statusLabel(event: RowStatus, t: TFunction): string {
   switch (event.kind) {
     case 'offRoute':
@@ -115,15 +126,26 @@ export default function TaxiGuidanceRow() {
       : next.event;
   const color = statusColor(status);
   const bearing = guidance.bearing;
+  const auto = guidance.route.source === 'auto';
+  const distance =
+    !offRoute && next ? distanceText(next, t, (m) => units.shortDistance(metersToFeet(m))) : null;
 
   return (
     <div className="border-border/50 flex w-0 min-w-full items-center gap-2 border-t px-3 py-1.5">
-      <StatusIcon status={status} className={cn('h-4 w-4 shrink-0', color)} />
-      {!offRoute && next && next.distance > 0 && (
-        <span className="xp-value shrink-0">
-          {units.shortDistance(metersToFeet(next.distance))}
+      <span
+        className="border-border text-muted-foreground shrink-0 rounded-sm border px-1 font-mono text-[10px] uppercase"
+        title={auto ? t('taxiGuidance.sourceAutoHint') : t('taxiGuidance.sourcePlannedHint')}
+      >
+        {auto ? t('taxiGuidance.sourceAuto') : t('taxiGuidance.sourcePlanned')}
+      </span>
+      {guidance.taxiway && (
+        <span className="shrink-0 font-mono text-sm uppercase">
+          <span className="text-muted-foreground">{t('taxiGuidance.on')} </span>
+          <span className="text-cat-amber font-semibold">{guidance.taxiway}</span>
         </span>
       )}
+      <StatusIcon status={status} className={cn('h-4 w-4 shrink-0', color)} />
+      {distance && <span className="xp-value shrink-0">{distance}</span>}
       <span className={cn('min-w-0 truncate font-mono text-sm font-semibold uppercase', color)}>
         {statusLabel(status, t)}
       </span>

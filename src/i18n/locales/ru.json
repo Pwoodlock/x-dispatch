@@ -1139,6 +1139,13 @@
     "unlock": "Разблокировать, чтобы переместить или изменить размер"
   },
   "taxiGuidance": {
+    "on": "По",
+    "now": "Сейчас",
+    "hold": "Стоп",
+    "sourceAuto": "Авто",
+    "sourcePlanned": "План",
+    "sourceAutoHint": "Предложено X-Dispatch для ВПП из плана полёта",
+    "sourcePlannedHint": "Составлено в планировщике руления",
     "direction": "Направление руления",
     "continue": "Прямо",
     "continueOnto": "Продолжайте по {{name}}",

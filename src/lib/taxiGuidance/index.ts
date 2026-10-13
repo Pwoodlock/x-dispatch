@@ -7,5 +7,6 @@ export type {
   GuidanceLeg,
   GuidancePoint,
   GuidanceRoute,
+  GuidanceSource,
   TurnKind,
 } from './types';

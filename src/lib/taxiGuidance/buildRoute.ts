@@ -1,6 +1,12 @@
 import type { TaxiGraph } from '@/lib/taxiGraph';
 import type { TaxiEdge } from '@/types/apt';
-import type { GuidanceDirection, GuidanceLeg, GuidancePoint, GuidanceRoute } from './types';
+import type {
+  GuidanceDirection,
+  GuidanceLeg,
+  GuidancePoint,
+  GuidanceRoute,
+  GuidanceSource,
+} from './types';
 
 /** Two route nodes closer than this (degrees, ~5 cm) are the same junction under different IDs. */
 const COINCIDENT_DEG = 5e-7;
@@ -55,6 +61,7 @@ export function buildGuidanceRoute(
     direction: GuidanceDirection;
     runway: string | null;
     gateName: string | null;
+    source: GuidanceSource;
     anchorNodeIds: number[];
   }
 ): GuidanceRoute | null {

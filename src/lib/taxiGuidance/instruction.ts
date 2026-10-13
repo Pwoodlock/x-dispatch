@@ -18,11 +18,14 @@ const JOIN_RADIUS_M = 300;
 const END_RADIUS_M = 150;
 /** Close enough to the route's end to call the stand reached. */
 const ARRIVED_M = 15;
+/** Closer than this, the next instruction is for now; a hold short only once at the line. */
+const NOW_M = 16;
+const AT_HOLD_M = 6;
 
 export interface GuidanceView {
   offRoute: boolean;
   arrived: boolean;
-  next: { event: GuidanceEvent; distance: number } | null;
+  next: { event: GuidanceEvent; distance: number; now: boolean } | null;
   then: GuidanceEvent | null;
 }
 
@@ -53,5 +56,6 @@ export function guidanceView(
     following && event.kind !== 'holdShort' && following.at - event.at <= THEN_WINDOW_M
       ? following
       : null;
-  return { offRoute, arrived, next: { event, distance }, then };
+  const now = distance < (event.kind === 'holdShort' ? AT_HOLD_M : NOW_M);
+  return { offRoute, arrived, next: { event, distance, now }, then };
 }

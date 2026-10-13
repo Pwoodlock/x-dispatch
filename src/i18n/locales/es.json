@@ -1139,6 +1139,13 @@
     "unlock": "Desbloquear para mover o cambiar el tamaño"
   },
   "taxiGuidance": {
+    "on": "En",
+    "now": "Ahora",
+    "hold": "Pare",
+    "sourceAuto": "Auto",
+    "sourcePlanned": "Plan",
+    "sourceAutoHint": "Sugerida por X-Dispatch para la pista del plan de vuelo",
+    "sourcePlannedHint": "Planificada en el planificador de rodaje",
     "direction": "Dirección de rodaje",
     "continue": "Continúe",
     "continueOnto": "Continúe por {{name}}",

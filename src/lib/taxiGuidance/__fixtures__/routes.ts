@@ -1,4 +1,4 @@
-import type { GuidanceDirection, GuidanceLeg, GuidanceRoute } from '../types';
+import type { GuidanceDirection, GuidanceLeg, GuidanceRoute, GuidanceSource } from '../types';
 
 /** Test origin near LFBO. Offsets are in metres east (x) and north (y) of it. */
 const LAT0 = 43.63;
@@ -18,13 +18,19 @@ export function leg(name: string, runways: string[] = [], isRunway = false): Gui
 export function makeRoute(
   xy: [number, number][],
   legs: GuidanceLeg[],
-  opts: { direction?: GuidanceDirection; runway?: string | null; gateName?: string | null } = {}
+  opts: {
+    direction?: GuidanceDirection;
+    runway?: string | null;
+    gateName?: string | null;
+    source?: GuidanceSource;
+  } = {}
 ): GuidanceRoute {
   return {
     icao: 'LFBO',
     direction: opts.direction ?? 'departure',
     runway: opts.runway ?? null,
     gateName: opts.gateName ?? null,
+    source: opts.source ?? 'planned',
     points: xy.map(([x, y]) => at(x, y)),
     legs,
     anchorNodeIds: [],

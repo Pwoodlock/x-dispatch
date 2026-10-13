@@ -4,7 +4,7 @@ import {
   bearingOf,
   buildGeometry,
   pointAtDistance,
-  toLatLon,
+  routeBetween,
   toLocal,
 } from './geometry';
 import { type GuidanceView, guidanceView } from './instruction';
@@ -22,6 +22,10 @@ interface PreparedRoute {
   geometry: RouteGeometry;
   events: GuidanceEvent[];
   holdBars: GuidancePoint[][];
+  /** Where the drawn route stops: a departure at the runway's hold line, else its end. */
+  drawEnd: number;
+  /** The route as drawn on the map. */
+  drawn: GuidancePoint[];
 }
 
 const prepared = new WeakMap<GuidanceRoute, PreparedRoute>();
@@ -32,7 +36,18 @@ export function prepareRoute(route: GuidanceRoute): PreparedRoute {
   if (!p) {
     const geometry = buildGeometry(route.points);
     const events = computeEvents(route, geometry);
-    p = { geometry, events, holdBars: holdBarLines(geometry, events) };
+    const hold =
+      route.direction === 'departure'
+        ? events.find((e) => e.kind === 'holdShort' && e.pointIndex !== null)
+        : undefined;
+    const drawEnd = hold?.at ?? geometry.total;
+    p = {
+      geometry,
+      events,
+      holdBars: holdBarLines(geometry, events),
+      drawEnd,
+      drawn: routeBetween(geometry, 0, drawEnd),
+    };
     prepared.set(route, p);
   }
   return p;
@@ -42,8 +57,10 @@ export interface TrackedGuidance {
   route: GuidanceRoute;
   progress: RouteProgress;
   view: GuidanceView;
-  /** The part of the route still ahead, from the aircraft's spot on it to the end. */
+  /** The drawn route still ahead, from the aircraft's spot on it. */
   remaining: GuidancePoint[];
+  /** Name of the taxiway the aircraft is following; null off it, on a runway or an unnamed connector. */
+  taxiway: string | null;
   /**
    * True bearing from the aircraft to where it should head: the nearest point of
    * the route before joining it or once off it, else the route a little ahead.
@@ -82,13 +99,15 @@ export function createGuidanceTracker() {
       }
       if (!best) return null;
 
-      const { geometry, events } = prepareRoute(best.route);
+      const { geometry, events, drawEnd } = prepareRoute(best.route);
       const { progress } = best;
       const view = guidanceView(events, progress, geometry.total);
-      const { point, segIndex } = pointAtDistance(geometry, progress.along);
-      const remaining = [toLatLon(geometry, point), ...best.route.points.slice(segIndex + 1)];
+      const { point } = pointAtDistance(geometry, progress.along);
+      const remaining = routeBetween(geometry, progress.along, drawEnd);
 
       const onRoute = progress.joined && !view.offRoute;
+      const leg = best.route.legs[progress.segIndex];
+      const taxiway = onRoute && leg && !leg.isRunway && leg.name ? leg.name : null;
       const aim = onRoute ? pointAtDistance(geometry, progress.along + AIM_AHEAD_M).point : point;
       const here = toLocal(geometry, position.lat, position.lon);
       const bearing =
@@ -96,7 +115,7 @@ export function createGuidanceTracker() {
           ? null
           : bearingOf(here, aim);
 
-      return { route: best.route, progress, view, remaining, bearing };
+      return { route: best.route, progress, view, remaining, taxiway, bearing };
     },
   };
 }

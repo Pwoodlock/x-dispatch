@@ -238,7 +238,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
 
     const routes = guidanceRoutes({ departure: departureRoute, arrival: arrivalRoute });
     const holdBars = routes.flatMap((r) => prepareRoute(r).holdBars.map(toRoutePoints));
-    const endpoints = routes.flatMap((r) => buildEndpoints(toRoutePoints(r.points)));
+    const endpoints = routes.flatMap((r) => buildEndpoints(toRoutePoints(prepareRoute(r).drawn)));
     const tracker = createGuidanceTracker();
     let lastStep: string | null = null;
 
@@ -256,7 +256,9 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       lastStep = step;
       setTaxiRouteLines(
         map,
-        routes.map((r) => toRoutePoints(tracked?.route === r ? tracked.remaining : r.points))
+        routes.map((r) =>
+          toRoutePoints(tracked?.route === r ? tracked.remaining : prepareRoute(r).drawn)
+        )
       );
     };
 

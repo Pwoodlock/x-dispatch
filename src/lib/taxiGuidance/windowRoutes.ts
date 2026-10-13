@@ -39,12 +39,14 @@ function parseRoute(v: unknown, direction: GuidanceDirection): GuidanceRoute | n
   if (!Array.isArray(points) || points.length < 2 || !points.every(isPoint)) return null;
   if (!Array.isArray(legs) || legs.length !== points.length - 1 || !legs.every(isLeg)) return null;
   if (!isNullableString(v.runway) || !isNullableString(v.gateName)) return null;
+  if (v.source !== 'auto' && v.source !== 'planned') return null;
   if (!isNumberArray(v.anchorNodeIds) || !isNumberArray(v.nodeIds)) return null;
   return {
     icao: v.icao,
     direction,
     runway: v.runway,
     gateName: v.gateName,
+    source: v.source,
     points,
     legs,
     anchorNodeIds: v.anchorNodeIds,

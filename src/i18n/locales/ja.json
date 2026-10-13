@@ -1139,6 +1139,13 @@
     "unlock": "ロックを解除して移動・サイズ変更"
   },
   "taxiGuidance": {
+    "on": "走行中",
+    "now": "今",
+    "hold": "停止",
+    "sourceAuto": "自動",
+    "sourcePlanned": "計画",
+    "sourceAutoHint": "フライトプランの滑走路に合わせてX-Dispatchが提案",
+    "sourcePlannedHint": "タキシールートプランナーで計画",
     "direction": "走行方向",
     "continue": "直進",
     "continueOnto": "{{name}}を直進",

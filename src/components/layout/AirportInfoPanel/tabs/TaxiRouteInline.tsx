@@ -22,6 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useUnits } from '@/hooks/useUnits';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { getRolloutEnd } from '@/lib/taxiGraph/rolloutEnd';
+import type { GuidanceSource } from '@/lib/taxiGuidance';
 import { metersToNauticalMiles } from '@/lib/utils/geomath';
 import { toastError } from '@/lib/utils/toastError';
 import { trackEvent } from '@/queries/useAnalytics';
@@ -83,7 +84,8 @@ export default function TaxiRouteInline() {
   // runway → gate. Only the runway is a user pick.
   const handleRunwaySelect = (
     runwayName: string,
-    routeDirection: TaxiRouteDirection = direction
+    routeDirection: TaxiRouteDirection = direction,
+    source: GuidanceSource = 'planned'
   ) => {
     if (!graph || !startPosition) return;
     const rwyEnd = runwayEnds.find((r) => r.name === runwayName);
@@ -97,7 +99,8 @@ export default function TaxiRouteInline() {
         startPosition.latitude,
         rwyEnd.lon,
         rwyEnd.lat,
-        runwayName
+        runwayName,
+        source
       );
     } else {
       // Arrival: the aircraft rolls out to the OPPOSITE end of the landing
@@ -111,7 +114,8 @@ export default function TaxiRouteInline() {
         startLat,
         startPosition.longitude,
         startPosition.latitude,
-        runwayName
+        runwayName,
+        source
       );
     }
     if (useTaxiRouteStore.getState().autoRouteResult === previousResult) {
@@ -145,7 +149,7 @@ export default function TaxiRouteInline() {
           : null;
     if (!plan || !runwayEnds.some((r) => r.name === plan.runway)) return;
     setDirection(plan.direction);
-    handleRunwaySelect(plan.runway, plan.direction);
+    handleRunwaySelect(plan.runway, plan.direction, 'auto');
     // Runs once, when the graph and gate are first known.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, startPosition, icao]);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { at, leg, makeRoute } from './__fixtures__/routes';
-import { createGuidanceTracker } from './tracker';
+import { createGuidanceTracker, prepareRoute } from './tracker';
 
 const departure = makeRoute(
   [
@@ -52,6 +52,36 @@ describe('createGuidanceTracker', () => {
     expect(tracker.update([departure], at(-60, 50))!.bearing).toBeCloseTo(90, 0);
     expect(tracker.update([departure], at(0, 100))!.bearing).toBeCloseTo(0, 0);
     expect(tracker.update([departure], at(0, 190))!.bearing).toBeGreaterThan(45);
+  });
+
+  it('names the taxiway the aircraft is on, and none on the lead-in from the gate', () => {
+    const fromGate = makeRoute(
+      [
+        [0, 0],
+        [0, 50],
+        [200, 50],
+      ],
+      [leg(''), leg('A1')]
+    );
+    expect(createGuidanceTracker().update([fromGate], at(0, 20))!.taxiway).toBeNull();
+    expect(createGuidanceTracker().update([fromGate], at(100, 50))!.taxiway).toBe('A1');
+  });
+
+  it('draws a departure only up to the hold line', () => {
+    const toRunway = makeRoute(
+      [
+        [0, 0],
+        [0, 100],
+        [0, 200],
+        [100, 200],
+      ],
+      [leg('A'), leg('A', ['14L/32R']), leg('14L/32R', ['14L/32R'], true)],
+      { runway: '14L' }
+    );
+    const tracked = createGuidanceTracker().update([toRunway], at(0, 40))!;
+    expect(tracked.remaining).toHaveLength(2);
+    expect(tracked.remaining[1]!.lat).toBeCloseTo(at(0, 100).lat, 7);
+    expect(prepareRoute(toRunway).drawn).toHaveLength(2);
   });
 
   it('tracks nothing when the aircraft is at another airport', () => {

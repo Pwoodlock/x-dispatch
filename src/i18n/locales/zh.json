@@ -1139,6 +1139,13 @@
     "unlock": "解锁以移动或调整大小"
   },
   "taxiGuidance": {
+    "on": "当前",
+    "now": "现在",
+    "hold": "停止",
+    "sourceAuto": "自动",
+    "sourcePlanned": "计划",
+    "sourceAutoHint": "X-Dispatch 按飞行计划跑道建议",
+    "sourcePlannedHint": "在滑行路线规划器中规划",
     "direction": "滑行方向",
     "continue": "直行",
     "continueOnto": "沿{{name}}直行",

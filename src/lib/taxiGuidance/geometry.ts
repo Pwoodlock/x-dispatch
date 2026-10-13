@@ -62,6 +62,17 @@ export function pointAtDistance(g: RouteGeometry, s: number): { point: Vec; segI
   return { point: { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }, segIndex: i };
 }
 
+/** The stretch of route from `from` to `to` metres along it, as lat/lon points. */
+export function routeBetween(g: RouteGeometry, from: number, to: number): GuidancePoint[] {
+  if (to <= from) return [];
+  const start = pointAtDistance(g, from);
+  const end = pointAtDistance(g, to);
+  const points = [start.point];
+  for (let i = start.segIndex + 1; i <= end.segIndex; i++) points.push(g.xy[i]!);
+  points.push(end.point);
+  return points.map((p) => toLatLon(g, p));
+}
+
 /** True bearing from `a` to `b`, 0 = north, clockwise, in [0, 360). */
 export function bearingOf(a: Vec, b: Vec): number {
   const deg = (Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI;

@@ -9,6 +9,9 @@ export interface GuidancePoint {
 
 export type GuidanceDirection = 'departure' | 'arrival';
 
+/** Who made the route: suggested by X-Dispatch on its own, or planned or edited by the pilot. */
+export type GuidanceSource = 'auto' | 'planned';
+
 /** One taxi network edge of the route, from `points[i]` to `points[i + 1]`. */
 export interface GuidanceLeg {
   /** Taxiway or runway name, empty when the scenery left it blank. */
@@ -29,6 +32,7 @@ export interface GuidanceRoute {
   runway: string | null;
   /** Gate or stand the route starts from (departure) or ends at (arrival). */
   gateName: string | null;
+  source: GuidanceSource;
   points: GuidancePoint[];
   legs: GuidanceLeg[];
   /** Editor state, so the planner can reopen the route: the picked nodes and the full path. */

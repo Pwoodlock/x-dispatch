@@ -25,6 +25,7 @@ export function guidanceSyncAction(prev: PlannerState, next: PlannerState): Guid
     prev.direction !== next.direction ||
     prev.selectedRunway !== next.selectedRunway ||
     prev.mode !== next.mode ||
+    prev.source !== next.source ||
     prev.activeTaxiIcao !== next.activeTaxiIcao;
   if (!changed) return null;
 
@@ -64,6 +65,7 @@ export function useTaxiGuidancePublisher(): void {
         direction: next.direction,
         runway: next.selectedRunway,
         gateName: useAppStore.getState().startPosition?.name ?? null,
+        source: next.source,
         anchorNodeIds: next.clickedNodeIds,
       });
       if (route) guidance.setRoute(route);

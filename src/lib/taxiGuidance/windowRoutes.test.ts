@@ -24,6 +24,12 @@ describe('parseGuidanceRoutes', () => {
     expect(parseGuidanceRoutes({ departure, arrival })).toEqual({ departure, arrival });
   });
 
+  it('drops a route with no known source', () => {
+    expect(
+      parseGuidanceRoutes({ departure: { ...departure, source: 'atc' }, arrival }).departure
+    ).toBeNull();
+  });
+
   it('drops a route filed under the wrong direction', () => {
     expect(parseGuidanceRoutes({ departure: arrival, arrival: null })).toEqual(NO_GUIDANCE_ROUTES);
   });

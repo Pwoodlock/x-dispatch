@@ -1139,6 +1139,13 @@
     "unlock": "Sblocca per spostare o ridimensionare"
   },
   "taxiGuidance": {
+    "on": "Su",
+    "now": "Ora",
+    "hold": "Stop",
+    "sourceAuto": "Auto",
+    "sourcePlanned": "Piano",
+    "sourceAutoHint": "Suggerito da X-Dispatch per la pista del piano di volo",
+    "sourcePlannedHint": "Pianificato nel pianificatore di rullaggio",
     "direction": "Direzione di rullaggio",
     "continue": "Proseguire",
     "continueOnto": "Proseguire su {{name}}",
