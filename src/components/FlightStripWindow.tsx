@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Lock, LockOpen, X } from 'lucide-react';
 import FlightStrip from '@/components/Map/widgets/FlightStrip';
 import { Button } from '@/components/ui/button';
-import { useCrossWindowStoreSync } from '@/hooks/useCrossWindowStoreSync';
+import { useFlightStripGuidance } from '@/hooks/useFlightStripGuidance';
+import { useSettingsStorageSync } from '@/hooks/useSettingsStorageSync';
 import { aspectChanged } from '@/lib/flightStrip/windowFit';
 import { cn } from '@/lib/utils/helpers';
 import { useFlightStripWindowOptions } from '@/queries';
@@ -73,7 +74,8 @@ function useReportStripShape(contentRef: React.RefObject<HTMLDivElement | null>)
  */
 export function FlightStripWindow() {
   usePlaneStateStream();
-  useCrossWindowStoreSync();
+  useSettingsStorageSync();
+  useFlightStripGuidance();
   const { t } = useTranslation();
   const { locked } = useFlightStripWindowOptions();
   const frameRef = useRef<HTMLDivElement>(null);

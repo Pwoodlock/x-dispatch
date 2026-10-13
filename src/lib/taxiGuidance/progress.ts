@@ -1,4 +1,5 @@
 import { type RouteGeometry, type Vec, projectOnSegment } from './geometry';
+import { OFF_ROUTE_M } from './instruction';
 
 export interface RouteProgress {
   /** Segment the aircraft is on: from `xy[segIndex]` to `xy[segIndex + 1]`. */
@@ -7,6 +8,11 @@ export interface RouteProgress {
   along: number;
   /** Metres from the aircraft to the route. */
   lateral: number;
+  /**
+   * The aircraft has been on the route at least once. Until then it is still
+   * making its way from the gate, which can sit well beside the first leg.
+   */
+  joined: boolean;
 }
 
 /**
@@ -18,8 +24,10 @@ const LOOKAHEAD_M = 300;
 /** Beyond this the window search has lost the aircraft and the whole route is searched again. */
 const REACQUIRE_M = 40;
 
-function closestOver(g: RouteGeometry, p: Vec, from: number, to: number): RouteProgress | null {
-  let best: RouteProgress | null = null;
+type Fix = Omit<RouteProgress, 'joined'>;
+
+function closestOver(g: RouteGeometry, p: Vec, from: number, to: number): Fix | null {
+  let best: Fix | null = null;
   for (let i = from; i <= to; i++) {
     const a = g.xy[i]!;
     const b = g.xy[i + 1]!;
@@ -45,7 +53,12 @@ export function trackProgress(
 ): RouteProgress | null {
   const lastSeg = g.xy.length - 2;
   if (lastSeg < 0) return null;
-  const global = () => closestOver(g, p, 0, lastSeg);
+  const fix = locate(g, p, prev, lastSeg);
+  return { ...fix, joined: !!prev?.joined || fix.lateral <= OFF_ROUTE_M };
+}
+
+function locate(g: RouteGeometry, p: Vec, prev: RouteProgress | null, lastSeg: number): Fix {
+  const global = () => closestOver(g, p, 0, lastSeg)!;
   if (!prev) return global();
 
   const from = Math.max(0, prev.segIndex - 1);
@@ -54,6 +67,6 @@ export function trackProgress(
   const windowed = closestOver(g, p, from, to)!;
   if (windowed.lateral <= REACQUIRE_M) return windowed;
 
-  const all = global()!;
+  const all = global();
   return all.lateral <= REACQUIRE_M ? all : windowed;
 }

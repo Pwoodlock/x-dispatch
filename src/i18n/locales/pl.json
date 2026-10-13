@@ -1139,6 +1139,7 @@
     "unlock": "Odblokuj, aby przesunąć lub zmienić rozmiar"
   },
   "taxiGuidance": {
+    "direction": "Kierunek kołowania",
     "continue": "Prosto",
     "continueOnto": "Dalej po {{name}}",
     "bearLeft": "Lekko w lewo",

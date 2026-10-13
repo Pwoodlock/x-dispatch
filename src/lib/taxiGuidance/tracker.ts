@@ -1,11 +1,22 @@
 import { computeEvents, holdBarLines } from './events';
-import { type RouteGeometry, buildGeometry, pointAtDistance, toLatLon, toLocal } from './geometry';
+import {
+  type RouteGeometry,
+  bearingOf,
+  buildGeometry,
+  pointAtDistance,
+  toLatLon,
+  toLocal,
+} from './geometry';
 import { type GuidanceView, guidanceView } from './instruction';
 import { type RouteProgress, trackProgress } from './progress';
 import type { GuidanceEvent, GuidancePoint, GuidanceRoute } from './types';
 
 /** Further than this from every route, the aircraft is somewhere else and nothing is tracked. */
 const NEAR_ROUTE_M = 1500;
+/** On the route, the arrow points at the route this far ahead, so it leads into turns. */
+const AIM_AHEAD_M = 40;
+/** Closer than this to the aimed point, its bearing is noise. */
+const AIM_MIN_M = 3;
 
 interface PreparedRoute {
   geometry: RouteGeometry;
@@ -33,6 +44,12 @@ export interface TrackedGuidance {
   view: GuidanceView;
   /** The part of the route still ahead, from the aircraft's spot on it to the end. */
   remaining: GuidancePoint[];
+  /**
+   * True bearing from the aircraft to where it should head: the nearest point of
+   * the route before joining it or once off it, else the route a little ahead.
+   * Null once arrived or when that point is right under the aircraft.
+   */
+  bearing: number | null;
 }
 
 /**
@@ -67,14 +84,19 @@ export function createGuidanceTracker() {
 
       const { geometry, events } = prepareRoute(best.route);
       const { progress } = best;
+      const view = guidanceView(events, progress, geometry.total);
       const { point, segIndex } = pointAtDistance(geometry, progress.along);
       const remaining = [toLatLon(geometry, point), ...best.route.points.slice(segIndex + 1)];
-      return {
-        route: best.route,
-        progress,
-        view: guidanceView(events, progress, geometry.total),
-        remaining,
-      };
+
+      const onRoute = progress.joined && !view.offRoute;
+      const aim = onRoute ? pointAtDistance(geometry, progress.along + AIM_AHEAD_M).point : point;
+      const here = toLocal(geometry, position.lat, position.lon);
+      const bearing =
+        view.arrived || Math.hypot(aim.x - here.x, aim.y - here.y) < AIM_MIN_M
+          ? null
+          : bearingOf(here, aim);
+
+      return { route: best.route, progress, view, remaining, bearing };
     },
   };
 }

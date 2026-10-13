@@ -51,7 +51,6 @@ export function guidanceSyncAction(prev: PlannerState, next: PlannerState): Guid
 export function useTaxiGuidancePublisher(): void {
   useEffect(() => {
     const guidance = useTaxiGuidanceStore.getState();
-    guidance.clearAll();
 
     const unsubPlanner = useTaxiRouteStore.subscribe((next, prev) => {
       const action = guidanceSyncAction(prev, next);

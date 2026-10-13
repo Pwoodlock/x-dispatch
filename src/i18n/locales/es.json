@@ -1139,6 +1139,7 @@
     "unlock": "Desbloquear para mover o cambiar el tamaño"
   },
   "taxiGuidance": {
+    "direction": "Dirección de rodaje",
     "continue": "Continúe",
     "continueOnto": "Continúe por {{name}}",
     "bearLeft": "Ligeramente a la izquierda",

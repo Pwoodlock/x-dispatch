@@ -1139,6 +1139,7 @@
     "unlock": "Entsperren zum Verschieben oder Ändern der Größe"
   },
   "taxiGuidance": {
+    "direction": "Rollrichtung",
     "continue": "Geradeaus",
     "continueOnto": "Weiter auf {{name}}",
     "bearLeft": "Leicht links",

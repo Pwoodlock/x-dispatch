@@ -31,6 +31,29 @@ describe('createGuidanceTracker', () => {
     expect(tracked.remaining[0]!.lat).toBeCloseTo(at(0, 50).lat, 7);
   });
 
+  it('is not off route at a gate beside the first leg, until it has joined and left', () => {
+    const taxilane = makeRoute(
+      [
+        [-30, 60],
+        [100, 60],
+        [100, 400],
+      ],
+      [leg('P65'), leg('M11')]
+    );
+    const tracker = createGuidanceTracker();
+    expect(tracker.update([taxilane], at(0, 0))!.view.offRoute).toBe(false);
+    expect(tracker.update([taxilane], at(50, 58))!.view.offRoute).toBe(false);
+    expect(tracker.update([taxilane], at(100, 200))!.view.offRoute).toBe(false);
+    expect(tracker.update([taxilane], at(40, 200))!.view.offRoute).toBe(true);
+  });
+
+  it('points at the route from the gate, then along it ahead of the aircraft', () => {
+    const tracker = createGuidanceTracker();
+    expect(tracker.update([departure], at(-60, 50))!.bearing).toBeCloseTo(90, 0);
+    expect(tracker.update([departure], at(0, 100))!.bearing).toBeCloseTo(0, 0);
+    expect(tracker.update([departure], at(0, 190))!.bearing).toBeGreaterThan(45);
+  });
+
   it('tracks nothing when the aircraft is at another airport', () => {
     expect(createGuidanceTracker().update([departure], at(0, 20_000))).toBeNull();
   });

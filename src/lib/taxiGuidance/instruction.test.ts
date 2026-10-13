@@ -7,7 +7,7 @@ const turnC: GuidanceEvent = { kind: 'turn', turn: 'turnRight', name: 'C', at: 4
 const hold: GuidanceEvent = { kind: 'holdShort', runway: '27', at: 450, pointIndex: 5 };
 const arrive: GuidanceEvent = { kind: 'arrive', name: 'G1', at: 600 };
 
-const on = (along: number, lateral = 2) => ({ segIndex: 0, along, lateral });
+const on = (along: number, lateral = 2) => ({ segIndex: 0, along, lateral, joined: true });
 
 describe('guidanceView', () => {
   it('shows the next instruction with the distance to it', () => {
@@ -32,7 +32,11 @@ describe('guidanceView', () => {
   });
 
   it('counts the way to the route while the aircraft is still at the gate', () => {
-    const view = guidanceView([turnB, arrive], { segIndex: 0, along: 0, lateral: 80 }, 600);
+    const view = guidanceView(
+      [turnB, arrive],
+      { segIndex: 0, along: 0, lateral: 80, joined: false },
+      600
+    );
     expect(view.offRoute).toBe(false);
     expect(view.next?.distance).toBe(280);
   });

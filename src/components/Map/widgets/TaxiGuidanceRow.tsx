@@ -20,6 +20,7 @@ import { useUnits } from '@/hooks/useUnits';
 import type { GuidanceEvent, TurnKind } from '@/lib/taxiGuidance';
 import { metersToFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { usePlaneStore } from '@/stores/planeStore';
 
 const TURN_ICON: Record<TurnKind, LucideIcon> = {
   continue: ArrowUp,
@@ -102,6 +103,7 @@ export default function TaxiGuidanceRow() {
   const { t } = useTranslation();
   const units = useUnits();
   const guidance = useTaxiGuidance();
+  const heading = usePlaneStore((s) => s.state?.heading);
   if (!guidance) return null;
   const { offRoute, arrived, next, then } = guidance.view;
   if (!offRoute && !arrived && !next) return null;
@@ -112,22 +114,31 @@ export default function TaxiGuidanceRow() {
       ? { kind: 'arrived' }
       : next.event;
   const color = statusColor(status);
+  const bearing = guidance.bearing;
 
   return (
     <div className="border-border/50 flex w-0 min-w-full items-center gap-2 border-t px-3 py-1.5">
       <StatusIcon status={status} className={cn('h-4 w-4 shrink-0', color)} />
-      <span className={cn('min-w-0 truncate font-mono text-sm font-semibold uppercase', color)}>
-        {statusLabel(status, t)}
-      </span>
       {!offRoute && next && next.distance > 0 && (
         <span className="xp-value shrink-0">
           {units.shortDistance(metersToFeet(next.distance))}
         </span>
       )}
+      <span className={cn('min-w-0 truncate font-mono text-sm font-semibold uppercase', color)}>
+        {statusLabel(status, t)}
+      </span>
       {!offRoute && then && (
         <span className="text-muted-foreground min-w-0 truncate text-xs uppercase">
           {t('taxiGuidance.then', { instruction: statusLabel(then, t) })}
         </span>
+      )}
+      {bearing !== null && heading !== undefined && (
+        <ArrowUp
+          role="img"
+          aria-label={t('taxiGuidance.direction')}
+          className={cn('ml-auto h-4 w-4 shrink-0', color)}
+          style={{ transform: `rotate(${bearing - heading}deg)` }}
+        />
       )}
     </div>
   );

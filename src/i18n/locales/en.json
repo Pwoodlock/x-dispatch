@@ -1139,6 +1139,7 @@
     "unlock": "Unlock to move or resize"
   },
   "taxiGuidance": {
+    "direction": "Direction to taxi",
     "continue": "Continue",
     "continueOnto": "Continue on {{name}}",
     "bearLeft": "Bear left",

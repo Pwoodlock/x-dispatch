@@ -1139,6 +1139,7 @@
     "unlock": "解锁以移动或调整大小"
   },
   "taxiGuidance": {
+    "direction": "滑行方向",
     "continue": "直行",
     "continueOnto": "沿{{name}}直行",
     "bearLeft": "稍向左",

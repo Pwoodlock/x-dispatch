@@ -10,8 +10,8 @@ const THEN_WINDOW_M = 300;
 /** Further from the route than this, the pilot is told they left it. */
 export const OFF_ROUTE_M = 40;
 /**
- * A gate is often well off the taxi network: the route starts at the nearest
- * node. Before joining it, or after leaving its end for the stand, being this
+ * A gate is often well off the taxi network, beside the route's first leg.
+ * Before joining the route, or after leaving its end for the stand, being this
  * far away is still normal.
  */
 const JOIN_RADIUS_M = 300;
@@ -32,7 +32,7 @@ export function guidanceView(
   total: number
 ): GuidanceView {
   const { along, lateral } = progress;
-  const beforeStart = along <= 0.5 && lateral <= JOIN_RADIUS_M;
+  const beforeStart = !progress.joined && lateral <= JOIN_RADIUS_M;
   const pastEnd = along >= total - 0.5 && lateral <= END_RADIUS_M;
   const offRoute = lateral > OFF_ROUTE_M && !beforeStart && !pastEnd;
 
@@ -46,7 +46,7 @@ export function guidanceView(
   const event = index >= 0 ? events[index]! : null;
   if (!event || arrived) return { offRoute, arrived, next: null, then: null };
 
-  // Before joining, the way to the first node counts toward the distance.
+  // Before joining, the way to the route counts toward the distance.
   const distance = Math.max(0, event.at - along) + (beforeStart ? lateral : 0);
   const following = events[index + 1];
   const then =

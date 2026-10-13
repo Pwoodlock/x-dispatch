@@ -1139,6 +1139,7 @@
     "unlock": "Unlash to move or resize"
   },
   "taxiGuidance": {
+    "direction": "Which way to sail",
     "continue": "Steady as she goes",
     "continueOnto": "Steady on {{name}}",
     "bearLeft": "Ease to port",

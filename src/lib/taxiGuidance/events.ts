@@ -28,20 +28,15 @@ export function classifyTurn(deltaDeg: number): TurnKind {
   return right ? 'sharpRight' : 'sharpLeft';
 }
 
-/** Heading change at route point `j`, measured over the last and next few metres. */
-function turnAt(g: RouteGeometry, j: number): number {
-  const node = g.xy[j]!;
-  const before = pointAtDistance(g, g.cum[j]! - TURN_SAMPLE_M).point;
-  const after = pointAtDistance(g, g.cum[j]! + TURN_SAMPLE_M).point;
-  return signedTurn(bearingOf(before, node), bearingOf(node, after));
-}
-
-/** A blank leg name carries the previous one, so an unnamed connector isn't announced as a new taxiway. */
-function effectiveNames(route: GuidanceRoute): string[] {
-  const names = route.legs.map((l) => l.name);
-  for (let i = 1; i < names.length; i++) if (!names[i]) names[i] = names[i - 1]!;
-  for (let i = names.length - 2; i >= 0; i--) if (!names[i]) names[i] = names[i + 1]!;
-  return names;
+/**
+ * Heading change from the way in to route point `from` to the way out of route
+ * point `to`, each measured over a few metres. Across a connector (`from` before
+ * `to`) this is the whole change from one taxiway to the next.
+ */
+function turnBetween(g: RouteGeometry, from: number, to: number): number {
+  const before = pointAtDistance(g, g.cum[from]! - TURN_SAMPLE_M).point;
+  const after = pointAtDistance(g, g.cum[to]! + TURN_SAMPLE_M).point;
+  return signedTurn(bearingOf(before, g.xy[from]!), bearingOf(g.xy[to]!, after));
 }
 
 /** The runway end the pilot knows (`14L`) when it belongs to this zone, else the zone's key (`14L/32R`). */
@@ -65,11 +60,13 @@ const KIND_ORDER: Record<GuidanceEvent['kind'], number> = {
 export function computeEvents(route: GuidanceRoute, g: RouteGeometry): GuidanceEvent[] {
   const events: GuidanceEvent[] = [];
   const legs = route.legs;
-  const names = effectiveNames(route);
+  /** The taxiway being followed, and where the route left it onto blank-named connectors. */
+  let taxiway: string | null = null;
+  let leftAt: number | null = null;
 
-  for (let j = 1; j < legs.length; j++) {
+  for (let j = 0; j < legs.length; j++) {
     const leg = legs[j]!;
-    const prev = legs[j - 1]!;
+    const prev = j > 0 ? legs[j - 1]! : leg;
     const at = g.cum[j]!;
 
     for (const key of leg.runways) {
@@ -91,9 +88,22 @@ export function computeEvents(route: GuidanceRoute, g: RouteGeometry): GuidanceE
 
     // Runway legs are covered by the hold/cross above; turns are taxiway changes.
     if (leg.isRunway) continue;
-    if (names[j] && names[j] !== names[j - 1]) {
-      events.push({ kind: 'turn', turn: classifyTurn(turnAt(g, j)), name: names[j]!, at });
+    if (!leg.name) {
+      if (taxiway !== null) leftAt ??= j;
+      continue;
     }
+    if (leg.name !== taxiway && j > 0) {
+      // The turn starts where the route leaves the old taxiway, not where the new name begins.
+      const from = leftAt ?? j;
+      events.push({
+        kind: 'turn',
+        turn: classifyTurn(turnBetween(g, from, j)),
+        name: leg.name,
+        at: g.cum[from]!,
+      });
+    }
+    taxiway = leg.name;
+    leftAt = null;
   }
 
   if (route.direction === 'departure') {

@@ -53,6 +53,35 @@ describe('buildGuidanceRoute', () => {
     ]);
   });
 
+  it('files zones that name single runway ends under their runway', () => {
+    const graph = buildTaxiGraph({
+      ...network(),
+      edges: [
+        {
+          fromNodeId: 1,
+          toNodeId: 2,
+          direction: 'twoway',
+          widthClass: 'D',
+          name: 'B3',
+          activeZones: [
+            { type: 'departure', runways: ['23'] },
+            { type: 'arrival', runways: ['05'] },
+          ],
+        },
+        {
+          fromNodeId: 3,
+          toNodeId: 4,
+          direction: 'twoway',
+          widthClass: 'D',
+          name: 'B3',
+          activeZones: [{ type: 'departure', runways: ['32R', '09'] }],
+        },
+      ],
+    } as TaxiNetwork);
+    const route = buildGuidanceRoute(graph, [1, 2, 3, 4], meta)!;
+    expect(route.legs.map((l) => l.runways)).toEqual([['05/23'], ['14L/32R', '09/27']]);
+  });
+
   it('merges two node IDs at the same spot into one point', () => {
     const route = buildGuidanceRoute(buildTaxiGraph(network()), [1, 2, 3, 4, 5], meta)!;
     expect(route.points).toHaveLength(4);

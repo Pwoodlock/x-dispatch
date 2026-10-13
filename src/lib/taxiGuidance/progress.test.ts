@@ -26,14 +26,14 @@ describe('trackProgress', () => {
     // From scratch the closer, later leg wins…
     expect(trackProgress(g, p, null)!.along).toBeGreaterThan(560);
     // …but following the aircraft from 150 m it stays on the leg it is taxiing.
-    const progress = trackProgress(g, p, { segIndex: 3, along: 150, lateral: 2 })!;
+    const progress = trackProgress(g, p, { segIndex: 3, along: 150, lateral: 2, joined: true })!;
     expect(progress.along).toBeCloseTo(200, 0);
   });
 
   it('re-finds the aircraft anywhere on the route once it has left the search window', () => {
     const g = outAndBack();
     const p = toLocal(g, at(60, 100).lat, at(60, 100).lon);
-    const progress = trackProgress(g, p, { segIndex: 0, along: 10, lateral: 1 })!;
+    const progress = trackProgress(g, p, { segIndex: 0, along: 10, lateral: 1, joined: true })!;
     expect(progress.along).toBeCloseTo(960, 0);
     expect(progress.lateral).toBeCloseTo(0, 0);
   });

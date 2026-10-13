@@ -37,6 +37,38 @@ describe('computeEvents', () => {
     expect(events[1]!.at).toBeCloseTo(300, 0);
   });
 
+  it('measures a turn through a blank-named connector, from where the route leaves the taxiway', () => {
+    const route = makeRoute(
+      [
+        [0, 0],
+        [0, 200],
+        [60, 200],
+        [120, 200],
+        [220, 200],
+      ],
+      [leg('A'), leg(''), leg(''), leg('B')],
+      { direction: 'arrival' }
+    );
+    const turn = eventsOf(route)[0]!;
+    expect(turn).toMatchObject({ kind: 'turn', turn: 'turnRight', name: 'B' });
+    expect(turn.at).toBeCloseTo(200, 0);
+  });
+
+  it('announces the first taxiway after a blank-named lead-in from the gate', () => {
+    const route = makeRoute(
+      [
+        [0, 0],
+        [0, 50],
+        [200, 50],
+      ],
+      [leg(''), leg('A')],
+      { direction: 'arrival' }
+    );
+    const turn = eventsOf(route)[0]!;
+    expect(turn).toMatchObject({ kind: 'turn', turn: 'turnRight', name: 'A' });
+    expect(turn.at).toBeCloseTo(50, 0);
+  });
+
   it('does not announce a blank-named connector as a new taxiway', () => {
     const route = makeRoute(
       [

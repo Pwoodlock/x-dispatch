@@ -1139,6 +1139,7 @@
     "unlock": "ロックを解除して移動・サイズ変更"
   },
   "taxiGuidance": {
+    "direction": "走行方向",
     "continue": "直進",
     "continueOnto": "{{name}}を直進",
     "bearLeft": "やや左",

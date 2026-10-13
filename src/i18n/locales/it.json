@@ -1139,6 +1139,7 @@
     "unlock": "Sblocca per spostare o ridimensionare"
   },
   "taxiGuidance": {
+    "direction": "Direzione di rullaggio",
     "continue": "Proseguire",
     "continueOnto": "Proseguire su {{name}}",
     "bearLeft": "Leggermente a sinistra",
