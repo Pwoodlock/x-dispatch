@@ -70,8 +70,16 @@ update_prune_plan() {
   done
 }
 
+# Succeeds when the full release is at least as new as the RC, which then has no testers.
+rc_superseded() {
+  local stable="${1#v}" rc="${2#v}"
+  rc="${rc%%-*}"
+  [ "$(printf '%s\n%s\n' "$rc" "$stable" | sort -V | tail -n 1)" = "$stable" ]
+}
+
 case "${1:-}" in
   prune-plan) prune_plan "${2:-}" "${3:-}"; exit 0 ;;
+  rc-superseded) rc_superseded "$2" "$3" && echo yes || echo no; exit 0 ;;
   feed-prune-plan) feed_prune_plan "$2"; exit 0 ;;
   update-prune-plan) update_prune_plan "$2"; exit 0 ;;
 esac
@@ -146,11 +154,13 @@ describe_files() {
   done
 }
 
+# Squirrel packages go to the win32/x64 feed only (publish_feed), not the download folder.
 upload_assets() {
   local dir="$1" tag="$2" f
   for f in "$dir"/*; do
     [ -f "$f" ] || continue
     is_generated "$(basename "$f")" && continue
+    is_package "$(basename "$f")" && continue
     put "$f" "releases/$tag/$(basename "$f")" "$ASSET_CACHE"
   done
 }
@@ -222,6 +232,7 @@ cmd_release() {
     [ "$channel" = "stable" ] && publish_feed "$dir"
     put "$WORK/manifest.json" "$(pointer_key "$channel")" "$MUTABLE" "application/json"
     summary "- :white_check_mark: Published \`$tag\` to R2 ($(pointer_key "$channel"))"
+    [ "$channel" = "stable" ] && clear_superseded_rc_feed "$tag"
     cmd_prune
   else
     summary "- :white_check_mark: Archived \`$tag\` to R2"
@@ -317,6 +328,19 @@ prune_updates() {
     summary "- :wastebasket: Removed \`updates/$name\` from R2"
   done < <(s3 ls "s3://$BUCKET/updates/" | awk '$4 ~ /\.nupkg$/ { print $4 }' \
     | update_prune_plan "$lists")
+}
+
+# A full release at least as new as the current RC ends it: the app moves beta testers
+# to the full release, so the RC release lists go and their packages are pruned.
+clear_superseded_rc_feed() {
+  local stable_tag="$1" rc_tag name
+  rc_tag="$(pointer_tag latest-rc.json)"
+  [ -n "$rc_tag" ] && rc_superseded "$stable_tag" "$rc_tag" || return 0
+  while IFS= read -r name; do
+    s3 rm "s3://$BUCKET/updates/$name" --only-show-errors
+    summary "- :wastebasket: Removed \`updates/$name\`, $rc_tag is superseded"
+  done < <(s3 ls "s3://$BUCKET/updates/" | awk '$4 ~ /^releases\..*-rc\.json$/ { print $4 }')
+  prune_updates
 }
 
 cmd_check() {

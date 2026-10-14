@@ -107,3 +107,15 @@ describe('publish-r2.sh update-prune-plan', () => {
     expect(plan(['update-prune-plan', dir], ['XDispatch-2.6.1-full.nupkg'])).toEqual([]);
   });
 });
+
+describe('publish-r2.sh rc-superseded', () => {
+  it('ends an RC once a full release of its version or newer ships', () => {
+    expect(plan(['rc-superseded', 'v2.5.1', 'v2.5.1-rc.2'], [])).toEqual(['yes']);
+    expect(plan(['rc-superseded', 'v2.6.0', 'v2.5.1-rc.2'], [])).toEqual(['yes']);
+  });
+
+  it('keeps an RC that is still ahead of the full release', () => {
+    expect(plan(['rc-superseded', 'v2.5.0', 'v2.5.1-rc.2'], [])).toEqual(['no']);
+    expect(plan(['rc-superseded', 'v2.9.0', 'v2.10.0-rc.1'], [])).toEqual(['no']);
+  });
+});

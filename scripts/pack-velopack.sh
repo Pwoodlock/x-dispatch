@@ -99,18 +99,25 @@ else
   cp "$installer" "$ASSETS/$INSTALLER_NAME"
 fi
 
-# Feed: this version's packages and the channel's release list. The previous full
-# package is already on the host, so it is not uploaded again.
+# Feed: this version's full package and delta, and a release list naming only them.
+# The previous full package was needed to build the delta; clients apply the delta to
+# the copy they already have, so the host no longer keeps it.
 for f in "$WORK"/*.nupkg; do
   name="$(basename "$f")"
   grep -qxF "$name" <<< "$previous" && continue
   cp "$f" "$FEED/"
 done
-cp "$WORK/releases.$CHANNEL.json" "$FEED/"
+node -e '
+  const [list, out, version] = process.argv.slice(1);
+  const feed = JSON.parse(require("fs").readFileSync(list, "utf8").replace(/^﻿/, ""));
+  feed.Assets = feed.Assets.filter((a) => a.Version === version);
+  require("fs").writeFileSync(out, JSON.stringify(feed));
+' "$WORK/releases.$CHANNEL.json" "$FEED/releases.$CHANNEL.json" "$VERSION"
 
-# Old Squirrel installs update from win32/x64 (stable only) and migrate to Velopack.
+# Old Squirrel installs update from win32/x64 (stable only) and migrate to Velopack;
+# they only ever need the newest package.
 if [ "$CHANNEL" = "win" ]; then
-  cp "$WORK/RELEASES" "$ASSETS/"
+  grep -aF " XDispatch-$VERSION-full.nupkg " "$WORK/RELEASES" > "$ASSETS/RELEASES"
   cp "$WORK/XDispatch-$VERSION-full.nupkg" "$ASSETS/"
 fi
 
