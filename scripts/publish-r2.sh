@@ -62,7 +62,10 @@ feed_prune_plan() {
 # the directory names. Without any list it keeps everything.
 update_prune_plan() {
   local lists="$1" keep name
-  ls "$lists"/releases.*.json > /dev/null 2>&1 || return 0
+  if ! ls "$lists"/releases.*.json > /dev/null 2>&1; then
+    cat > /dev/null
+    return 0
+  fi
   keep="$(cat "$lists"/releases.*.json | grep -oE '"FileName": *"[^"]+"' | sed -E 's/.*"([^"]+)"$/\1/')"
   while IFS= read -r name || [ -n "$name" ]; do
     [ -n "$name" ] || continue

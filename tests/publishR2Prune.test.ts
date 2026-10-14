@@ -104,7 +104,9 @@ describe('publish-r2.sh update-prune-plan', () => {
 
   it('keeps every package when no release list could be read', () => {
     const dir = mkdtempSync(join(tmpdir(), 'r2-updates-'));
-    expect(plan(['update-prune-plan', dir], ['XDispatch-2.6.1-full.nupkg'])).toEqual([]);
+    // More names than a pipe buffers, so a plan that exits without reading them breaks here.
+    const names = Array.from({ length: 20000 }, (_, i) => `XDispatch-2.6.${i}-full.nupkg`);
+    expect(plan(['update-prune-plan', dir], names)).toEqual([]);
   });
 });
 
