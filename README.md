@@ -80,7 +80,7 @@ npm install           # install dependencies
 npm start             # dev mode with hot reload
 npm run start:clean   # fresh start (clears .vite cache)
 npm run start:fresh   # dev mode with --reset-cache
-npm run make          # build distributables
+npm run package       # packaged app in out/ (installers: scripts/pack-velopack.sh)
 npm run typecheck     # TypeScript strict mode
 npm run lint          # ESLint
 npm run lint:fix      # auto-fix lint issues

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Turns the app Forge packaged (out/X-Dispatch-<platform>-<arch>) into a Velopack release:
-# the installer people download, the update feed for dl.x-dispatch.app/updates, and on
-# Windows the Squirrel RELEASES file and full package that move old Squirrel installs over.
+# the installer people download (Setup.exe, AppImage, dmg), the update feed for
+# dl.x-dispatch.app/updates, and on Windows the Squirrel RELEASES file and full package
+# that move old Squirrel installs over.
 #
 #   pack-velopack.sh <stable|beta> <assets-dir> <feed-dir>
 #
@@ -9,8 +10,8 @@
 # feed already has).
 #
 # The version is read from package.json, which the workflow has already set.
-# Channels match updateChannel() in src/lib/updater/channel.ts: win, win-beta,
-# linux-x64, linux-x64-beta, linux-arm64, linux-arm64-beta.
+# Channels match updateChannel() in src/lib/updater/channel.ts: win, linux-<arch> and
+# darwin-<arch>, each with a -beta twin.
 set -euo pipefail
 
 KIND="$1"
@@ -45,7 +46,19 @@ case "$(uname -s)" in
     INSTALLER_GLOB='*.AppImage'
     INSTALLER_NAME="X-Dispatch-$VERSION-linux-$ARCH.AppImage"
     ;;
-  *) echo "::error::Velopack packs Windows and Linux here; macOS ships the Forge dmg."; exit 1 ;;
+  Darwin)
+    BASE="darwin-$ARCH"
+    APP="out/X-Dispatch-darwin-$ARCH/X-Dispatch.app"
+    [ -d "$APP" ] || { echo "::error::$APP not found."; exit 1; }
+    # The app has no certificate: vpk signs it ad hoc ("-") after adding its updater, so
+    # the bundle's signature stays whole and macOS asks to open it like any unsigned app.
+    PLATFORM_ARGS=(--packDir "$APP" --mainExe "$(ls "$APP/Contents/MacOS" | head -n 1)"
+      --icon assets/icon.icns --runtime "osx-$ARCH" --noInst
+      --signAppIdentity=- --signEntitlements packaging/entitlements.mac.plist)
+    INSTALLER_GLOB='*-Portable.zip'
+    INSTALLER_NAME="X-Dispatch-$VERSION-$([ "$ARCH" = arm64 ] && echo mac-apple-silicon || echo mac-intel).dmg"
+    ;;
+  *) echo "::error::Unsupported platform $(uname -s)."; exit 1 ;;
 esac
 
 CHANNEL="$BASE"
@@ -74,7 +87,17 @@ vpk pack --packId XDispatch --packTitle X-Dispatch --packAuthors "Lyes Tarzalt" 
 mkdir -p "$ASSETS" "$FEED"
 installer="$(find "$WORK" -maxdepth 1 -name "$INSTALLER_GLOB" | head -n 1)"
 [ -n "$installer" ] || { echo "::error::vpk made no installer matching $INSTALLER_GLOB."; exit 1; }
-cp "$installer" "$ASSETS/$INSTALLER_NAME"
+if [ "$BASE" = "darwin-$ARCH" ]; then
+  # The dmg holds the app as vpk left it, updater included, so installs from it update.
+  mkdir "$WORK/dmg"
+  ditto -x -k "$installer" "$WORK/dmg"
+  codesign --verify --deep --strict --verbose=2 "$WORK/dmg/X-Dispatch.app"
+  ln -s /Applications "$WORK/dmg/Applications"
+  hdiutil create -volname X-Dispatch -srcfolder "$WORK/dmg" -fs HFS+ -format ULFO -ov \
+    "$ASSETS/$INSTALLER_NAME"
+else
+  cp "$installer" "$ASSETS/$INSTALLER_NAME"
+fi
 
 # Feed: this version's packages and the channel's release list. The previous full
 # package is already on the host, so it is not uploaded again.

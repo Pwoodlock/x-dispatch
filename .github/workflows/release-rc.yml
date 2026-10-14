@@ -91,19 +91,14 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y squashfs-tools
 
-      - name: Install platform dependencies (macOS)
-        if: matrix.os == 'macos-latest'
-        run: brew install python-setuptools
-
       - name: Set up .NET (Velopack packer)
-        if: runner.os != 'macOS'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      # macOS makes the Forge dmg; Windows and Linux installers come from Velopack below.
+      # Forge builds and packages the app; the installers come from Velopack below.
       - name: Package app
-        run: npm run ${{ runner.os == 'macOS' && 'make' || 'package' }} ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
+        run: npm run package ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           # Only upload source maps once — same maps for all platforms
@@ -112,7 +107,6 @@ jobs:
           SENTRY_PROJECT: ${{ matrix.sentry && secrets.SENTRY_PROJECT || '' }}
 
       - name: Pack installer and update feed (Velopack)
-        if: runner.os != 'macOS'
         shell: bash
         run: bash scripts/pack-velopack.sh beta release-assets feed
 
@@ -120,13 +114,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rc-${{ needs.resolve.outputs.rc_version }}-${{ matrix.name }}
-          path: |
-            out/make/**/*.dmg
-            release-assets/*
+          path: release-assets/*
           retention-days: 7
 
       - name: Upload update feed
-        if: runner.os != 'macOS'
         uses: actions/upload-artifact@v4
         with:
           name: rc-feed-${{ needs.resolve.outputs.rc_version }}-${{ matrix.name }}

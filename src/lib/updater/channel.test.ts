@@ -61,11 +61,13 @@ describe('planUpdateChannel', () => {
 });
 
 describe('updateChannel', () => {
-  it('keeps the default Windows channel for full releases and splits Linux by arch', () => {
+  it('keeps the default Windows channel for full releases and splits Linux and macOS by arch', () => {
     expect(updateChannel('win32', 'x64', false)).toBe('win');
     expect(updateChannel('win32', 'x64', true)).toBe('win-beta');
     expect(updateChannel('linux', 'arm64', false)).toBe('linux-arm64');
     expect(updateChannel('linux', 'x64', true)).toBe('linux-x64-beta');
+    expect(updateChannel('darwin', 'arm64', false)).toBe('darwin-arm64');
+    expect(updateChannel('darwin', 'x64', true)).toBe('darwin-x64-beta');
   });
 });
 

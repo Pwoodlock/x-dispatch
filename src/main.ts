@@ -962,10 +962,10 @@ function updateSource(): HttpSource {
 
 /**
  * Null when this copy was not installed by Velopack (dev, a bare package, an old
- * Squirrel install) or runs on macOS, which stays unsigned: those get a download notice.
+ * Squirrel install, a Mac app from the Forge dmg): those get a download notice.
  */
 function createUpdateManager(): UpdateManager | null {
-  if (!app.isPackaged || process.platform === 'darwin') return null;
+  if (!app.isPackaged) return null;
   try {
     const manager = new UpdateManager(updateSource());
     manager.getCurrentVersion();

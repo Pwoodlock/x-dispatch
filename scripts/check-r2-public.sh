@@ -93,7 +93,8 @@ fi
 # Velopack feed: each channel's release list, and every package it names at its size.
 # Beta lists exist only while a beta does; before the first Velopack release there are none.
 stable_lists=0
-for channel in win linux-x64 linux-arm64 win-beta linux-x64-beta linux-arm64-beta; do
+for channel in win linux-x64 linux-arm64 darwin-arm64 darwin-x64 \
+  win-beta linux-x64-beta linux-arm64-beta darwin-arm64-beta darwin-x64-beta; do
   list="$WORK/releases.$channel.json"
   code="$(get "$BASE/updates/releases.$channel.json?id=XDispatch&localVersion=0.0.0" "$list" "$UA_APP")"
   if [ "$code" = "404" ]; then
@@ -114,8 +115,8 @@ for channel in win linux-x64 linux-arm64 win-beta linux-x64-beta linux-arm64-bet
 done
 case "$stable_lists" in
   0) echo "::notice title=dl.x-dispatch.app::No Velopack update feed yet." ;;
-  3) ;;
-  *) fail "Only $stable_lists of 3 stable Velopack release lists are published" ;;
+  5) ;;
+  *) fail "Only $stable_lists of 5 stable Velopack release lists are published" ;;
 esac
 
 for tag in "${tags[@]}" "$@"; do

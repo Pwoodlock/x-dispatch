@@ -1,20 +1,11 @@
-import { MakerDMG } from '@electron-forge/maker-dmg';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
-import { cp, mkdir, rename, writeFile } from 'node:fs/promises';
+import { cp, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { buildThirdPartyLicenses } from './src/lib/build/thirdPartyLicenses';
 import { macDocumentTypesInfo } from './src/lib/nativeShell/fileAssociations';
-
-function getPlatformLabel(platform: string, arch: string): string {
-  if (platform === 'win32') return `windows-${arch}`;
-  if (platform === 'darwin') return arch === 'arm64' ? 'mac-apple-silicon' : 'mac-intel';
-  return `linux-${arch}`;
-}
-
-const RENAME_EXTENSIONS = new Set(['.dmg']);
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -36,13 +27,8 @@ const config: ForgeConfig = {
     extendInfo: macDocumentTypesInfo(),
   },
   rebuildConfig: {},
-  // Windows and Linux installers come from Velopack (scripts/pack-velopack.sh).
-  makers: [
-    new MakerDMG({
-      icon: './assets/icon.icns',
-      format: 'ULFO',
-    }),
-  ],
+  // Installers and update packages come from Velopack (scripts/pack-velopack.sh).
+  makers: [],
   plugins: [
     new VitePlugin({
       build: [
@@ -78,27 +64,6 @@ const config: ForgeConfig = {
     }),
   ],
   hooks: {
-    async postMake(_forgeConfig, makeResults) {
-      const pkg = JSON.parse(require('node:fs').readFileSync('./package.json', 'utf-8'));
-      for (const result of makeResults) {
-        const label = getPlatformLabel(result.platform, result.arch);
-        const renamed: string[] = [];
-        for (const artifact of result.artifacts) {
-          const ext = path.extname(artifact);
-          if (RENAME_EXTENSIONS.has(ext)) {
-            const newName = `X-Dispatch-${pkg.version}-${label}${ext}`;
-            const newPath = path.join(path.dirname(artifact), newName);
-            await rename(artifact, newPath);
-            renamed.push(newPath);
-          } else {
-            renamed.push(artifact);
-          }
-        }
-        result.artifacts = renamed;
-      }
-      return makeResults;
-    },
-
     async packageAfterCopy(_forgeConfig, buildPath) {
       const requiredPackages = [
         'sql.js',
