@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-10-14
+
 ### Added
 
 - **Taxi guidance in the Flight Strip.** On the ground, the strip shows your next turn and how far away it is, the taxiway you're on, runway crossings and where to hold short, with an arrow pointing the way. The taxi planner suggests a route to your SimBrief runway, and the map draws it up to the hold line and trims it as you taxi. It works in the popped-out Flight Strip too.
@@ -237,7 +239,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.5.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.3...v2.5.0
 [2.4.3]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.1...v2.4.2
