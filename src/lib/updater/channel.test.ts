@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planUpdateChannel, updateChannel } from './channel';
+import { initialBetaChoice, planUpdateChannel, updateChannel } from './channel';
 
 describe('planUpdateChannel', () => {
   it('offers the beta toggle only while a beta is newer than the full release', () => {
@@ -66,5 +66,18 @@ describe('updateChannel', () => {
     expect(updateChannel('win32', 'x64', true)).toBe('win-beta');
     expect(updateChannel('linux', 'arm64', false)).toBe('linux-arm64');
     expect(updateChannel('linux', 'x64', true)).toBe('linux-x64-beta');
+  });
+});
+
+describe('initialBetaChoice', () => {
+  it('keeps the choice the user saved', () => {
+    expect(initialBetaChoice({ beta: false }, '2.6.1-rc.1')).toBe(false);
+    expect(initialBetaChoice({ beta: true }, '2.6.0')).toBe(true);
+  });
+
+  it('starts a beta install in the beta when nothing was saved', () => {
+    expect(initialBetaChoice(undefined, '2.6.1-rc.1')).toBe(true);
+    expect(initialBetaChoice(undefined, '2.6.0')).toBe(false);
+    expect(initialBetaChoice({ beta: 'yes' }, '2.6.0')).toBe(false);
   });
 });

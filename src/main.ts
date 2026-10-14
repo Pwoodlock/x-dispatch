@@ -85,7 +85,12 @@ import {
   NO_GUIDANCE_ROUTES,
   parseGuidanceRoutes,
 } from './lib/taxiGuidance/windowRoutes';
-import { type ManifestVersion, planUpdateChannel, updateChannel } from './lib/updater/channel';
+import {
+  type ManifestVersion,
+  initialBetaChoice,
+  planUpdateChannel,
+  updateChannel,
+} from './lib/updater/channel';
 import { createUpdateStatusStore, parseReleaseVersion } from './lib/updater/updateStatus';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
@@ -989,11 +994,13 @@ function updateChannelFile(): string {
 }
 
 function loadBetaEnabled(): boolean {
+  let saved: unknown;
   try {
-    return JSON.parse(fs.readFileSync(updateChannelFile(), 'utf-8')).beta === true;
+    saved = JSON.parse(fs.readFileSync(updateChannelFile(), 'utf-8'));
   } catch {
-    return false;
+    saved = undefined;
   }
+  return initialBetaChoice(saved, app.getVersion());
 }
 
 function saveBetaEnabled(beta: boolean): void {

@@ -1,4 +1,4 @@
-import { isNewerVersion } from '@/lib/utils/versionCompare';
+import { hasPrerelease, isNewerVersion } from '@/lib/utils/versionCompare';
 
 /**
  * A release manifest read from the download host: the version, `null` when the
@@ -55,4 +55,16 @@ export function planUpdateChannel(input: ChannelInput): ChannelPlan {
 export function updateChannel(platform: NodeJS.Platform, arch: string, beta: boolean): string {
   const base = platform === 'win32' ? 'win' : `${platform}-${arch}`;
   return beta ? `${base}-beta` : base;
+}
+
+/**
+ * The beta choice saved in update-channel.json, or for an install that never saved
+ * one, whether it is a beta: someone who installed a beta starts in the beta.
+ */
+export function initialBetaChoice(saved: unknown, installed: string): boolean {
+  if (typeof saved === 'object' && saved !== null) {
+    const { beta } = saved as { beta?: unknown };
+    if (typeof beta === 'boolean') return beta;
+  }
+  return hasPrerelease(installed);
 }
