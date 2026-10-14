@@ -23,7 +23,7 @@ import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { scaleBucket, widthBucket } from './lib/analytics/buckets';
 import { ANALYTICS_SHORTCUTS, type AnalyticsConsentState } from './lib/analytics/events';
-import { initMainAnalytics } from './lib/analytics/mainAnalytics';
+import { initMainAnalytics, setAnalyticsUpdateContext } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
@@ -91,6 +91,11 @@ import {
   planUpdateChannel,
   updateChannel,
 } from './lib/updater/channel';
+import {
+  detectInstallKind,
+  downloadedUpdateFacts,
+  updateFailureReason,
+} from './lib/updater/updateAnalytics';
 import { createUpdateStatusStore, parseReleaseVersion } from './lib/updater/updateStatus';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
@@ -1017,6 +1022,19 @@ let latestBeta: ManifestVersion;
 /** Feed settings the current UpdateManager was built with. */
 let updateFeed = { channel: '', allowDowngrade: false };
 
+const installKind = detectInstallKind({
+  isPackaged: app.isPackaged,
+  velopack: updateManager !== null,
+  platform: process.platform,
+  squirrelUpdaterExists: fs.existsSync(path.resolve(process.execPath, '..', '..', 'Update.exe')),
+  appImage: process.env.APPIMAGE,
+});
+setAnalyticsUpdateContext(() => ({
+  install_kind: installKind,
+  update_channel: updateFeed.channel || null,
+  beta_enabled: betaEnabled,
+}));
+
 async function readReleaseVersion(url: string, channel: 'stable' | 'rc'): Promise<ManifestVersion> {
   const result = await proxyFetch(url, { timeoutMs: 8_000 });
   if (result.statusCode === 404) return null;
@@ -1042,6 +1060,7 @@ function applyUpdateChannel(): void {
     betaEnabled,
   });
   if (plan.betaEnabled !== betaEnabled) {
+    if (!plan.betaEnabled) analytics.track('beta_ended', {});
     betaEnabled = plan.betaEnabled;
     saveBetaEnabled(betaEnabled);
   }
@@ -1094,6 +1113,7 @@ function applyDownloadedUpdate(): void {
 }
 
 let updateRetryTimer: NodeJS.Timeout | null = null;
+const reportedUpdateFailures = new Set<string>();
 let updateInterval: NodeJS.Timeout | null = null;
 
 function startManagedUpdateCheck(): void {
@@ -1109,6 +1129,7 @@ function startManagedUpdateCheck(): void {
 
 async function downloadUpdate(manager: UpdateManager): Promise<void> {
   updateStatus.patch({ install: 'checking', error: null });
+  let stage: 'check' | 'download' = 'check';
   try {
     const update = await manager.checkForUpdatesAsync();
     if (!update) {
@@ -1117,6 +1138,7 @@ async function downloadUpdate(manager: UpdateManager): Promise<void> {
     }
     updateStatus.patch({ install: 'downloading' });
     analytics.track('update_found', { method: 'auto' });
+    stage = 'download';
     await manager.downloadUpdateAsync(update);
     // The beta choice changed while it downloaded: check again on the new feed.
     if (manager !== updateManager) {
@@ -1126,12 +1148,21 @@ async function downloadUpdate(manager: UpdateManager): Promise<void> {
     }
     downloadedUpdate = update;
     updateStatus.patch({ install: 'ready', installVersion: update.TargetFullRelease.Version });
-    analytics.track('update_downloaded', {});
+    analytics.track('update_downloaded', {
+      ...downloadedUpdateFacts(update),
+      downgrade: update.IsDowngrade,
+    });
     requestAttention();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     logger.main.error(`[AutoUpdate] ${message}`);
     updateStatus.patch({ install: 'error', error: message });
+    const reason = updateFailureReason(message);
+    // Retries come every 10 minutes; one report per kind of failure per session is enough.
+    if (!reportedUpdateFailures.has(`${stage}:${reason}`)) {
+      reportedUpdateFailures.add(`${stage}:${reason}`);
+      analytics.track('update_failed', { stage, reason });
+    }
     // One failed check at startup should not cost the user the whole 4 hour interval.
     updateRetryTimer ??= setTimeout(() => {
       updateRetryTimer = null;
@@ -1194,6 +1225,7 @@ function registerIpcHandlers() {
   on('app:setBetaUpdates', (event, enabled: unknown) => {
     if (!mainWindow || event.sender !== mainWindow.webContents) return;
     if (typeof enabled !== 'boolean' || (enabled && !updateStatus.get().betaAvailable)) return;
+    analytics.track('beta_toggled', { enabled });
     betaEnabled = enabled;
     saveBetaEnabled(enabled);
     applyUpdateChannel();

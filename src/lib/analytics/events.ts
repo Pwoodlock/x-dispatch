@@ -433,8 +433,22 @@ const EVENT_SCHEMA = {
   support_prompt_dismissed: { forever: { kind: 'boolean' } },
   /** An update was found: installed in the background (Windows) or offered as a notice. */
   update_found: { method: oneOf(['auto', 'notice']) },
-  /** Windows: the update finished downloading and will install on restart. */
-  update_downloaded: {},
+  /** The update finished downloading (as deltas or the full package) and installs on restart or quit. */
+  update_downloaded: {
+    kind: oneOf(['delta', 'full']),
+    size_mb: { kind: 'count' },
+    /** Back to the full release after leaving the beta. */
+    downgrade: { kind: 'boolean' },
+  },
+  /** The background updater failed to check or download; the cause, never the message. */
+  update_failed: {
+    stage: oneOf(['check', 'download']),
+    reason: oneOf(['network', 'not_found', 'other']),
+  },
+  /** The user switched beta updates on or off in Settings > About. */
+  beta_toggled: { enabled: { kind: 'boolean' } },
+  /** A full release caught up with the user's beta, which ended their beta run. */
+  beta_ended: {},
   /** macOS/Linux: the update notice's download button was clicked. */
   update_notice_clicked: {},
   /** Once per launch: how long until the map was ready, and whether data came from the cache. */
