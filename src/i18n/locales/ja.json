@@ -510,6 +510,10 @@
       "pilotIdPlaceholder": "ユーザー名 または 1234567"
     },
     "about": {
+      "updates": "アップデート",
+      "betaUpdates": "ベータ版アップデート",
+      "betaUpdatesAvailable": "一足先に v{{version}} を試せます。正式版が出ると自動で正式版に移り、ベータはオフになります。",
+      "betaUpdatesNone": "現在ベータ版はありません。",
       "title": "情報",
       "description": "X-Plane 向けフライトディスパッチと空港表示",
       "updateAvailable": "アップデートが利用可能 — v{{version}}",

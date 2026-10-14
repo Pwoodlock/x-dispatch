@@ -160,6 +160,7 @@ export const DESKTOP_ONLY_CHANNELS: readonly string[] = [
   'app:openLogFolder',
   'app:openPath',
   'app:pickDirectory',
+  'app:setBetaUpdates',
   'app:setFlightStripContentSize',
   'app:setFlightStripGuidance',
   'app:setFlightStripMouseCapture',

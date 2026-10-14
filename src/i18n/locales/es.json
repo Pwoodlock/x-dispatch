@@ -510,6 +510,10 @@
       "pilotIdPlaceholder": "usuario o 1234567"
     },
     "about": {
+      "updates": "Actualizaciones",
+      "betaUpdates": "Actualizaciones beta",
+      "betaUpdatesAvailable": "Prueba la v{{version}} antes que nadie. Cuando salga la versión final pasarás a ella y la beta se desactivará.",
+      "betaUpdatesNone": "No hay ninguna versión beta por ahora.",
       "title": "Acerca de",
       "description": "Despacho de vuelos y visualización de aeropuertos para X-Plane",
       "updateAvailable": "Actualización disponible — v{{version}}",

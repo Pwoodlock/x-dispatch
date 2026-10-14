@@ -2,11 +2,11 @@ import type { UpdateStatus } from '@/types/update';
 
 export const DOWNLOAD_PAGE_URL = 'https://x-dispatch.app/download/';
 
-/** Version named by latest.json, or null when it is not a stable release manifest. */
-export function parseLatestStableVersion(json: string): string | null {
+/** Version named by latest.json or latest-rc.json, or null when it is not that channel's manifest. */
+export function parseReleaseVersion(json: string, channel: 'stable' | 'rc'): string | null {
   try {
     const payload = JSON.parse(json) as { tag?: unknown; channel?: unknown };
-    if (payload.channel !== 'stable' || typeof payload.tag !== 'string') return null;
+    if (payload.channel !== channel || typeof payload.tag !== 'string') return null;
     return payload.tag.replace(/^v/, '');
   } catch {
     return null;
@@ -28,6 +28,9 @@ export function createUpdateStatusStore(init: { managed: boolean }): UpdateStatu
     install: 'idle',
     installVersion: null,
     error: null,
+    betaAvailable: false,
+    betaEnabled: false,
+    latestBetaVersion: null,
   };
   const listeners = new Set<(status: UpdateStatus) => void>();
 

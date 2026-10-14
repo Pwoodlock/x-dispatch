@@ -30,123 +30,112 @@ import {
 } from '@/queries';
 import type { UpdateStatus } from '@/types/update';
 import { ThirdPartyNoticesDialog } from '../ThirdPartyNoticesDialog';
-import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
+import {
+  SettingsHeader,
+  SettingsLinkRow,
+  SettingsPathDisplay,
+  SettingsSectionBlock,
+  SettingsToggleRow,
+} from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
 const trackDonateClick = () => trackEvent('donate_clicked', { source: 'settings_about' });
 const KOFI_URL = 'https://ko-fi.com/A0A21V3IZZ';
 
-interface UpdateStatusLineProps {
+interface UpdateStatusRowProps {
   version: string;
   update: UpdateStatus;
   checking: boolean;
   onCheck: () => void;
 }
 
-/** One line under the version: what the updater is doing, and the one action that fits. */
-function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLineProps) {
+/** What the updater is doing, and the one action that fits. */
+function UpdateStatusRow({ version, update, checking, onCheck }: UpdateStatusRowProps) {
   const { t } = useTranslation();
   const outdated = !!update.latestVersion && isNewerVersion(version, update.latestVersion);
   const busy = checking || update.install === 'checking';
 
-  const checkButton = (
-    <Button
-      size="xs"
-      variant="ghost"
-      className="text-muted-foreground"
-      disabled={busy}
-      onClick={onCheck}
-    >
+  let status: React.ReactNode;
+  let action: React.ReactNode = (
+    <Button size="sm" variant="ghost" disabled={busy} onClick={onCheck}>
       <RefreshCw className={cn('h-3.5 w-3.5', busy && 'animate-spin')} />
       {t('settings.about.checkForUpdates')}
     </Button>
   );
 
   if (update.install === 'ready') {
-    const readyVersion = update.installVersion ?? update.latestVersion ?? '';
-    return (
-      <div className="mt-2 flex flex-col items-center gap-1.5">
-        <p className="text-success inline-flex items-center gap-1.5 text-xs">
-          <CircleCheck className="h-3.5 w-3.5" />
-          {t('settings.about.updateReady', { version: readyVersion })}
-        </p>
-        <DesktopOnly>
-          <Button
-            size="xs"
-            variant="outline"
-
-            onClick={() => void window.appAPI.installUpdate()}
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            {t('settings.about.restartToUpdate')}
-          </Button>
-        </DesktopOnly>
-      </div>
+    status = (
+      <span className="text-success inline-flex items-center gap-1.5">
+        <CircleCheck className="h-4 w-4 shrink-0" />
+        {t('settings.about.updateReady', {
+          version: update.installVersion ?? update.latestVersion ?? '',
+        })}
+      </span>
     );
-  }
-
-  if (busy) {
-    return (
-      <p className="text-muted-foreground mt-2 inline-flex items-center gap-1.5 text-xs">
-        <Spinner className="size-3.5" />
-        {t('settings.about.checkingForUpdates')}
-      </p>
-    );
-  }
-
-  if (update.install === 'downloading') {
-    return (
-      <p className="text-info mt-2 inline-flex items-center gap-1.5 text-xs">
-        <Download className="h-3.5 w-3.5" />
-        {t('settings.about.downloadingUpdate')}
-      </p>
-    );
-  }
-
-  if (update.install === 'error') {
-    return (
-      <div className="mt-2 flex flex-col items-center gap-1">
-        <p className="text-warning inline-flex items-center gap-1.5 text-xs">
-          <TriangleAlert className="h-3.5 w-3.5" />
-          {t('settings.about.updateCheckFailed')}
-        </p>
-        <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={onCheck}>
+    action = (
+      <DesktopOnly>
+        <Button size="sm" variant="outline" onClick={() => void window.appAPI.installUpdate()}>
           <RefreshCw className="h-3.5 w-3.5" />
-          {t('settings.about.tryAgain')}
+          {t('settings.about.restartToUpdate')}
         </Button>
-      </div>
+      </DesktopOnly>
     );
-  }
-
-  if (outdated && !update.managed) {
-    return (
-      <button
-        type="button"
-        onClick={() => window.appAPI.openExternal(update.url)}
-        className="border-info/40 bg-info/5 text-info hover:bg-info/10 mt-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors"
-      >
-        <Download className="h-3.5 w-3.5" />
+  } else if (busy) {
+    status = (
+      <span className="text-muted-foreground inline-flex items-center gap-1.5">
+        <Spinner className="size-4 shrink-0" />
+        {t('settings.about.checkingForUpdates')}
+      </span>
+    );
+  } else if (update.install === 'downloading') {
+    status = (
+      <span className="text-info inline-flex items-center gap-1.5">
+        <Download className="h-4 w-4 shrink-0" />
+        {t('settings.about.downloadingUpdate')}
+      </span>
+    );
+    action = null;
+  } else if (update.install === 'error') {
+    status = (
+      <span className="text-warning inline-flex items-center gap-1.5">
+        <TriangleAlert className="h-4 w-4 shrink-0" />
+        {t('settings.about.updateCheckFailed')}
+      </span>
+    );
+    action = (
+      <Button size="sm" variant="ghost" onClick={onCheck}>
+        <RefreshCw className="h-3.5 w-3.5" />
+        {t('settings.about.tryAgain')}
+      </Button>
+    );
+  } else if (outdated) {
+    status = (
+      <span className="text-info inline-flex items-center gap-1.5">
+        <Download className="h-4 w-4 shrink-0" />
         {t('settings.about.updateAvailable', { version: update.latestVersion })}
-      </button>
+      </span>
+    );
+    if (!update.managed) {
+      action = (
+        <Button size="sm" variant="outline" onClick={() => window.appAPI.openExternal(update.url)}>
+          <Download className="h-3.5 w-3.5" />
+          {t('update.available.download')}
+        </Button>
+      );
+    }
+  } else if (update.latestVersion) {
+    status = (
+      <span className="text-success inline-flex items-center gap-1.5">
+        <CircleCheck className="h-4 w-4 shrink-0" />
+        {t('settings.about.upToDate')}
+      </span>
     );
   }
 
   return (
-    <div className="mt-2 flex flex-col items-center gap-1">
-      {outdated ? (
-        <p className="text-info inline-flex items-center gap-1.5 text-xs">
-          <Download className="h-3.5 w-3.5" />
-          {t('settings.about.updateAvailable', { version: update.latestVersion })}
-        </p>
-      ) : (
-        update.latestVersion && (
-          <p className="text-success inline-flex items-center gap-1.5 text-xs">
-            <CircleCheck className="h-3.5 w-3.5" />
-            {t('settings.about.upToDate')}
-          </p>
-        )
-      )}
-      {checkButton}
+    <div className="flex min-h-14 items-center justify-between gap-3 px-4 py-2.5 text-sm">
+      <span className="min-w-0">{status}</span>
+      {action}
     </div>
   );
 }
@@ -168,31 +157,46 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         description={t('settings.about.description')}
       />
 
-      {/* App Identity */}
-      <div className="flex flex-col items-center pt-2 text-center">
-        <AppLogo size="lg" className="mb-4" />
-        <h1 className="xp-detail-heading">X-Dispatch</h1>
-        <p className="text-muted-foreground mt-1 font-mono text-sm">
-          {version ? `v${version}` : t('common.loading')}
-        </p>
-        {version && update && (
-          <UpdateStatusLine
-            version={version}
-            update={update}
-            checking={check.isPending}
-            onCheck={() => check.mutate()}
-          />
-        )}
-        <p className="text-muted-foreground mt-3 max-w-md text-sm">
-          {t('settings.about.projectNotice')}
-        </p>
-        <p className="text-muted-foreground mt-2 max-w-md text-xs">
-          {t('settings.about.independenceNotice')}
-        </p>
-        <p className="text-muted-foreground mt-2 max-w-md text-xs">
-          {t('settings.about.simulationOnly')}
-        </p>
+      <div className="flex items-center gap-4">
+        <AppLogo size="md" />
+        <div className="min-w-0">
+          <h1 className="xp-detail-heading">X-Dispatch</h1>
+          <p className="text-muted-foreground font-mono text-sm">
+            {version ? `v${version}` : t('common.loading')}
+          </p>
+        </div>
       </div>
+
+      {version && update && (
+        <SettingsSectionBlock title={t('settings.about.updates')}>
+          <div className="divide-border divide-y rounded-lg border">
+            <UpdateStatusRow
+              version={version}
+              update={update}
+              checking={check.isPending}
+              onCheck={() => check.mutate()}
+            />
+            {update.managed && (
+              <DesktopOnly>
+                <SettingsToggleRow
+                  className="rounded-none border-0"
+                  title={t('settings.about.betaUpdates')}
+                  description={
+                    update.betaAvailable && update.latestBetaVersion
+                      ? t('settings.about.betaUpdatesAvailable', {
+                          version: update.latestBetaVersion,
+                        })
+                      : t('settings.about.betaUpdatesNone')
+                  }
+                  checked={update.betaEnabled}
+                  disabled={!update.betaAvailable}
+                  onCheckedChange={(enabled) => window.appAPI.setBetaUpdates(enabled)}
+                />
+              </DesktopOnly>
+            )}
+          </div>
+        </SettingsSectionBlock>
+      )}
 
       {/* Credits + Links side-by-side */}
       <div className="grid gap-6 sm:grid-cols-2">
@@ -310,6 +314,12 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           </div>
           {logPath && <SettingsPathDisplay path={logPath} />}
         </div>
+      </div>
+
+      <div className="text-muted-foreground space-y-1.5 border-t pt-4 text-center text-xs">
+        <p>{t('settings.about.projectNotice')}</p>
+        <p>{t('settings.about.independenceNotice')}</p>
+        <p>{t('settings.about.simulationOnly')}</p>
       </div>
     </div>
   );

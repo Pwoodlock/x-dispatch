@@ -510,6 +510,10 @@
       "pilotIdPlaceholder": "handle or 1234567"
     },
     "about": {
+      "updates": "Fresh cargo",
+      "betaUpdates": "Beta updates",
+      "betaUpdatesAvailable": "Sail v{{version}} afore the rest o' the fleet. When the true release makes port, ye be moved to it an' beta be struck.",
+      "betaUpdatesNone": "No beta on the horizon, matey.",
       "title": "Ship's Log",
       "description": "Flight dispatch an' airport visualization fer X-Plane",
       "updateAvailable": "New booty available — v{{version}}",

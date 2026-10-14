@@ -17,7 +17,7 @@ import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import { execFile } from 'node:child_process';
 import path from 'path';
-import { type UpdateInfo, UpdateManager, VelopackApp } from 'velopack';
+import { HttpSource, type UpdateInfo, UpdateManager, VelopackApp } from 'velopack';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
@@ -85,7 +85,8 @@ import {
   NO_GUIDANCE_ROUTES,
   parseGuidanceRoutes,
 } from './lib/taxiGuidance/windowRoutes';
-import { createUpdateStatusStore, parseLatestStableVersion } from './lib/updater/updateStatus';
+import { type ManifestVersion, planUpdateChannel, updateChannel } from './lib/updater/channel';
+import { createUpdateStatusStore, parseReleaseVersion } from './lib/updater/updateStatus';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -131,7 +132,15 @@ const TRACK_FIX_SEARCH_NM = 1500;
 // itself; it also applies an update downloaded in the previous session before boot.
 if (app.isPackaged) {
   try {
-    VelopackApp.build().run();
+    // Updates are applied on restart or quit, once checked against the user's channel.
+    VelopackApp.build()
+      .setLogger((level, msg) => {
+        if (level === 'error') logger.main.error(`[Velopack] ${msg}`);
+        else if (level === 'warn') logger.main.warn(`[Velopack] ${msg}`);
+        else if (level === 'info') logger.main.info(`[Velopack] ${msg}`);
+      })
+      .setAutoApplyOnStartup(false)
+      .run();
   } catch (err) {
     logger.main.error('Velopack startup failed', err);
   }
@@ -927,13 +936,24 @@ function createWindow(): BrowserWindow {
   return window;
 }
 
-const DOWNLOADS_BASE_URL = 'https://dl.x-dispatch.app';
+/** X_DISPATCH_DOWNLOADS_URL points a test install at a local download host. */
+const DOWNLOADS_BASE_URL = process.env.X_DISPATCH_DOWNLOADS_URL || 'https://dl.x-dispatch.app';
 const LATEST_STABLE_URL = `${DOWNLOADS_BASE_URL}/latest.json`;
+const LATEST_BETA_URL = `${DOWNLOADS_BASE_URL}/latest-rc.json`;
 const UPDATE_RETRY_MS = 10 * 60_000;
 const UPDATE_INTERVAL_MS = 4 * 60 * 60_000;
 const UPDATE_FIRST_CHECK_DELAY_MS = 5_000;
-/** X_DISPATCH_UPDATE_FEED points a test install at a local release folder. */
-const UPDATE_FEED = process.env.X_DISPATCH_UPDATE_FEED || `${DOWNLOADS_BASE_URL}/updates`;
+const UPDATE_FEED = `${DOWNLOADS_BASE_URL}/updates`;
+/** Generous enough for the full package on a slow line; without it a stalled download never ends. */
+const UPDATE_DOWNLOAD_TIMEOUT_MS = 60 * 60_000;
+
+/** Velopack's requests name the app like every other request to the download host. */
+function updateSource(): HttpSource {
+  return new HttpSource(UPDATE_FEED, {
+    Headers: [{ Name: 'User-Agent', Value: `X-Dispatch/${app.getVersion()}` }],
+    TimeoutMilliseconds: UPDATE_DOWNLOAD_TIMEOUT_MS,
+  });
+}
 
 /**
  * Null when this copy was not installed by Velopack (dev, a bare package, an old
@@ -942,7 +962,7 @@ const UPDATE_FEED = process.env.X_DISPATCH_UPDATE_FEED || `${DOWNLOADS_BASE_URL}
 function createUpdateManager(): UpdateManager | null {
   if (!app.isPackaged || process.platform === 'darwin') return null;
   try {
-    const manager = new UpdateManager(UPDATE_FEED);
+    const manager = new UpdateManager(updateSource());
     manager.getCurrentVersion();
     return manager;
   } catch (err) {
@@ -951,26 +971,119 @@ function createUpdateManager(): UpdateManager | null {
   }
 }
 
-const updateManager = createUpdateManager();
+let updateManager = createUpdateManager();
 const updateStatus = createUpdateStatusStore({ managed: updateManager !== null });
 let downloadedUpdate: UpdateInfo | null = null;
+let applyingUpdate = false;
+let restartAfterUpdate = false;
 updateStatus.subscribe((status) => broadcast('app:updateStatus', status));
+let loggedInstall = updateStatus.get().install;
+updateStatus.subscribe(({ install, installVersion }) => {
+  if (install === loggedInstall) return;
+  loggedInstall = install;
+  logger.main.info(`[AutoUpdate] ${install}${installVersion ? ` ${installVersion}` : ''}`);
+});
+
+function updateChannelFile(): string {
+  return path.join(app.getPath('userData'), 'update-channel.json');
+}
+
+function loadBetaEnabled(): boolean {
+  try {
+    return JSON.parse(fs.readFileSync(updateChannelFile(), 'utf-8')).beta === true;
+  } catch {
+    return false;
+  }
+}
+
+function saveBetaEnabled(beta: boolean): void {
+  try {
+    fs.writeFileSync(updateChannelFile(), JSON.stringify({ beta }));
+  } catch (err) {
+    logger.main.warn('Could not save the update channel', err);
+  }
+}
+
+let betaEnabled = loadBetaEnabled();
+let latestStable: ManifestVersion;
+let latestBeta: ManifestVersion;
+/** Feed settings the current UpdateManager was built with. */
+let updateFeed = { channel: '', allowDowngrade: false };
+
+async function readReleaseVersion(url: string, channel: 'stable' | 'rc'): Promise<ManifestVersion> {
+  const result = await proxyFetch(url, { timeoutMs: 8_000 });
+  if (result.statusCode === 404) return null;
+  if (!result.data || result.error) return undefined;
+  const version = parseReleaseVersion(result.data, channel);
+  if (!version) logger.main.warn(`Update check: ${url} is not a ${channel} release manifest`);
+  return version ?? undefined;
+}
+
+function discardDownloadedUpdate(): void {
+  downloadedUpdate = null;
+  if (updateStatus.get().install === 'ready') {
+    updateStatus.patch({ install: 'idle', installVersion: null });
+  }
+}
+
+/** Follows the beta choice: ends a beta run the full release caught up with, picks the feed. */
+function applyUpdateChannel(): void {
+  const plan = planUpdateChannel({
+    installed: app.getVersion(),
+    latestStable,
+    latestBeta,
+    betaEnabled,
+  });
+  if (plan.betaEnabled !== betaEnabled) {
+    betaEnabled = plan.betaEnabled;
+    saveBetaEnabled(betaEnabled);
+  }
+  updateStatus.patch({
+    betaAvailable: plan.betaAvailable,
+    betaEnabled: plan.betaEnabled,
+    latestBetaVersion: typeof latestBeta === 'string' ? latestBeta : null,
+  });
+  if (!updateManager) return;
+  const channel = updateChannel(process.platform, process.arch, plan.beta);
+  if (channel === updateFeed.channel && plan.allowDowngrade === updateFeed.allowDowngrade) return;
+  logger.main.info(
+    `[AutoUpdate] feed ${channel}${plan.allowDowngrade ? ' (back to the full release)' : ''}`
+  );
+  updateManager = new UpdateManager(updateSource(), {
+    ExplicitChannel: channel,
+    AllowVersionDowngrade: plan.allowDowngrade,
+    MaximumDeltasBeforeFallback: 10,
+  });
+  // A download from the other feed is not what the user asked for any more.
+  if (updateFeed.channel) discardDownloadedUpdate();
+  updateFeed = { channel, allowDowngrade: plan.allowDowngrade };
+}
 
 async function refreshLatestVersion(): Promise<void> {
-  const result = await proxyFetch(LATEST_STABLE_URL, { timeoutMs: 8_000 });
-  if (!result.data || result.error) return;
-  const latestVersion = parseLatestStableVersion(result.data);
-  if (!latestVersion) {
-    logger.main.warn('Update check: latest.json is not a stable release manifest');
-    return;
-  }
-  updateStatus.patch({ latestVersion });
+  [latestStable, latestBeta] = await Promise.all([
+    readReleaseVersion(LATEST_STABLE_URL, 'stable'),
+    readReleaseVersion(LATEST_BETA_URL, 'rc'),
+  ]);
+  if (typeof latestStable === 'string') updateStatus.patch({ latestVersion: latestStable });
+  applyUpdateChannel();
 }
 
 async function checkForUpdatesNow() {
-  if (updateStatus.get().managed) startManagedUpdateCheck();
   await refreshLatestVersion();
+  startManagedUpdateCheck();
   return updateStatus.get();
+}
+
+/**
+ * Hands a downloaded update to Velopack's updater. Called from will-quit, after
+ * before-quit has closed the database and ended the session: the updater cannot
+ * wait on this process (Access is denied), so it applies at once and stops
+ * whatever is still running.
+ */
+function applyDownloadedUpdate(): void {
+  if (applyingUpdate || !updateManager || !downloadedUpdate) return;
+  applyingUpdate = true;
+  updateManager.waitExitThenApplyUpdate(downloadedUpdate, true, restartAfterUpdate);
 }
 
 let updateRetryTimer: NodeJS.Timeout | null = null;
@@ -998,6 +1111,12 @@ async function downloadUpdate(manager: UpdateManager): Promise<void> {
     updateStatus.patch({ install: 'downloading' });
     analytics.track('update_found', { method: 'auto' });
     await manager.downloadUpdateAsync(update);
+    // The beta choice changed while it downloaded: check again on the new feed.
+    if (manager !== updateManager) {
+      updateStatus.patch({ install: 'idle' });
+      startManagedUpdateCheck();
+      return;
+    }
     downloadedUpdate = update;
     updateStatus.patch({ install: 'ready', installVersion: update.TargetFullRelease.Version });
     analytics.track('update_downloaded', {});
@@ -1017,9 +1136,10 @@ async function downloadUpdate(manager: UpdateManager): Promise<void> {
 function initAutoUpdater(): void {
   if (updateInterval) return;
   // Frequent polling only adds load on the download host.
-  updateInterval = setInterval(startManagedUpdateCheck, UPDATE_INTERVAL_MS);
+  updateInterval = setInterval(() => void checkForUpdatesNow(), UPDATE_INTERVAL_MS);
   logger.main.info(`Auto-updater initialized (${UPDATE_FEED})`);
-  startManagedUpdateCheck();
+  // An update that is ready but was not restarted for is applied as the app quits.
+  app.on('will-quit', applyDownloadedUpdate);
 }
 
 function registerIpcHandlers() {
@@ -1064,9 +1184,17 @@ function registerIpcHandlers() {
     if (typeof icao !== 'string' || !isValidICAO(icao)) return;
     recordRecentAirport(icao.toUpperCase(), typeof name === 'string' ? name.slice(0, 80) : '');
   });
+  on('app:setBetaUpdates', (event, enabled: unknown) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    if (typeof enabled !== 'boolean' || (enabled && !updateStatus.get().betaAvailable)) return;
+    betaEnabled = enabled;
+    saveBetaEnabled(enabled);
+    applyUpdateChannel();
+    startManagedUpdateCheck();
+  });
   handle('app:installUpdate', () => {
-    if (updateStatus.get().install !== 'ready' || !updateManager || !downloadedUpdate) return false;
-    updateManager.waitExitThenApplyUpdate(downloadedUpdate, true, true);
+    if (updateStatus.get().install !== 'ready' || !downloadedUpdate) return false;
+    restartAfterUpdate = true;
     app.quit();
     return true;
   });
@@ -2711,8 +2839,8 @@ async function bootstrap(): Promise<void> {
   // Dev builds stay off the download host so HMR restarts do not hammer it.
   if (app.isPackaged) {
     setTimeout(() => {
-      void refreshLatestVersion();
       if (updateStatus.get().managed) initAutoUpdater();
+      void checkForUpdatesNow();
     }, UPDATE_FIRST_CHECK_DELAY_MS);
   }
 

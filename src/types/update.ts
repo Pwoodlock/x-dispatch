@@ -12,4 +12,10 @@ export interface UpdateStatus {
   /** Version that finished downloading, known once `install` is 'ready'. */
   installVersion: string | null;
   error: string | null;
+  /** A beta newer than the newest full release is published; the beta toggle only works then. */
+  betaAvailable: boolean;
+  /** The user takes betas; switched off once a full release catches up with their beta. */
+  betaEnabled: boolean;
+  /** Newest beta on the download host, null when there is none or it is not known yet. */
+  latestBetaVersion: string | null;
 }

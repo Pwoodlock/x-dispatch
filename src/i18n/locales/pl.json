@@ -510,6 +510,10 @@
       "pilotIdPlaceholder": "użytkownik lub 1234567"
     },
     "about": {
+      "updates": "Aktualizacje",
+      "betaUpdates": "Aktualizacje beta",
+      "betaUpdatesAvailable": "Wypróbuj v{{version}} przed innymi. Gdy wyjdzie pełna wersja, przejdziesz na nią, a beta się wyłączy.",
+      "betaUpdatesNone": "Obecnie nie ma wersji beta.",
       "title": "O programie",
       "description": "Planowanie lotów i wizualizacja lotnisk dla X-Plane",
       "updateAvailable": "Dostępna aktualizacja — v{{version}}",

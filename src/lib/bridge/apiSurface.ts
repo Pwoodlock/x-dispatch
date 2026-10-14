@@ -106,6 +106,7 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getUpdateStatus: () => t.invoke('app:getUpdateStatus'),
       checkForUpdates: () => t.invoke('app:checkForUpdates'),
       installUpdate: () => t.invoke('app:installUpdate'),
+      setBetaUpdates: (enabled: boolean) => t.send('app:setBetaUpdates', enabled),
       openFlightStripWindow: () => t.invoke('app:openFlightStripWindow'),
       showFlightStripWindow: () => t.invoke('app:showFlightStripWindow'),
       isFlightStripWindowOpen: () => t.invoke('app:isFlightStripWindowOpen'),
