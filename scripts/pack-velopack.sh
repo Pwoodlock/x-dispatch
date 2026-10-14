@@ -40,6 +40,9 @@ case "$(uname -s)" in
     INSTALLER_NAME="X-Dispatch-$VERSION-windows-$ARCH.exe"
     ;;
   Linux)
+    # TODO: vpk's AppImage has no .desktop MimeType, so xdispatch:// links and .fms files
+    # are not registered (the Forge AppImage did). Pack a prepared X-Dispatch.AppDir with
+    # our own .desktop file instead of the plain folder.
     BASE="linux-$ARCH"
     PLATFORM_ARGS=(--packDir "out/X-Dispatch-linux-$ARCH" --mainExe x-dispatch
       --icon assets/icon.png --runtime "linux-$ARCH" --categories Utility)
