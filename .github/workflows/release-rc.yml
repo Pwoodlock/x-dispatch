@@ -108,7 +108,7 @@ jobs:
 
       - name: Pack installer and update feed (Velopack)
         shell: bash
-        run: bash scripts/pack-velopack.sh beta release-assets feed
+        run: bash scripts/pack-velopack.sh rc release-assets feed
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -254,7 +254,7 @@ jobs:
             --prerelease \
             --verify-tag
 
-      # Before latest-rc.json names the beta, so beta testers find it in their feed.
+      # Before latest-rc.json names the RC, so beta testers find it in their feed.
       - name: Publish update feed to R2
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}

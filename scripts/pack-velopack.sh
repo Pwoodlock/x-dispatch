@@ -4,14 +4,14 @@
 # dl.x-dispatch.app/updates, and on Windows the Squirrel RELEASES file and full package
 # that move old Squirrel installs over.
 #
-#   pack-velopack.sh <stable|beta> <assets-dir> <feed-dir>
+#   pack-velopack.sh <stable|rc> <assets-dir> <feed-dir>
 #
 # VELOPACK_NO_DELTA=1 packs without the previous release (a rebuild of a version the
 # feed already has).
 #
 # The version is read from package.json, which the workflow has already set.
 # Channels match updateChannel() in src/lib/updater/channel.ts: win, linux-<arch> and
-# darwin-<arch>, each with a -beta twin.
+# darwin-<arch>, each with an -rc twin for release candidates.
 set -euo pipefail
 
 KIND="$1"
@@ -19,7 +19,7 @@ ASSETS="$2"
 FEED="$3"
 UPDATES_URL="${UPDATES_URL:-https://dl.x-dispatch.app/updates}"
 
-case "$KIND" in stable | beta) ;; *) echo "::error::Kind must be stable or beta, got '$KIND'."; exit 1 ;; esac
+case "$KIND" in stable | rc) ;; *) echo "::error::Kind must be stable or rc, got '$KIND'."; exit 1 ;; esac
 
 VERSION="$(node -p "require('./package.json').version")"
 # vpk and the velopack module the app ships must be the same version.
@@ -54,7 +54,7 @@ case "$(uname -s)" in
     # the bundle's signature stays whole and macOS asks to open it like any unsigned app.
     PLATFORM_ARGS=(--packDir "$APP" --mainExe "$(ls "$APP/Contents/MacOS" | head -n 1)"
       --icon assets/icon.icns --runtime "osx-$ARCH" --noInst
-      --signAppIdentity=- --signEntitlements packaging/entitlements.mac.plist)
+      --signAppIdentity=- --signEntitlements packaging/mac.entitlements)
     INSTALLER_GLOB='*-Portable.zip'
     INSTALLER_NAME="X-Dispatch-$VERSION-$([ "$ARCH" = arm64 ] && echo mac-apple-silicon || echo mac-intel).dmg"
     ;;
@@ -62,7 +62,7 @@ case "$(uname -s)" in
 esac
 
 CHANNEL="$BASE"
-[ "$KIND" = "beta" ] && CHANNEL="$BASE-beta"
+[ "$KIND" = "rc" ] && CHANNEL="$BASE-rc"
 
 export PATH="$PATH:$HOME/.dotnet/tools"
 command -v vpk > /dev/null || dotnet tool install --global vpk --version "$VPK_VERSION" > /dev/null

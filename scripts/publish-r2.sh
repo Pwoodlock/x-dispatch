@@ -19,7 +19,7 @@
 #   releases/<tag>/manifest.json    version, channel, date, notes, files with size and sha256
 #   win32/x64/RELEASES + *.nupkg    Squirrel feed for installs from before Velopack, latest stable only;
 #                                   its packages are Velopack's, which move those installs over
-#   updates/releases.<channel>.json Velopack release list per channel (win, win-beta, linux-x64, ...)
+#   updates/releases.<channel>.json Velopack release list per channel (win, win-rc, linux-x64, ...)
 #   updates/*.nupkg                 Velopack full and delta packages the lists name
 #   latest.json / latest-rc.json    copy of the newest manifest per channel
 #

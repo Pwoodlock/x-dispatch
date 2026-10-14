@@ -19,8 +19,8 @@ export interface ChannelPlan {
   betaAvailable: boolean;
   /** Choice to save: a beta run ends once a full release catches up with it. */
   betaEnabled: boolean;
-  /** Read the beta feed rather than the full release feed. */
-  beta: boolean;
+  /** Read the release candidate feed rather than the full release feed. */
+  rc: boolean;
   /** The installed beta is newer than the full release the user is going back to. */
   allowDowngrade: boolean;
 }
@@ -36,7 +36,7 @@ export function planUpdateChannel(input: ChannelInput): ChannelPlan {
     return {
       betaAvailable: input.betaEnabled,
       betaEnabled: input.betaEnabled,
-      beta: input.betaEnabled,
+      rc: input.betaEnabled,
       allowDowngrade: false,
     };
   }
@@ -45,16 +45,16 @@ export function planUpdateChannel(input: ChannelInput): ChannelPlan {
   const betaEnabled = input.betaEnabled && betaAvailable;
   const allowDowngrade =
     !betaEnabled && latestStable !== null && isNewerVersion(latestStable, installed);
-  return { betaAvailable, betaEnabled, beta: betaEnabled, allowDowngrade };
+  return { betaAvailable, betaEnabled, rc: betaEnabled, allowDowngrade };
 }
 
 /**
  * Velopack channel of this platform's builds. Windows full releases keep the
  * default `win` channel, which is what old Squirrel installs migrate through.
  */
-export function updateChannel(platform: NodeJS.Platform, arch: string, beta: boolean): string {
+export function updateChannel(platform: NodeJS.Platform, arch: string, rc: boolean): string {
   const base = platform === 'win32' ? 'win' : `${platform}-${arch}`;
-  return beta ? `${base}-beta` : base;
+  return rc ? `${base}-rc` : base;
 }
 
 /**

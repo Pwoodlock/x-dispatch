@@ -94,7 +94,7 @@ jobs:
         env:
           TAG: ${{ inputs.tag }}
           VELOPACK_NO_DELTA: '1'
-        run: bash scripts/pack-velopack.sh "$([[ "$TAG" == *-* ]] && echo beta || echo stable)" release-assets feed-unused
+        run: bash scripts/pack-velopack.sh "$([[ "$TAG" == *-* ]] && echo rc || echo stable)" release-assets feed-unused
 
       - name: Collect assets
         if: success()

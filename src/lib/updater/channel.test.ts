@@ -19,7 +19,7 @@ describe('planUpdateChannel', () => {
     expect(plan).toEqual({
       betaAvailable: true,
       betaEnabled: true,
-      beta: true,
+      rc: true,
       allowDowngrade: false,
     });
   });
@@ -34,7 +34,7 @@ describe('planUpdateChannel', () => {
     expect(plan).toEqual({
       betaAvailable: false,
       betaEnabled: false,
-      beta: false,
+      rc: false,
       allowDowngrade: false,
     });
   });
@@ -46,7 +46,7 @@ describe('planUpdateChannel', () => {
       latestBeta: '2.6.1-rc1',
       betaEnabled: false,
     });
-    expect(plan).toMatchObject({ betaAvailable: true, beta: false, allowDowngrade: true });
+    expect(plan).toMatchObject({ betaAvailable: true, rc: false, allowDowngrade: true });
   });
 
   it('keeps the saved choice when a manifest could not be read', () => {
@@ -56,18 +56,18 @@ describe('planUpdateChannel', () => {
       latestBeta: undefined,
       betaEnabled: true,
     });
-    expect(plan).toMatchObject({ betaEnabled: true, beta: true, allowDowngrade: false });
+    expect(plan).toMatchObject({ betaEnabled: true, rc: true, allowDowngrade: false });
   });
 });
 
 describe('updateChannel', () => {
   it('keeps the default Windows channel for full releases and splits Linux and macOS by arch', () => {
     expect(updateChannel('win32', 'x64', false)).toBe('win');
-    expect(updateChannel('win32', 'x64', true)).toBe('win-beta');
+    expect(updateChannel('win32', 'x64', true)).toBe('win-rc');
     expect(updateChannel('linux', 'arm64', false)).toBe('linux-arm64');
-    expect(updateChannel('linux', 'x64', true)).toBe('linux-x64-beta');
+    expect(updateChannel('linux', 'x64', true)).toBe('linux-x64-rc');
     expect(updateChannel('darwin', 'arm64', false)).toBe('darwin-arm64');
-    expect(updateChannel('darwin', 'x64', true)).toBe('darwin-x64-beta');
+    expect(updateChannel('darwin', 'x64', true)).toBe('darwin-x64-rc');
   });
 });
 

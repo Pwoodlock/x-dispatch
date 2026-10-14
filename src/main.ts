@@ -1051,7 +1051,7 @@ function applyUpdateChannel(): void {
     latestBetaVersion: typeof latestBeta === 'string' ? latestBeta : null,
   });
   if (!updateManager) return;
-  const channel = updateChannel(process.platform, process.arch, plan.beta);
+  const channel = updateChannel(process.platform, process.arch, plan.rc);
   if (channel === updateFeed.channel && plan.allowDowngrade === updateFeed.allowDowngrade) return;
   logger.main.info(
     `[AutoUpdate] feed ${channel}${plan.allowDowngrade ? ' (back to the full release)' : ''}`
