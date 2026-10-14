@@ -121,17 +121,7 @@ export function FlightStripWindow() {
           });
         }}
       >
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          className={cn(locked ? 'text-primary' : 'text-muted-foreground')}
-          onClick={() => window.appAPI.toggleFlightStripLock()}
-          aria-pressed={locked}
-          aria-label={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
-          tooltip={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
-        >
-          {locked ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5" />}
-        </Button>
+        {/* Close sits left of the lock so unlocking never puts it under the cursor. */}
         {!locked && (
           <Button
             variant="ghost"
@@ -144,6 +134,22 @@ export function FlightStripWindow() {
             <X className="h-3.5 w-3.5" />
           </Button>
         )}
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className={cn(locked ? 'text-primary' : 'text-muted-foreground')}
+          // A locked window can miss the first click, so pilots double-click; the
+          // second click of a double-click would lock it again.
+          onClick={(event) => {
+            if (event.detail > 1) return;
+            window.appAPI.toggleFlightStripLock();
+          }}
+          aria-pressed={locked}
+          aria-label={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
+          tooltip={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
+        >
+          {locked ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5" />}
+        </Button>
       </div>
     </div>
   );
