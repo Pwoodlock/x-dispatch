@@ -62,11 +62,18 @@ jobs:
           node --version
           npm --version
 
+      # Tags from before Velopack still build with the Forge makers they shipped with.
+      - name: Set up .NET (Velopack packer)
+        if: runner.os != 'macOS' && hashFiles('scripts/pack-velopack.sh') != ''
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
       - name: Package app (verbose)
         shell: bash
         run: |
           set -x
-          npm run make ${ARCH_FLAG} --loglevel=verbose
+          npm run ${{ (runner.os == 'macOS' || hashFiles('scripts/pack-velopack.sh') == '') && 'make' || 'package' }} ${ARCH_FLAG} --loglevel=verbose
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           DEBUG: electron-forge:*
@@ -78,6 +85,16 @@ jobs:
         run: |
           echo "=== out/make tree ==="
           ls -laR out/make || echo "out/make missing"
+
+      # Installers only: the update feed already lists this version's packages by
+      # checksum, so a rebuilt package must never replace them there.
+      - name: Pack installer (Velopack)
+        if: success() && runner.os != 'macOS' && hashFiles('scripts/pack-velopack.sh') != ''
+        shell: bash
+        env:
+          TAG: ${{ inputs.tag }}
+          VELOPACK_NO_DELTA: '1'
+        run: bash scripts/pack-velopack.sh "$([[ "$TAG" == *-* ]] && echo beta || echo stable)" release-assets feed-unused
 
       - name: Collect assets
         if: success()

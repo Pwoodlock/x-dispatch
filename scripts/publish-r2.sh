@@ -4,6 +4,7 @@
 #   publish-r2.sh release <stable|rc> <tag> <assets-dir> <notes-file>
 #   publish-r2.sh archive <stable|rc> <tag> <assets-dir> <notes-file>   same, pointers untouched
 #   publish-r2.sh assets  <tag> <assets-dir>                            add or replace rebuilt assets
+#   publish-r2.sh feed    <feed-dir>                                    Velopack update packages and release lists
 #   publish-r2.sh notes   <tag> <notes-file>                            replace the notes
 #   publish-r2.sh check                                                 verify credentials, no writes
 #   publish-r2.sh prune                                                 delete builds the pointers no longer need
@@ -16,7 +17,10 @@
 #   releases/<tag>/sha256sums.txt
 #   releases/<tag>/notes.md
 #   releases/<tag>/manifest.json    version, channel, date, notes, files with size and sha256
-#   win32/x64/RELEASES + *.nupkg    Squirrel feed for update-electron-app, latest stable only
+#   win32/x64/RELEASES + *.nupkg    Squirrel feed for installs from before Velopack, latest stable only;
+#                                   its packages are Velopack's, which move those installs over
+#   updates/releases.<channel>.json Velopack release list per channel (win, win-beta, linux-x64, ...)
+#   updates/*.nupkg                 Velopack full and delta packages the lists name
 #   latest.json / latest-rc.json    copy of the newest manifest per channel
 #
 # Pointers are written after the files they reference, so a client never sees a
@@ -54,9 +58,22 @@ feed_prune_plan() {
   done
 }
 
+# Reads update package names on stdin and prints the ones no Velopack release list in
+# the directory names. Without any list it keeps everything.
+update_prune_plan() {
+  local lists="$1" keep name
+  ls "$lists"/releases.*.json > /dev/null 2>&1 || return 0
+  keep="$(cat "$lists"/releases.*.json | grep -oE '"FileName": *"[^"]+"' | sed -E 's/.*"([^"]+)"$/\1/')"
+  while IFS= read -r name || [ -n "$name" ]; do
+    [ -n "$name" ] || continue
+    grep -qxF "$name" <<< "$keep" || echo "$name"
+  done
+}
+
 case "${1:-}" in
   prune-plan) prune_plan "${2:-}" "${3:-}"; exit 0 ;;
   feed-prune-plan) feed_prune_plan "$2"; exit 0 ;;
+  update-prune-plan) update_prune_plan "$2"; exit 0 ;;
 esac
 
 BUCKET="${R2_BUCKET:-x-dispatch-downloads}"
@@ -270,6 +287,38 @@ cmd_prune() {
     | feed_prune_plan "$WORK/RELEASES")
 }
 
+# Packages go up before the lists that name them, so a client never sees a release
+# whose files are missing; packages no list names any more are then removed.
+cmd_feed() {
+  local dir="$1" f
+  ls "$dir"/releases.*.json > /dev/null 2>&1 || {
+    echo "::error::No Velopack release lists in $dir."
+    exit 1
+  }
+  for f in "$dir"/*.nupkg; do
+    [ -f "$f" ] || continue
+    put "$f" "updates/$(basename "$f")" "$IMMUTABLE"
+  done
+  for f in "$dir"/releases.*.json; do
+    put "$f" "updates/$(basename "$f")" "$MUTABLE" "application/json"
+    summary "- :white_check_mark: Published update list \`$(basename "$f")\` to R2"
+  done
+  prune_updates
+}
+
+prune_updates() {
+  local lists="$WORK/lists" name
+  mkdir -p "$lists"
+  while IFS= read -r name; do
+    fetch "updates/$name" "$lists/$name"
+  done < <(s3 ls "s3://$BUCKET/updates/" | awk '$4 ~ /^releases\..*\.json$/ { print $4 }')
+  while IFS= read -r name; do
+    s3 rm "s3://$BUCKET/updates/$name" --only-show-errors
+    summary "- :wastebasket: Removed \`updates/$name\` from R2"
+  done < <(s3 ls "s3://$BUCKET/updates/" | awk '$4 ~ /\.nupkg$/ { print $4 }' \
+    | update_prune_plan "$lists")
+}
+
 cmd_check() {
   s3 ls "s3://$BUCKET/" > /dev/null
   summary "- :white_check_mark: R2 credentials can reach \`$BUCKET\`"
@@ -278,8 +327,9 @@ cmd_check() {
 case "${1:-}" in
   release | archive) cmd_release "$1" "$2" "$3" "$4" "$5" ;;
   assets) cmd_assets "$2" "$3" ;;
+  feed) cmd_feed "$2" ;;
   notes) cmd_notes "$2" "$3" ;;
   check) cmd_check ;;
   prune) cmd_prune ;;
-  *) echo "Usage: publish-r2.sh release|archive|assets|notes|check|prune ..." >&2; exit 2 ;;
+  *) echo "Usage: publish-r2.sh release|archive|assets|feed|notes|check|prune ..." >&2; exit 2 ;;
 esac

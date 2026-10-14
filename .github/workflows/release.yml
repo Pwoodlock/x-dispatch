@@ -114,8 +114,15 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install python-setuptools
 
+      - name: Set up .NET (Velopack packer)
+        if: runner.os != 'macOS'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # macOS makes the Forge dmg; Windows and Linux installers come from Velopack below.
       - name: Package app
-        run: npm run make ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
+        run: npm run ${{ runner.os == 'macOS' && 'make' || 'package' }} ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           # Only upload source maps once — same maps for all platforms
@@ -123,17 +130,26 @@ jobs:
           SENTRY_ORG: ${{ matrix.sentry && secrets.SENTRY_ORG || '' }}
           SENTRY_PROJECT: ${{ matrix.sentry && secrets.SENTRY_PROJECT || '' }}
 
+      - name: Pack installer and update feed (Velopack)
+        if: runner.os != 'macOS'
+        shell: bash
+        run: bash scripts/pack-velopack.sh stable release-assets feed
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.name }}
           path: |
-            out/make/**/*.exe
-            out/make/**/*.nupkg
-            out/make/**/RELEASES
             out/make/**/*.dmg
-            out/make/**/*.zip
-            out/make/**/*.AppImage
+            release-assets/*
+          retention-days: 1
+
+      - name: Upload update feed
+        if: runner.os != 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: feed-${{ matrix.name }}
+          path: feed/*
           retention-days: 1
 
   release:
@@ -189,6 +205,13 @@ jobs:
           find artifacts -type f \( -name '*.exe' -o -name '*.nupkg' -o -name 'RELEASES' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' \) -exec cp {} release-assets/ \;
           echo "Collected assets:"
           ls -la release-assets/
+
+      - name: Download update feed
+        uses: actions/download-artifact@v4
+        with:
+          path: feed
+          pattern: feed-*
+          merge-multiple: true
 
       # Commit list for the collapsed "All changes" section on GitHub only.
       - name: List commits
@@ -255,6 +278,14 @@ jobs:
           # Delete any leftover draft/release from a failed previous run
           gh release delete "$TAG" --yes 2>/dev/null || true
           gh release create "$TAG" --draft --verify-tag --title "$TAG" --notes-file release-notes.md
+
+      # Before latest.json names the release, so an app told about it finds it in its feed.
+      - name: Publish update feed to R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: bash scripts/publish-r2.sh feed feed
 
       - name: Publish release to R2
         env:

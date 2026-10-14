@@ -90,6 +90,34 @@ else
   done < <(tr -d '\r' < "$WORK/RELEASES" | sed 's/^\xEF\xBB\xBF//')
 fi
 
+# Velopack feed: each channel's release list, and every package it names at its size.
+# Beta lists exist only while a beta does; before the first Velopack release there are none.
+stable_lists=0
+for channel in win linux-x64 linux-arm64 win-beta linux-x64-beta linux-arm64-beta; do
+  list="$WORK/releases.$channel.json"
+  code="$(get "$BASE/updates/releases.$channel.json?id=XDispatch&localVersion=0.0.0" "$list" "$UA_APP")"
+  if [ "$code" = "404" ]; then
+    continue
+  elif [ "$code" != "200" ]; then
+    fail "updates/releases.$channel.json returned $code"
+    continue
+  fi
+  [[ "$channel" == *-beta ]] || stable_lists=$((stable_lists + 1))
+  while IFS=$'\t' read -r name size; do
+    result="$(probe "$BASE/updates/$name" "$UA_APP")"
+    if [ "${result%% *}" != "206" ]; then
+      fail "updates/$name returned ${result%% *}"
+    elif [ "${result#* }" != "$size" ]; then
+      fail "updates/$name is ${result#* } bytes, releases.$channel.json says $size"
+    fi
+  done < <(jqr '.Assets[] | [.FileName, (.Size | tostring)] | @tsv' "$list")
+done
+case "$stable_lists" in
+  0) echo "::notice title=dl.x-dispatch.app::No Velopack update feed yet." ;;
+  3) ;;
+  *) fail "Only $stable_lists of 3 stable Velopack release lists are published" ;;
+esac
+
 for tag in "${tags[@]}" "$@"; do
   check_release "$tag"
 done

@@ -1,10 +1,8 @@
 import { MakerDMG } from '@electron-forge/maker-dmg';
-import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
-import { MakerAppImage } from '@reforged/maker-appimage';
 import { cp, mkdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { buildThirdPartyLicenses } from './src/lib/build/thirdPartyLicenses';
@@ -16,7 +14,7 @@ function getPlatformLabel(platform: string, arch: string): string {
   return `linux-${arch}`;
 }
 
-const RENAME_EXTENSIONS = new Set(['.exe', '.dmg', '.AppImage']);
+const RENAME_EXTENSIONS = new Set(['.dmg']);
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -38,22 +36,11 @@ const config: ForgeConfig = {
     extendInfo: macDocumentTypesInfo(),
   },
   rebuildConfig: {},
+  // Windows and Linux installers come from Velopack (scripts/pack-velopack.sh).
   makers: [
-    new MakerSquirrel({
-      name: 'XDispatch',
-      setupIcon: './assets/icon.ico',
-      loadingGif: './assets/transparent.gif',
-    }),
     new MakerDMG({
       icon: './assets/icon.icns',
       format: 'ULFO',
-    }),
-    new MakerAppImage({
-      options: {
-        icon: './assets/icon.png',
-        categories: ['Utility', 'Game'],
-        mimeType: ['x-scheme-handler/xdispatch', 'application/x-xplane-fms'],
-      },
     }),
   ],
   plugins: [

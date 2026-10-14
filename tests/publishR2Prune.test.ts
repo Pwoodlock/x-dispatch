@@ -73,3 +73,37 @@ describe('publish-r2.sh prune-plan', () => {
     ).toEqual(['XDispatch-2.1.0-full.nupkg']);
   });
 });
+
+describe('publish-r2.sh update-prune-plan', () => {
+  const list = (names: string[]) =>
+    JSON.stringify({ Assets: names.map((FileName) => ({ Version: '0', Type: 'Full', FileName })) });
+
+  it('lists update packages that no channel release list names', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'r2-updates-'));
+    writeFileSync(
+      join(dir, 'releases.win.json'),
+      list(['XDispatch-2.6.1-full.nupkg', 'XDispatch-2.6.1-delta.nupkg'])
+    );
+    writeFileSync(
+      join(dir, 'releases.win-beta.json'),
+      list(['XDispatch-2.7.0-rc.1-win-beta-full.nupkg'])
+    );
+    expect(
+      plan(
+        ['update-prune-plan', dir],
+        [
+          'XDispatch-2.6.0-full.nupkg',
+          'XDispatch-2.6.1-full.nupkg',
+          'XDispatch-2.6.1-delta.nupkg',
+          'XDispatch-2.7.0-rc.1-win-beta-full.nupkg',
+          'XDispatch-2.6.1-rc.2-win-beta-full.nupkg',
+        ]
+      )
+    ).toEqual(['XDispatch-2.6.0-full.nupkg', 'XDispatch-2.6.1-rc.2-win-beta-full.nupkg']);
+  });
+
+  it('keeps every package when no release list could be read', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'r2-updates-'));
+    expect(plan(['update-prune-plan', dir], ['XDispatch-2.6.1-full.nupkg'])).toEqual([]);
+  });
+});
