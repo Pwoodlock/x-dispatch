@@ -3,7 +3,6 @@ import {
   ClipboardItem,
   Menu,
   app,
-  autoUpdater,
   clipboard,
   dialog,
   nativeTheme,
@@ -18,7 +17,7 @@ import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import { execFile } from 'node:child_process';
 import path from 'path';
-import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
+import { type UpdateInfo, UpdateManager, VelopackApp } from 'velopack';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
@@ -127,6 +126,16 @@ import type { LoadingProgress, PlaneState } from './types/xplane';
 
 /** Named NAT track fixes are looked up within this radius of the nearest track coordinate. */
 const TRACK_FIX_SEARCH_NM = 1500;
+
+// Velopack runs the app for its install, update and uninstall hooks and ends those runs
+// itself; it also applies an update downloaded in the previous session before boot.
+if (app.isPackaged) {
+  try {
+    VelopackApp.build().run();
+  } catch (err) {
+    logger.main.error('Velopack startup failed', err);
+  }
+}
 
 // Squirrel.Windows runs the app for install, update and uninstall hooks (shortcut
 // handling); those runs quit without booting so they never race the real instance.
@@ -921,12 +930,30 @@ function createWindow(): BrowserWindow {
 const DOWNLOADS_BASE_URL = 'https://dl.x-dispatch.app';
 const LATEST_STABLE_URL = `${DOWNLOADS_BASE_URL}/latest.json`;
 const UPDATE_RETRY_MS = 10 * 60_000;
+const UPDATE_INTERVAL_MS = 4 * 60 * 60_000;
 const UPDATE_FIRST_CHECK_DELAY_MS = 5_000;
+/** X_DISPATCH_UPDATE_FEED points a test install at a local release folder. */
+const UPDATE_FEED = process.env.X_DISPATCH_UPDATE_FEED || `${DOWNLOADS_BASE_URL}/updates`;
 
-// Windows installs itself through Squirrel; macOS and Linux only get a notice.
-const updateStatus = createUpdateStatusStore({
-  managed: app.isPackaged && process.platform === 'win32',
-});
+/**
+ * Null when this copy was not installed by Velopack (dev, a bare package, an old
+ * Squirrel install) or runs on macOS, which stays unsigned: those get a download notice.
+ */
+function createUpdateManager(): UpdateManager | null {
+  if (!app.isPackaged || process.platform === 'darwin') return null;
+  try {
+    const manager = new UpdateManager(UPDATE_FEED);
+    manager.getCurrentVersion();
+    return manager;
+  } catch (err) {
+    logger.main.info(`Updates by download notice: ${err instanceof Error ? err.message : err}`);
+    return null;
+  }
+}
+
+const updateManager = createUpdateManager();
+const updateStatus = createUpdateStatusStore({ managed: updateManager !== null });
+let downloadedUpdate: UpdateInfo | null = null;
 updateStatus.subscribe((status) => broadcast('app:updateStatus', status));
 
 async function refreshLatestVersion(): Promise<void> {
@@ -947,65 +974,52 @@ async function checkForUpdatesNow() {
 }
 
 let updateRetryTimer: NodeJS.Timeout | null = null;
-let autoUpdaterReady = false;
+let updateInterval: NodeJS.Timeout | null = null;
 
 function startManagedUpdateCheck(): void {
   const { install } = updateStatus.get();
-  if (!autoUpdaterReady) return;
+  if (!updateManager || !updateInterval) return;
   if (install === 'checking' || install === 'downloading' || install === 'ready') return;
   if (updateRetryTimer) {
     clearTimeout(updateRetryTimer);
     updateRetryTimer = null;
   }
-  autoUpdater.checkForUpdates();
+  void downloadUpdate(updateManager);
+}
+
+async function downloadUpdate(manager: UpdateManager): Promise<void> {
+  updateStatus.patch({ install: 'checking', error: null });
+  try {
+    const update = await manager.checkForUpdatesAsync();
+    if (!update) {
+      updateStatus.patch({ install: 'up-to-date' });
+      return;
+    }
+    updateStatus.patch({ install: 'downloading' });
+    analytics.track('update_found', { method: 'auto' });
+    await manager.downloadUpdateAsync(update);
+    downloadedUpdate = update;
+    updateStatus.patch({ install: 'ready', installVersion: update.TargetFullRelease.Version });
+    analytics.track('update_downloaded', {});
+    requestAttention();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.main.error(`[AutoUpdate] ${message}`);
+    updateStatus.patch({ install: 'error', error: message });
+    // One failed check at startup should not cost the user the whole 4 hour interval.
+    updateRetryTimer ??= setTimeout(() => {
+      updateRetryTimer = null;
+      startManagedUpdateCheck();
+    }, UPDATE_RETRY_MS);
+  }
 }
 
 function initAutoUpdater(): void {
-  try {
-    updateElectronApp({
-      updateSource: {
-        type: UpdateSourceType.StaticStorage,
-        baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
-      },
-      // Also checks once right away; frequent polling only adds load on the download host.
-      updateInterval: '4 hours',
-      // The renderer offers the restart itself from the update status.
-      notifyUser: false,
-      logger: {
-        log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-        info: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-        warn: (msg: string) => logger.main.warn(`[AutoUpdate] ${msg}`),
-        error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
-      },
-    });
-    autoUpdater.on('checking-for-update', () => {
-      updateStatus.patch({ install: 'checking', error: null });
-    });
-    autoUpdater.on('update-available', () => {
-      updateStatus.patch({ install: 'downloading', error: null });
-      analytics.track('update_found', { method: 'auto' });
-    });
-    autoUpdater.on('update-not-available', () => {
-      updateStatus.patch({ install: 'up-to-date', error: null });
-    });
-    autoUpdater.on('update-downloaded', (_event, _notes, releaseName) => {
-      updateStatus.patch({ install: 'ready', installVersion: releaseName || null, error: null });
-      analytics.track('update_downloaded', {});
-      requestAttention();
-    });
-    autoUpdater.on('error', (err) => {
-      updateStatus.patch({ install: 'error', error: err.message });
-      // One failed check at startup should not cost the user the whole 4 hour interval.
-      updateRetryTimer ??= setTimeout(() => {
-        updateRetryTimer = null;
-        startManagedUpdateCheck();
-      }, UPDATE_RETRY_MS);
-    });
-    autoUpdaterReady = true;
-    logger.main.info('Auto-updater initialized');
-  } catch (err) {
-    logger.main.error('Failed to initialize auto-updater', err);
-  }
+  if (updateInterval) return;
+  // Frequent polling only adds load on the download host.
+  updateInterval = setInterval(startManagedUpdateCheck, UPDATE_INTERVAL_MS);
+  logger.main.info(`Auto-updater initialized (${UPDATE_FEED})`);
+  startManagedUpdateCheck();
 }
 
 function registerIpcHandlers() {
@@ -1051,8 +1065,9 @@ function registerIpcHandlers() {
     recordRecentAirport(icao.toUpperCase(), typeof name === 'string' ? name.slice(0, 80) : '');
   });
   handle('app:installUpdate', () => {
-    if (updateStatus.get().install !== 'ready') return false;
-    autoUpdater.quitAndInstall();
+    if (updateStatus.get().install !== 'ready' || !updateManager || !downloadedUpdate) return false;
+    updateManager.waitExitThenApplyUpdate(downloadedUpdate, true, true);
+    app.quit();
     return true;
   });
   handle('app:openFlightStripWindow', () => toggleFlightStripWindow());

@@ -22,6 +22,8 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: {
       unpackDir: 'node_modules/7zip-bin',
+      // Native modules cannot load from inside the archive.
+      unpack: '**/*.node',
     },
     icon: './assets/icon',
     executableName: 'x-dispatch',
@@ -119,6 +121,8 @@ const config: ForgeConfig = {
         'utf-8-validate',
         '7zip-bin',
         'node-7z',
+        'velopack',
+        '@neon-rs/load',
       ];
 
       const sourceNodeModulesPath = path.resolve(__dirname, 'node_modules');
