@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Taxi guidance in the Flight Strip.** On the ground, the strip shows your next turn and how far away it is, the taxiway you're on, runway crossings and where to hold short, with an arrow pointing the way. The taxi planner suggests a route to your SimBrief runway, and the map draws it up to the hold line and trims it as you taxi. It works in the popped-out Flight Strip too.
+- **Beta updates.** When a beta is available, switch on Beta updates in Settings > About to get each beta as it comes out. When the full release catches up, you move to it automatically and the switch turns off. Switch it off at any time to go back to the latest full release.
+
+### Changed
+
+- **X-Dispatch now updates itself on Windows, macOS and Linux.** Updates download in the background and install when you restart or quit, and after this one they only download what changed, so they are much smaller. On Windows this update moves you over on its own. On macOS and Linux, download this version once from the website; from then on it updates itself. On macOS you still confirm Open Anyway the first time you open it.
+- **A tidier About page.** Update status, the update button and the beta switch sit together under Updates.
+- **Aircraft with the same name are easy to tell apart.** The list shows what differs between them, such as their folder or file name, the flight setup shows the aircraft's file, and search finds aircraft by their path.
+
+### Fixed
+
+- **Clicks on the map keep working after switching X-Plane installation.** Gates, runways, the right-click menu, pins and the measure tool stopped responding until X-Dispatch was restarted.
+- **Double-clicking the Flight Strip padlock no longer locks it again,** and unlocking no longer puts the close button under your cursor.
+
 ## [2.5.0] - 2026-10-12
 
 ### Added
