@@ -16,6 +16,7 @@ export const external = [
   'electron-squirrel-startup',
   '7zip-bin',
   'node-7z',
+  'velopack',
 ];
 
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {

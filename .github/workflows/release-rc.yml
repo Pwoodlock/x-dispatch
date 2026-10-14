@@ -33,14 +33,11 @@ jobs:
           npm version ${{ inputs.version }} --no-git-tag-version
           NEXT=$(node -p "require('./package.json').version")
 
-          # Auto-increment: find the highest existing rc.N for this version
-          # among uploaded artifacts. With `--paginate`, the jq filter runs
-          # per page and emits one line per match — so we stream the
-          # numbers, sort, and take the tail to get the global max instead
-          # of trying to compute it inside jq (which previously produced
-          # multi-line output that broke the arithmetic below).
-          LAST=$(gh api "repos/${{ github.repository }}/actions/artifacts" --paginate \
-            --jq ".artifacts[] | select(.name | startswith(\"rc-${NEXT}-rc.\")) | .name | sub(\"^rc-${NEXT}-rc.\"; \"\") | split(\"-\")[0] | tonumber" \
+          # Next rc.N after the highest RC tag of this version. Tags stay, unlike
+          # build artifacts, so a version can never be published twice: the update
+          # feed cannot hold two different builds of one version.
+          LAST=$(git ls-remote --tags origin "refs/tags/v${NEXT}-rc.*" \
+            | sed -nE "s#.*refs/tags/v${NEXT//./\\.}-rc\.([0-9]+)\$#\1#p" \
             | sort -n | tail -n 1)
           [[ "$LAST" =~ ^[0-9]+$ ]] || LAST=0
           RC_NUM=$((LAST + 1))
@@ -94,12 +91,14 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y squashfs-tools
 
-      - name: Install platform dependencies (macOS)
-        if: matrix.os == 'macos-latest'
-        run: brew install python-setuptools
+      - name: Set up .NET (Velopack packer)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
+      # Forge builds and packages the app; the installers come from Velopack below.
       - name: Package app
-        run: npm run make ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
+        run: npm run package ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           # Only upload source maps once — same maps for all platforms
@@ -107,15 +106,22 @@ jobs:
           SENTRY_ORG: ${{ matrix.sentry && secrets.SENTRY_ORG || '' }}
           SENTRY_PROJECT: ${{ matrix.sentry && secrets.SENTRY_PROJECT || '' }}
 
+      - name: Pack installer and update feed (Velopack)
+        shell: bash
+        run: bash scripts/pack-velopack.sh rc release-assets feed
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
-
         with:
           name: rc-${{ needs.resolve.outputs.rc_version }}-${{ matrix.name }}
-          path: |
-            out/make/**/*.exe
-            out/make/**/*.dmg
-            out/make/**/*.AppImage
+          path: release-assets/*
+          retention-days: 7
+
+      - name: Upload update feed
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-feed-${{ needs.resolve.outputs.rc_version }}-${{ matrix.name }}
+          path: feed/*
           retention-days: 7
 
   notify:
@@ -143,6 +149,13 @@ jobs:
           test "$(find release-assets -type f | wc -l | tr -d ' ')" = "5"
           echo "Collected RC release assets:"
           ls -la release-assets/
+
+      - name: Download update feed
+        uses: actions/download-artifact@v4
+        with:
+          path: feed
+          pattern: rc-feed-${{ needs.resolve.outputs.rc_version }}-*
+          merge-multiple: true
 
       - name: Generate changelog
         id: changelog
@@ -240,6 +253,14 @@ jobs:
             --draft \
             --prerelease \
             --verify-tag
+
+      # Before latest-rc.json names the RC, so beta testers find it in their feed.
+      - name: Publish update feed to R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: bash scripts/publish-r2.sh feed feed
 
       - name: Publish release to R2
         env:

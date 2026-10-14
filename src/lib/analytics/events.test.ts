@@ -112,7 +112,16 @@ describe('sanitizeEvent', () => {
       method: 'auto',
     });
     expect(sanitizeEvent('update_found', { method: 'store' })).toBeNull();
-    expect(sanitizeEvent('update_downloaded', {})).not.toBeNull();
+    expect(
+      sanitizeEvent('update_downloaded', { kind: 'delta', size_mb: 3, downgrade: false })
+    ).not.toBeNull();
+    expect(sanitizeEvent('update_downloaded', {})).toBeNull();
+    expect(
+      sanitizeEvent('update_failed', { stage: 'check', reason: 'not_found' })?.properties
+    ).toEqual({ stage: 'check', reason: 'not_found' });
+    expect(sanitizeEvent('update_failed', { stage: 'check', reason: 'HTTP 404' })).toBeNull();
+    expect(sanitizeEvent('beta_toggled', { enabled: true })).not.toBeNull();
+    expect(sanitizeEvent('beta_ended', {})).not.toBeNull();
     expect(sanitizeEvent('update_notice_clicked', {})).not.toBeNull();
   });
 

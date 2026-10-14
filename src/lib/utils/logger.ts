@@ -2,6 +2,7 @@ import { app } from 'electron';
 import log from 'electron-log/main';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
+import { isInstallerHookRun } from './installerHookRun';
 
 log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}] [{level}] {text}';
 log.transports.console.format = '[{level}] {text}';
@@ -17,7 +18,8 @@ if (isDev) {
 }
 
 const logFile = log.transports.file.getFile();
-if (logFile) {
+// An update starts the app for its hooks; clearing then would lose the last session's log.
+if (logFile && !isInstallerHookRun(process.argv)) {
   try {
     fs.writeFileSync(logFile.path, '');
   } catch {

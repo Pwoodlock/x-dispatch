@@ -73,3 +73,51 @@ describe('publish-r2.sh prune-plan', () => {
     ).toEqual(['XDispatch-2.1.0-full.nupkg']);
   });
 });
+
+describe('publish-r2.sh update-prune-plan', () => {
+  const list = (names: string[]) =>
+    JSON.stringify({ Assets: names.map((FileName) => ({ Version: '0', Type: 'Full', FileName })) });
+
+  it('lists update packages that no channel release list names', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'r2-updates-'));
+    writeFileSync(
+      join(dir, 'releases.win.json'),
+      list(['XDispatch-2.6.1-full.nupkg', 'XDispatch-2.6.1-delta.nupkg'])
+    );
+    writeFileSync(
+      join(dir, 'releases.win-beta.json'),
+      list(['XDispatch-2.7.0-rc.1-win-beta-full.nupkg'])
+    );
+    expect(
+      plan(
+        ['update-prune-plan', dir],
+        [
+          'XDispatch-2.6.0-full.nupkg',
+          'XDispatch-2.6.1-full.nupkg',
+          'XDispatch-2.6.1-delta.nupkg',
+          'XDispatch-2.7.0-rc.1-win-beta-full.nupkg',
+          'XDispatch-2.6.1-rc.2-win-beta-full.nupkg',
+        ]
+      )
+    ).toEqual(['XDispatch-2.6.0-full.nupkg', 'XDispatch-2.6.1-rc.2-win-beta-full.nupkg']);
+  });
+
+  it('keeps every package when no release list could be read', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'r2-updates-'));
+    // More names than a pipe buffers, so a plan that exits without reading them breaks here.
+    const names = Array.from({ length: 20000 }, (_, i) => `XDispatch-2.6.${i}-full.nupkg`);
+    expect(plan(['update-prune-plan', dir], names)).toEqual([]);
+  });
+});
+
+describe('publish-r2.sh rc-superseded', () => {
+  it('ends an RC once a full release of its version or newer ships', () => {
+    expect(plan(['rc-superseded', 'v2.5.1', 'v2.5.1-rc.2'], [])).toEqual(['yes']);
+    expect(plan(['rc-superseded', 'v2.6.0', 'v2.5.1-rc.2'], [])).toEqual(['yes']);
+  });
+
+  it('keeps an RC that is still ahead of the full release', () => {
+    expect(plan(['rc-superseded', 'v2.5.0', 'v2.5.1-rc.2'], [])).toEqual(['no']);
+    expect(plan(['rc-superseded', 'v2.9.0', 'v2.10.0-rc.1'], [])).toEqual(['no']);
+  });
+});

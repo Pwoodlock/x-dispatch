@@ -41,6 +41,14 @@ const analyticsFetch: PostHogFetch = async (url, options) => {
   }
 };
 
+type UpdateContext = Record<string, string | boolean | null>;
+let updateContext: () => UpdateContext = () => ({});
+
+/** The updater reports how this copy was installed and which feed it follows. */
+export function setAnalyticsUpdateContext(context: () => UpdateContext): void {
+  updateContext = context;
+}
+
 function osName(): string {
   if (process.platform === 'darwin') return 'Mac OS X';
   if (process.platform === 'win32') return 'Windows';
@@ -79,6 +87,7 @@ export function initMainAnalytics(): Analytics {
       // Region from the OS settings (e.g. "FR"), not an IP lookup; empty when unknown.
       country: app.getLocaleCountryCode() || null,
       xplane_version: getStoredXPlaneVersion()?.version ?? null,
+      ...updateContext(),
     }),
   });
 }

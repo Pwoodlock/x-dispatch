@@ -510,6 +510,10 @@
       "pilotIdPlaceholder": "用户名 或 1234567"
     },
     "about": {
+      "updates": "更新",
+      "betaUpdates": "测试版更新",
+      "betaUpdatesAvailable": "抢先体验 v{{version}}。正式版发布后会自动切换到正式版，并关闭测试版。",
+      "betaUpdatesNone": "目前没有测试版。",
       "title": "关于",
       "description": "X-Plane 飞行签派和机场可视化",
       "updateAvailable": "有可用更新 — v{{version}}",

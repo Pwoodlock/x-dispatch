@@ -510,6 +510,10 @@
       "pilotIdPlaceholder": "Benutzername oder 1234567"
     },
     "about": {
+      "updates": "Updates",
+      "betaUpdates": "Beta-Updates",
+      "betaUpdatesAvailable": "Teste v{{version}} vor allen anderen. Sobald die finale Version erscheint, wechselst du dorthin und Beta schaltet sich aus.",
+      "betaUpdatesNone": "Derzeit gibt es keine Beta-Version.",
       "title": "Über",
       "description": "Flugdisposition und Flughafenvisualisierung für X-Plane",
       "updateAvailable": "Update verfügbar — v{{version}}",

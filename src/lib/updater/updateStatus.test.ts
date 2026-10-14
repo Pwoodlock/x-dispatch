@@ -1,15 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createUpdateStatusStore, parseLatestStableVersion } from './updateStatus';
+import { createUpdateStatusStore, parseReleaseVersion } from './updateStatus';
 
-describe('parseLatestStableVersion', () => {
-  it('strips the tag prefix of a stable manifest', () => {
-    expect(parseLatestStableVersion('{"tag":"v2.2.1","channel":"stable"}')).toBe('2.2.1');
+describe('parseReleaseVersion', () => {
+  it('reads the version of the channel the manifest is for', () => {
+    expect(parseReleaseVersion('{"tag":"v2.2.1","channel":"stable"}', 'stable')).toBe('2.2.1');
+    expect(parseReleaseVersion('{"tag":"v2.3.0-rc1","channel":"rc"}', 'rc')).toBe('2.3.0-rc1');
   });
 
-  it('ignores release candidates and malformed payloads', () => {
-    expect(parseLatestStableVersion('{"tag":"v2.3.0-rc.1","channel":"rc"}')).toBeNull();
-    expect(parseLatestStableVersion('{"channel":"stable"}')).toBeNull();
-    expect(parseLatestStableVersion('not json')).toBeNull();
+  it("ignores another channel's manifest and malformed payloads", () => {
+    expect(parseReleaseVersion('{"tag":"v2.3.0-rc.1","channel":"rc"}', 'stable')).toBeNull();
+    expect(parseReleaseVersion('{"channel":"stable"}', 'stable')).toBeNull();
+    expect(parseReleaseVersion('not json', 'stable')).toBeNull();
   });
 });
 

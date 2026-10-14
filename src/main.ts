@@ -3,7 +3,6 @@ import {
   ClipboardItem,
   Menu,
   app,
-  autoUpdater,
   clipboard,
   dialog,
   nativeTheme,
@@ -18,13 +17,13 @@ import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import { execFile } from 'node:child_process';
 import path from 'path';
-import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
+import { HttpSource, type UpdateInfo, UpdateManager, VelopackApp } from 'velopack';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { scaleBucket, widthBucket } from './lib/analytics/buckets';
 import { ANALYTICS_SHORTCUTS, type AnalyticsConsentState } from './lib/analytics/events';
-import { initMainAnalytics } from './lib/analytics/mainAnalytics';
+import { initMainAnalytics, setAnalyticsUpdateContext } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
@@ -86,7 +85,18 @@ import {
   NO_GUIDANCE_ROUTES,
   parseGuidanceRoutes,
 } from './lib/taxiGuidance/windowRoutes';
-import { createUpdateStatusStore, parseLatestStableVersion } from './lib/updater/updateStatus';
+import {
+  type ManifestVersion,
+  initialBetaChoice,
+  planUpdateChannel,
+  updateChannel,
+} from './lib/updater/channel';
+import {
+  detectInstallKind,
+  downloadedUpdateFacts,
+  updateFailureReason,
+} from './lib/updater/updateAnalytics';
+import { createUpdateStatusStore, parseReleaseVersion } from './lib/updater/updateStatus';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -127,6 +137,24 @@ import type { LoadingProgress, PlaneState } from './types/xplane';
 
 /** Named NAT track fixes are looked up within this radius of the nearest track coordinate. */
 const TRACK_FIX_SEARCH_NM = 1500;
+
+// Velopack runs the app for its install, update and uninstall hooks and ends those runs
+// itself; it also applies an update downloaded in the previous session before boot.
+if (app.isPackaged) {
+  try {
+    // Updates are applied on restart or quit, once checked against the user's channel.
+    VelopackApp.build()
+      .setLogger((level, msg) => {
+        if (level === 'error') logger.main.error(`[Velopack] ${msg}`);
+        else if (level === 'warn') logger.main.warn(`[Velopack] ${msg}`);
+        else if (level === 'info') logger.main.info(`[Velopack] ${msg}`);
+      })
+      .setAutoApplyOnStartup(false)
+      .run();
+  } catch (err) {
+    logger.main.error('Velopack startup failed', err);
+  }
+}
 
 // Squirrel.Windows runs the app for install, update and uninstall hooks (shortcut
 // handling); those runs quit without booting so they never race the real instance.
@@ -918,94 +946,238 @@ function createWindow(): BrowserWindow {
   return window;
 }
 
-const DOWNLOADS_BASE_URL = 'https://dl.x-dispatch.app';
+/** X_DISPATCH_DOWNLOADS_URL points a test install at a local download host. */
+const DOWNLOADS_BASE_URL = process.env.X_DISPATCH_DOWNLOADS_URL || 'https://dl.x-dispatch.app';
 const LATEST_STABLE_URL = `${DOWNLOADS_BASE_URL}/latest.json`;
+const LATEST_BETA_URL = `${DOWNLOADS_BASE_URL}/latest-rc.json`;
 const UPDATE_RETRY_MS = 10 * 60_000;
+const UPDATE_INTERVAL_MS = 4 * 60 * 60_000;
 const UPDATE_FIRST_CHECK_DELAY_MS = 5_000;
+const UPDATE_FEED = `${DOWNLOADS_BASE_URL}/updates`;
+/** Generous enough for the full package on a slow line; without it a stalled download never ends. */
+const UPDATE_DOWNLOAD_TIMEOUT_MS = 60 * 60_000;
 
-// Windows installs itself through Squirrel; macOS and Linux only get a notice.
-const updateStatus = createUpdateStatusStore({
-  managed: app.isPackaged && process.platform === 'win32',
-});
+/** Velopack's requests name the app like every other request to the download host. */
+function updateSource(): HttpSource {
+  return new HttpSource(UPDATE_FEED, {
+    Headers: [{ Name: 'User-Agent', Value: `X-Dispatch/${app.getVersion()}` }],
+    TimeoutMilliseconds: UPDATE_DOWNLOAD_TIMEOUT_MS,
+  });
+}
+
+/**
+ * Null when this copy was not installed by Velopack (dev, a bare package, an old
+ * Squirrel install, a Mac app from the Forge dmg): those get a download notice.
+ */
+function createUpdateManager(): UpdateManager | null {
+  if (!app.isPackaged) return null;
+  try {
+    const manager = new UpdateManager(updateSource());
+    manager.getCurrentVersion();
+    return manager;
+  } catch (err) {
+    logger.main.info(`Updates by download notice: ${err instanceof Error ? err.message : err}`);
+    return null;
+  }
+}
+
+let updateManager = createUpdateManager();
+const updateStatus = createUpdateStatusStore({ managed: updateManager !== null });
+let downloadedUpdate: UpdateInfo | null = null;
+let applyingUpdate = false;
+let restartAfterUpdate = false;
 updateStatus.subscribe((status) => broadcast('app:updateStatus', status));
+let loggedInstall = updateStatus.get().install;
+updateStatus.subscribe(({ install, installVersion }) => {
+  if (install === loggedInstall) return;
+  loggedInstall = install;
+  logger.main.info(`[AutoUpdate] ${install}${installVersion ? ` ${installVersion}` : ''}`);
+});
+
+function updateChannelFile(): string {
+  return path.join(app.getPath('userData'), 'update-channel.json');
+}
+
+function loadBetaEnabled(): boolean {
+  let saved: unknown;
+  try {
+    saved = JSON.parse(fs.readFileSync(updateChannelFile(), 'utf-8'));
+  } catch {
+    saved = undefined;
+  }
+  return initialBetaChoice(saved, app.getVersion());
+}
+
+function saveBetaEnabled(beta: boolean): void {
+  try {
+    fs.writeFileSync(updateChannelFile(), JSON.stringify({ beta }));
+  } catch (err) {
+    logger.main.warn('Could not save the update channel', err);
+  }
+}
+
+let betaEnabled = loadBetaEnabled();
+let latestStable: ManifestVersion;
+let latestBeta: ManifestVersion;
+/** Feed settings the current UpdateManager was built with. */
+let updateFeed = { channel: '', allowDowngrade: false };
+
+const installKind = detectInstallKind({
+  isPackaged: app.isPackaged,
+  velopack: updateManager !== null,
+  platform: process.platform,
+  squirrelUpdaterExists: fs.existsSync(path.resolve(process.execPath, '..', '..', 'Update.exe')),
+  appImage: process.env.APPIMAGE,
+});
+setAnalyticsUpdateContext(() => ({
+  install_kind: installKind,
+  update_channel: updateFeed.channel || null,
+  beta_enabled: betaEnabled,
+}));
+
+async function readReleaseVersion(url: string, channel: 'stable' | 'rc'): Promise<ManifestVersion> {
+  const result = await proxyFetch(url, { timeoutMs: 8_000 });
+  if (result.statusCode === 404) return null;
+  if (!result.data || result.error) return undefined;
+  const version = parseReleaseVersion(result.data, channel);
+  if (!version) logger.main.warn(`Update check: ${url} is not a ${channel} release manifest`);
+  return version ?? undefined;
+}
+
+function discardDownloadedUpdate(): void {
+  downloadedUpdate = null;
+  if (updateStatus.get().install === 'ready') {
+    updateStatus.patch({ install: 'idle', installVersion: null });
+  }
+}
+
+/** Follows the beta choice: ends a beta run the full release caught up with, picks the feed. */
+function applyUpdateChannel(): void {
+  const plan = planUpdateChannel({
+    installed: app.getVersion(),
+    latestStable,
+    latestBeta,
+    betaEnabled,
+  });
+  if (plan.betaEnabled !== betaEnabled) {
+    if (!plan.betaEnabled) analytics.track('beta_ended', {});
+    betaEnabled = plan.betaEnabled;
+    saveBetaEnabled(betaEnabled);
+  }
+  updateStatus.patch({
+    betaAvailable: plan.betaAvailable,
+    betaEnabled: plan.betaEnabled,
+    latestBetaVersion: typeof latestBeta === 'string' ? latestBeta : null,
+  });
+  if (!updateManager) return;
+  const channel = updateChannel(process.platform, process.arch, plan.rc);
+  if (channel === updateFeed.channel && plan.allowDowngrade === updateFeed.allowDowngrade) return;
+  logger.main.info(
+    `[AutoUpdate] feed ${channel}${plan.allowDowngrade ? ' (back to the full release)' : ''}`
+  );
+  updateManager = new UpdateManager(updateSource(), {
+    ExplicitChannel: channel,
+    AllowVersionDowngrade: plan.allowDowngrade,
+    MaximumDeltasBeforeFallback: 10,
+  });
+  // A download from the other feed is not what the user asked for any more.
+  if (updateFeed.channel) discardDownloadedUpdate();
+  updateFeed = { channel, allowDowngrade: plan.allowDowngrade };
+}
 
 async function refreshLatestVersion(): Promise<void> {
-  const result = await proxyFetch(LATEST_STABLE_URL, { timeoutMs: 8_000 });
-  if (!result.data || result.error) return;
-  const latestVersion = parseLatestStableVersion(result.data);
-  if (!latestVersion) {
-    logger.main.warn('Update check: latest.json is not a stable release manifest');
-    return;
-  }
-  updateStatus.patch({ latestVersion });
+  [latestStable, latestBeta] = await Promise.all([
+    readReleaseVersion(LATEST_STABLE_URL, 'stable'),
+    readReleaseVersion(LATEST_BETA_URL, 'rc'),
+  ]);
+  if (typeof latestStable === 'string') updateStatus.patch({ latestVersion: latestStable });
+  applyUpdateChannel();
 }
 
 async function checkForUpdatesNow() {
-  if (updateStatus.get().managed) startManagedUpdateCheck();
   await refreshLatestVersion();
+  startManagedUpdateCheck();
   return updateStatus.get();
 }
 
+/**
+ * Hands a downloaded update to Velopack's updater. Called from will-quit, after
+ * before-quit has closed the database and ended the session: the updater cannot
+ * wait on this process (Access is denied), so it applies at once and stops
+ * whatever is still running.
+ */
+function applyDownloadedUpdate(): void {
+  if (applyingUpdate || !updateManager || !downloadedUpdate) return;
+  applyingUpdate = true;
+  updateManager.waitExitThenApplyUpdate(downloadedUpdate, true, restartAfterUpdate);
+}
+
 let updateRetryTimer: NodeJS.Timeout | null = null;
-let autoUpdaterReady = false;
+const reportedUpdateFailures = new Set<string>();
+let updateInterval: NodeJS.Timeout | null = null;
 
 function startManagedUpdateCheck(): void {
   const { install } = updateStatus.get();
-  if (!autoUpdaterReady) return;
+  if (!updateManager || !updateInterval) return;
   if (install === 'checking' || install === 'downloading' || install === 'ready') return;
   if (updateRetryTimer) {
     clearTimeout(updateRetryTimer);
     updateRetryTimer = null;
   }
-  autoUpdater.checkForUpdates();
+  void downloadUpdate(updateManager);
+}
+
+async function downloadUpdate(manager: UpdateManager): Promise<void> {
+  updateStatus.patch({ install: 'checking', error: null });
+  let stage: 'check' | 'download' = 'check';
+  try {
+    const update = await manager.checkForUpdatesAsync();
+    if (!update) {
+      updateStatus.patch({ install: 'up-to-date' });
+      return;
+    }
+    updateStatus.patch({ install: 'downloading' });
+    analytics.track('update_found', { method: 'auto' });
+    stage = 'download';
+    await manager.downloadUpdateAsync(update);
+    // The beta choice changed while it downloaded: check again on the new feed.
+    if (manager !== updateManager) {
+      updateStatus.patch({ install: 'idle' });
+      startManagedUpdateCheck();
+      return;
+    }
+    downloadedUpdate = update;
+    updateStatus.patch({ install: 'ready', installVersion: update.TargetFullRelease.Version });
+    analytics.track('update_downloaded', {
+      ...downloadedUpdateFacts(update),
+      downgrade: update.IsDowngrade,
+    });
+    requestAttention();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.main.error(`[AutoUpdate] ${message}`);
+    updateStatus.patch({ install: 'error', error: message });
+    const reason = updateFailureReason(message);
+    // Retries come every 10 minutes; one report per kind of failure per session is enough.
+    if (!reportedUpdateFailures.has(`${stage}:${reason}`)) {
+      reportedUpdateFailures.add(`${stage}:${reason}`);
+      analytics.track('update_failed', { stage, reason });
+    }
+    // One failed check at startup should not cost the user the whole 4 hour interval.
+    updateRetryTimer ??= setTimeout(() => {
+      updateRetryTimer = null;
+      startManagedUpdateCheck();
+    }, UPDATE_RETRY_MS);
+  }
 }
 
 function initAutoUpdater(): void {
-  try {
-    updateElectronApp({
-      updateSource: {
-        type: UpdateSourceType.StaticStorage,
-        baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
-      },
-      // Also checks once right away; frequent polling only adds load on the download host.
-      updateInterval: '4 hours',
-      // The renderer offers the restart itself from the update status.
-      notifyUser: false,
-      logger: {
-        log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-        info: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-        warn: (msg: string) => logger.main.warn(`[AutoUpdate] ${msg}`),
-        error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
-      },
-    });
-    autoUpdater.on('checking-for-update', () => {
-      updateStatus.patch({ install: 'checking', error: null });
-    });
-    autoUpdater.on('update-available', () => {
-      updateStatus.patch({ install: 'downloading', error: null });
-      analytics.track('update_found', { method: 'auto' });
-    });
-    autoUpdater.on('update-not-available', () => {
-      updateStatus.patch({ install: 'up-to-date', error: null });
-    });
-    autoUpdater.on('update-downloaded', (_event, _notes, releaseName) => {
-      updateStatus.patch({ install: 'ready', installVersion: releaseName || null, error: null });
-      analytics.track('update_downloaded', {});
-      requestAttention();
-    });
-    autoUpdater.on('error', (err) => {
-      updateStatus.patch({ install: 'error', error: err.message });
-      // One failed check at startup should not cost the user the whole 4 hour interval.
-      updateRetryTimer ??= setTimeout(() => {
-        updateRetryTimer = null;
-        startManagedUpdateCheck();
-      }, UPDATE_RETRY_MS);
-    });
-    autoUpdaterReady = true;
-    logger.main.info('Auto-updater initialized');
-  } catch (err) {
-    logger.main.error('Failed to initialize auto-updater', err);
-  }
+  if (updateInterval) return;
+  // Frequent polling only adds load on the download host.
+  updateInterval = setInterval(() => void checkForUpdatesNow(), UPDATE_INTERVAL_MS);
+  logger.main.info(`Auto-updater initialized (${UPDATE_FEED})`);
+  // An update that is ready but was not restarted for is applied as the app quits.
+  app.on('will-quit', applyDownloadedUpdate);
 }
 
 function registerIpcHandlers() {
@@ -1050,9 +1222,19 @@ function registerIpcHandlers() {
     if (typeof icao !== 'string' || !isValidICAO(icao)) return;
     recordRecentAirport(icao.toUpperCase(), typeof name === 'string' ? name.slice(0, 80) : '');
   });
+  on('app:setBetaUpdates', (event, enabled: unknown) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    if (typeof enabled !== 'boolean' || (enabled && !updateStatus.get().betaAvailable)) return;
+    analytics.track('beta_toggled', { enabled });
+    betaEnabled = enabled;
+    saveBetaEnabled(enabled);
+    applyUpdateChannel();
+    startManagedUpdateCheck();
+  });
   handle('app:installUpdate', () => {
-    if (updateStatus.get().install !== 'ready') return false;
-    autoUpdater.quitAndInstall();
+    if (updateStatus.get().install !== 'ready' || !downloadedUpdate) return false;
+    restartAfterUpdate = true;
+    app.quit();
     return true;
   });
   handle('app:openFlightStripWindow', () => toggleFlightStripWindow());
@@ -2696,8 +2878,8 @@ async function bootstrap(): Promise<void> {
   // Dev builds stay off the download host so HMR restarts do not hammer it.
   if (app.isPackaged) {
     setTimeout(() => {
-      void refreshLatestVersion();
       if (updateStatus.get().managed) initAutoUpdater();
+      void checkForUpdatesNow();
     }, UPDATE_FIRST_CHECK_DELAY_MS);
   }
 

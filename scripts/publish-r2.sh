@@ -4,6 +4,7 @@
 #   publish-r2.sh release <stable|rc> <tag> <assets-dir> <notes-file>
 #   publish-r2.sh archive <stable|rc> <tag> <assets-dir> <notes-file>   same, pointers untouched
 #   publish-r2.sh assets  <tag> <assets-dir>                            add or replace rebuilt assets
+#   publish-r2.sh feed    <feed-dir>                                    Velopack update packages and release lists
 #   publish-r2.sh notes   <tag> <notes-file>                            replace the notes
 #   publish-r2.sh check                                                 verify credentials, no writes
 #   publish-r2.sh prune                                                 delete builds the pointers no longer need
@@ -16,7 +17,10 @@
 #   releases/<tag>/sha256sums.txt
 #   releases/<tag>/notes.md
 #   releases/<tag>/manifest.json    version, channel, date, notes, files with size and sha256
-#   win32/x64/RELEASES + *.nupkg    Squirrel feed for update-electron-app, latest stable only
+#   win32/x64/RELEASES + *.nupkg    Squirrel feed for installs from before Velopack, latest stable only;
+#                                   its packages are Velopack's, which move those installs over
+#   updates/releases.<channel>.json Velopack release list per channel (win, win-rc, linux-x64, ...)
+#   updates/*.nupkg                 Velopack full and delta packages the lists name
 #   latest.json / latest-rc.json    copy of the newest manifest per channel
 #
 # Pointers are written after the files they reference, so a client never sees a
@@ -54,9 +58,33 @@ feed_prune_plan() {
   done
 }
 
+# Reads update package names on stdin and prints the ones no Velopack release list in
+# the directory names. Without any list it keeps everything.
+update_prune_plan() {
+  local lists="$1" keep name
+  if ! ls "$lists"/releases.*.json > /dev/null 2>&1; then
+    cat > /dev/null
+    return 0
+  fi
+  keep="$(cat "$lists"/releases.*.json | grep -oE '"FileName": *"[^"]+"' | sed -E 's/.*"([^"]+)"$/\1/')"
+  while IFS= read -r name || [ -n "$name" ]; do
+    [ -n "$name" ] || continue
+    grep -qxF "$name" <<< "$keep" || echo "$name"
+  done
+}
+
+# Succeeds when the full release is at least as new as the RC, which then has no testers.
+rc_superseded() {
+  local stable="${1#v}" rc="${2#v}"
+  rc="${rc%%-*}"
+  [ "$(printf '%s\n%s\n' "$rc" "$stable" | sort -V | tail -n 1)" = "$stable" ]
+}
+
 case "${1:-}" in
   prune-plan) prune_plan "${2:-}" "${3:-}"; exit 0 ;;
+  rc-superseded) rc_superseded "$2" "$3" && echo yes || echo no; exit 0 ;;
   feed-prune-plan) feed_prune_plan "$2"; exit 0 ;;
+  update-prune-plan) update_prune_plan "$2"; exit 0 ;;
 esac
 
 BUCKET="${R2_BUCKET:-x-dispatch-downloads}"
@@ -129,11 +157,13 @@ describe_files() {
   done
 }
 
+# Squirrel packages go to the win32/x64 feed only (publish_feed), not the download folder.
 upload_assets() {
   local dir="$1" tag="$2" f
   for f in "$dir"/*; do
     [ -f "$f" ] || continue
     is_generated "$(basename "$f")" && continue
+    is_package "$(basename "$f")" && continue
     put "$f" "releases/$tag/$(basename "$f")" "$ASSET_CACHE"
   done
 }
@@ -205,6 +235,7 @@ cmd_release() {
     [ "$channel" = "stable" ] && publish_feed "$dir"
     put "$WORK/manifest.json" "$(pointer_key "$channel")" "$MUTABLE" "application/json"
     summary "- :white_check_mark: Published \`$tag\` to R2 ($(pointer_key "$channel"))"
+    [ "$channel" = "stable" ] && clear_superseded_rc_feed "$tag"
     cmd_prune
   else
     summary "- :white_check_mark: Archived \`$tag\` to R2"
@@ -270,6 +301,51 @@ cmd_prune() {
     | feed_prune_plan "$WORK/RELEASES")
 }
 
+# Packages go up before the lists that name them, so a client never sees a release
+# whose files are missing; packages no list names any more are then removed.
+cmd_feed() {
+  local dir="$1" f
+  ls "$dir"/releases.*.json > /dev/null 2>&1 || {
+    echo "::error::No Velopack release lists in $dir."
+    exit 1
+  }
+  for f in "$dir"/*.nupkg; do
+    [ -f "$f" ] || continue
+    put "$f" "updates/$(basename "$f")" "$IMMUTABLE"
+  done
+  for f in "$dir"/releases.*.json; do
+    put "$f" "updates/$(basename "$f")" "$MUTABLE" "application/json"
+    summary "- :white_check_mark: Published update list \`$(basename "$f")\` to R2"
+  done
+  prune_updates
+}
+
+prune_updates() {
+  local lists="$WORK/lists" name
+  mkdir -p "$lists"
+  while IFS= read -r name; do
+    fetch "updates/$name" "$lists/$name"
+  done < <(s3 ls "s3://$BUCKET/updates/" | awk '$4 ~ /^releases\..*\.json$/ { print $4 }')
+  while IFS= read -r name; do
+    s3 rm "s3://$BUCKET/updates/$name" --only-show-errors
+    summary "- :wastebasket: Removed \`updates/$name\` from R2"
+  done < <(s3 ls "s3://$BUCKET/updates/" | awk '$4 ~ /\.nupkg$/ { print $4 }' \
+    | update_prune_plan "$lists")
+}
+
+# A full release at least as new as the current RC ends it: the app moves beta testers
+# to the full release, so the RC release lists go and their packages are pruned.
+clear_superseded_rc_feed() {
+  local stable_tag="$1" rc_tag name
+  rc_tag="$(pointer_tag latest-rc.json)"
+  [ -n "$rc_tag" ] && rc_superseded "$stable_tag" "$rc_tag" || return 0
+  while IFS= read -r name; do
+    s3 rm "s3://$BUCKET/updates/$name" --only-show-errors
+    summary "- :wastebasket: Removed \`updates/$name\`, $rc_tag is superseded"
+  done < <(s3 ls "s3://$BUCKET/updates/" | awk '$4 ~ /^releases\..*-rc\.json$/ { print $4 }')
+  prune_updates
+}
+
 cmd_check() {
   s3 ls "s3://$BUCKET/" > /dev/null
   summary "- :white_check_mark: R2 credentials can reach \`$BUCKET\`"
@@ -278,8 +354,9 @@ cmd_check() {
 case "${1:-}" in
   release | archive) cmd_release "$1" "$2" "$3" "$4" "$5" ;;
   assets) cmd_assets "$2" "$3" ;;
+  feed) cmd_feed "$2" ;;
   notes) cmd_notes "$2" "$3" ;;
   check) cmd_check ;;
   prune) cmd_prune ;;
-  *) echo "Usage: publish-r2.sh release|archive|assets|notes|check|prune ..." >&2; exit 2 ;;
+  *) echo "Usage: publish-r2.sh release|archive|assets|feed|notes|check|prune ..." >&2; exit 2 ;;
 esac

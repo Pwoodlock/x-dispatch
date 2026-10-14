@@ -88,6 +88,8 @@ declare global {
       checkForUpdates: () => Promise<UpdateStatus>;
       /** Restarts into a downloaded update; false when none is ready. */
       installUpdate: () => Promise<boolean>;
+      /** Opt in or out of beta updates; the update status reports the result. */
+      setBetaUpdates: (enabled: boolean) => void;
       onUpdateStatus: (callback: (status: UpdateStatus) => void) => () => void;
       /** Opens the detached flight strip window, or closes it when open. */
       openFlightStripWindow: () => Promise<void>;

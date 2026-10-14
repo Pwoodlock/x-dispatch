@@ -510,6 +510,10 @@
       "pilotIdPlaceholder": "username or 1234567"
     },
     "about": {
+      "updates": "Updates",
+      "betaUpdates": "Beta updates",
+      "betaUpdatesAvailable": "Try v{{version}} before everyone else. When the full release comes out you move to it and beta turns off.",
+      "betaUpdatesNone": "No beta release right now.",
       "title": "About",
       "description": "Flight dispatch and airport visualization for X-Plane",
       "updateAvailable": "Update available — v{{version}}",
