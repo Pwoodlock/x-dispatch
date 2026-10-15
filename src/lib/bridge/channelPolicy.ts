@@ -163,7 +163,7 @@ export const DESKTOP_ONLY_CHANNELS: readonly string[] = [
   'app:setBetaUpdates',
   'app:setFlightStripContentSize',
   'app:setFlightStripGuidance',
-  'app:setFlightStripMouseCapture',
+  'app:setFlightStripGrip',
   'app:setFlightStripWindowOptions',
   'app:showFlightStripWindow',
   'app:toggleFlightStripLock',

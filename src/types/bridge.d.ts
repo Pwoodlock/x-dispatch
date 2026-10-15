@@ -120,10 +120,10 @@ declare global {
         callback: (routes: import('@/lib/taxiGuidance/windowRoutes').GuidanceRoutes) => void
       ) => () => void;
       /**
-       * Strip window only: the pointer is on the lock grip (its rect in the window), so a
-       * locked window takes clicks until main sees the cursor leave it.
+       * Strip window only: where the lock grip is in the window, so main can let a locked
+       * window take clicks while the cursor is on it.
        */
-      setFlightStripMouseCapture: (
+      setFlightStripGrip: (
         grip: import('@/lib/flightStrip/windowOptions').FlightStripGripRect | null
       ) => void;
       /** Strip window only: asks the main window to flip the lock setting. */

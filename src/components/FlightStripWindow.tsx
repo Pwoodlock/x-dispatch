@@ -67,10 +67,41 @@ function useReportStripShape(contentRef: React.RefObject<HTMLDivElement | null>)
 }
 
 /**
+ * Tells main where the lock grip is whenever it moves or resizes (window resize,
+ * Interface Zoom, the close button coming and going), so main can watch the cursor
+ * over it. The rect goes in screen pixels: Interface Zoom scales CSS pixels.
+ */
+function useReportGrip(gripRef: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const grip = gripRef.current;
+    if (!grip) return;
+    const report = () => {
+      const zoom = window.outerWidth / window.innerWidth || 1;
+      const { x, y, width, height } = grip.getBoundingClientRect();
+      window.appAPI.setFlightStripGrip({
+        x: x * zoom,
+        y: y * zoom,
+        width: width * zoom,
+        height: height * zoom,
+      });
+    };
+    const observer = new ResizeObserver(report);
+    observer.observe(grip);
+    observer.observe(document.documentElement);
+    window.addEventListener('resize', report);
+    report();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', report);
+    };
+  }, [gripRef]);
+}
+
+/**
  * The whole renderer of the detached flight strip window. The window has no title bar:
  * unlocked, the strip area drags it, the edges resize it and the strip scales to fit.
  * Locked, main lets every click through to the simulator and a faint lock stays in the
- * corner; hovering brings it up (main forwards mouse moves), and it alone takes clicks.
+ * corner; main watches the cursor and lets the lock alone take clicks.
  */
 export function FlightStripWindow() {
   usePlaneStateStream();
@@ -80,8 +111,10 @@ export function FlightStripWindow() {
   const { locked } = useFlightStripWindowOptions();
   const frameRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
+  const gripRef = useRef<HTMLDivElement>(null);
   const scale = useFitScale(frameRef, stripRef);
   useReportStripShape(stripRef);
+  useReportGrip(gripRef);
 
   return (
     // The padding stays outside the drag region so the window edges keep resizing.
@@ -100,26 +133,13 @@ export function FlightStripWindow() {
         </div>
       </div>
       <div
+        ref={gripRef}
         className={cn(
           'bg-background/80 absolute top-1 right-1 flex items-center gap-0.5 rounded-sm transition-opacity group-hover:opacity-100 focus-within:opacity-100',
           // Locked, the lock stays faintly visible so the pilot knows why the strip will not move.
           locked ? 'opacity-60' : 'opacity-0'
         )}
         style={noDragStyle}
-        // While the pointer is here a locked window takes clicks, so the grip works. Chromium
-        // misses enter and leave as the window flips click-through, so moves report the
-        // grip and main drops capture once the cursor is off it. The rect goes to main in
-        // screen pixels: Interface Zoom scales CSS pixels.
-        onMouseMove={(event) => {
-          const zoom = window.outerWidth / window.innerWidth || 1;
-          const { x, y, width, height } = event.currentTarget.getBoundingClientRect();
-          window.appAPI.setFlightStripMouseCapture({
-            x: x * zoom,
-            y: y * zoom,
-            width: width * zoom,
-            height: height * zoom,
-          });
-        }}
       >
         {/* Close sits left of the lock so unlocking never puts it under the cursor. */}
         {!locked && (

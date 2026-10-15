@@ -122,8 +122,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getFlightStripGuidance: () => t.invoke('app:getFlightStripGuidance'),
       onFlightStripGuidance: (callback: (routes: GuidanceRoutes) => void) =>
         t.on('app:flightStripGuidance', callback),
-      setFlightStripMouseCapture: (grip: FlightStripGripRect | null) =>
-        t.send('app:setFlightStripMouseCapture', grip),
+      setFlightStripGrip: (grip: FlightStripGripRect | null) =>
+        t.send('app:setFlightStripGrip', grip),
       toggleFlightStripLock: () => t.send('app:toggleFlightStripLock'),
       setFlightStripContentSize: (size: { width: number; height: number }) =>
         t.send('app:setFlightStripContentSize', size),

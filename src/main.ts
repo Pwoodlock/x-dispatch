@@ -34,6 +34,7 @@ import {
   type FlightStripGripRect,
   type FlightStripWindowOptions,
   applyFlightStripWindowOptions,
+  cursorOnGrip,
   parseFlightStripWindowOptions,
   parseGripRect,
 } from './lib/flightStrip/windowOptions';
@@ -623,42 +624,40 @@ let flightStripContent: Size | null = null;
 let flightStripGuidance: GuidanceRoutes = NO_GUIDANCE_ROUTES;
 
 /**
- * Windows sends no mouse leave to a window that ignores the mouse, so a pointer
- * that exits over the grip would leave the strip taking clicks. Main checks the
- * cursor itself while capturing.
+ * While the strip is locked, main watches the cursor itself and lets the window take
+ * clicks only while it is on the grip. Waiting for forwarded mouse moves instead let
+ * the first click on the lock pass through whenever Windows did not forward one.
  */
 let flightStripCaptureWatch: ReturnType<typeof setInterval> | null = null;
-/** Chromium's own leave events are unreliable while the window flips click-through. */
+/** The lock grip in the strip window's content area, as the strip last reported it. */
 let flightStripGrip: FlightStripGripRect | null = null;
+const FLIGHT_STRIP_CAPTURE_POLL_MS = 50;
 
-function setFlightStripCapture(grip: FlightStripGripRect | null): void {
-  flightStripGrip = grip;
-  const capture = grip !== null;
+function setFlightStripCapture(capture: boolean): void {
   if (flightStripCapture === capture) return;
   flightStripCapture = capture;
-  if (flightStripCaptureWatch) clearInterval(flightStripCaptureWatch);
-  flightStripCaptureWatch = null;
-  if (capture) {
-    flightStripCaptureWatch = setInterval(() => {
-      if (!isFlightStripWindowOpen() || !flightStripGrip) return setFlightStripCapture(null);
-      const { x, y } = screen.getCursorScreenPoint();
-      const content = flightStripWindow!.getContentBounds();
-      const left = content.x + flightStripGrip.x;
-      const top = content.y + flightStripGrip.y;
-      if (
-        x < left ||
-        y < top ||
-        x >= left + flightStripGrip.width ||
-        y >= top + flightStripGrip.height
-      ) {
-        setFlightStripCapture(null);
-      }
-    }, 100);
-  }
   applyFlightStripOptions();
 }
 
+/** Runs the cursor watch exactly while an open strip is locked. */
+function syncFlightStripCaptureWatch(): void {
+  const watch = isFlightStripWindowOpen() && flightStripOptions.locked;
+  if (!watch) {
+    if (flightStripCaptureWatch) clearInterval(flightStripCaptureWatch);
+    flightStripCaptureWatch = null;
+    flightStripCapture = false;
+    return;
+  }
+  if (flightStripCaptureWatch) return;
+  flightStripCaptureWatch = setInterval(() => {
+    if (!isFlightStripWindowOpen()) return syncFlightStripCaptureWatch();
+    const content = flightStripWindow!.getContentBounds();
+    setFlightStripCapture(cursorOnGrip(screen.getCursorScreenPoint(), content, flightStripGrip));
+  }, FLIGHT_STRIP_CAPTURE_POLL_MS);
+}
+
 function applyFlightStripOptions(): void {
+  syncFlightStripCaptureWatch();
   if (!isFlightStripWindowOpen()) return;
   applyFlightStripWindowOptions(flightStripWindow!, flightStripOptions, {
     capture: flightStripCapture,
@@ -703,6 +702,8 @@ function openFlightStripWindow(): void {
     // A double-click on the drag area would otherwise maximize it into a screen of empty bars.
     maximizable: false,
     fullscreenable: false,
+    // The simulator has focus, so the first click on the lock would only focus the strip.
+    acceptFirstMouse: true,
     frame: false,
     autoHideMenuBar: true,
     show: false,
@@ -751,7 +752,8 @@ function openFlightStripWindow(): void {
   win.on('closed', () => {
     if (flightStripWindow === win) {
       flightStripWindow = null;
-      setFlightStripCapture(null);
+      flightStripGrip = null;
+      syncFlightStripCaptureWatch();
     }
     broadcast('app:flightStripWindowOpen', false);
   });
@@ -1256,9 +1258,9 @@ function registerIpcHandlers() {
       flightStripWindow!.webContents.send('app:flightStripGuidance', flightStripGuidance);
     }
   });
-  on('app:setFlightStripMouseCapture', (event, grip: unknown) => {
+  on('app:setFlightStripGrip', (event, grip: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
-    setFlightStripCapture(parseGripRect(grip));
+    flightStripGrip = parseGripRect(grip);
   });
   on('app:setFlightStripContentSize', (event, size: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
