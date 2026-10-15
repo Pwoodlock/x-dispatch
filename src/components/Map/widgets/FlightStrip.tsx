@@ -22,6 +22,8 @@ interface FlightStripProps {
   onCenterPlane: () => void;
   /** Shown in its own window: the window moves and sizes it, no map actions. */
   detached?: boolean;
+  /** Buttons at the right end of the detached strip, where the map strip has its own. */
+  actions?: ReactNode;
   /** Shown at the bottom of the strip's card, under the taxi guidance. */
   footer?: ReactNode;
 }
@@ -104,7 +106,12 @@ function useStripDrag(detached: boolean) {
 
 // --- Main component ---
 
-export default function FlightStrip({ onCenterPlane, detached = false, footer }: FlightStripProps) {
+export default function FlightStrip({
+  onCenterPlane,
+  detached = false,
+  actions,
+  footer,
+}: FlightStripProps) {
   const planeState = usePlaneStore((s) => s.state);
   const connected = usePlaneStore((s) => s.connected);
   const { t } = useTranslation();
@@ -303,7 +310,9 @@ export default function FlightStrip({ onCenterPlane, detached = false, footer }:
                 </div>
               )}
 
-              {!detached && <GroupSeparator />}
+              {(!detached || actions) && <GroupSeparator />}
+
+              {detached && actions && <div className="px-1.5 py-1.5">{actions}</div>}
 
               {/* Center / Follow and pop-out buttons; the detached window has neither */}
               {!detached && (
