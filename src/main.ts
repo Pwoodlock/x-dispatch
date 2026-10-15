@@ -28,6 +28,7 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
+import { type SimPresence, createSimPresence } from './lib/flightStrip/simPresence';
 import { type Size, fitWindowToContent, parseContentSize } from './lib/flightStrip/windowFit';
 import {
   DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS,
@@ -666,9 +667,14 @@ function applyFlightStripOptions(): void {
   flightStripWindow!.webContents.send('app:flightStripWindowOptions', flightStripOptions);
 }
 
-/** The same button closes it again. */
+/** How long X-Plane can be gone before the strip hides: rides out a reconnect, not a quit. */
+const FLIGHT_STRIP_SIM_GRACE_MS = 2000;
+/** Hides the open strip while X-Plane is gone; one per strip window. */
+let flightStripSimPresence: SimPresence | null = null;
+
+/** The same button closes it again; a strip hidden while X-Plane is gone comes back instead. */
 function toggleFlightStripWindow(): void {
-  if (isFlightStripWindowOpen()) flightStripWindow!.close();
+  if (isFlightStripWindowOpen() && flightStripWindow!.isVisible()) flightStripWindow!.close();
   else openFlightStripWindow();
 }
 
@@ -679,10 +685,17 @@ function closeFlightStripWindow(): void {
 /**
  * A small frameless window with only the flight strip, kept above the simulator.
  * Not owned by the main window, so minimizing X-Dispatch leaves it on screen;
- * closing X-Dispatch closes it too.
+ * closing X-Dispatch closes it too. Hides while X-Plane is gone, see `createSimPresence`.
  */
 function openFlightStripWindow(): void {
-  if (isFlightStripWindowOpen()) return;
+  if (isFlightStripWindowOpen()) {
+    // Hidden because X-Plane quit: the pilot asked for it, so it stays up from here.
+    if (!flightStripWindow!.isVisible()) {
+      flightStripSimPresence?.shownByPilot();
+      flightStripWindow!.show();
+    }
+    return;
+  }
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets', 'icon.png')
     : path.join(__dirname, '..', '..', 'assets', 'icon.png');
@@ -725,6 +738,18 @@ function openFlightStripWindow(): void {
   flightStripWindow = win;
   flightStripCapture = false;
   flightStripContent = null;
+  flightStripSimPresence = createSimPresence({
+    graceMs: FLIGHT_STRIP_SIM_GRACE_MS,
+    hide: () => {
+      if (!win.isDestroyed()) win.hide();
+    },
+    // Inactive, so the strip coming back never takes focus from the simulator.
+    show: () => {
+      if (win.isDestroyed()) return;
+      win.showInactive();
+      applyFlightStripOptions();
+    },
+  });
   applyFlightStripOptions();
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   // Another topmost window (the sim going fullscreen) can push it down; take the top back.
@@ -754,6 +779,8 @@ function openFlightStripWindow(): void {
       flightStripWindow = null;
       flightStripGrip = null;
       syncFlightStripCaptureWatch();
+      flightStripSimPresence?.dispose();
+      flightStripSimPresence = null;
     }
     broadcast('app:flightStripWindowOpen', false);
   });
@@ -2462,6 +2489,10 @@ function registerIpcHandlers() {
         },
         onConnectionChange: (connected: boolean) => {
           if (!sender.isDestroyed()) sender.send('xplaneService:connectionChange', connected);
+          // The strip window's own stream decides whether the strip has a sim to show.
+          if (isFlightStripWindowOpen() && sender === flightStripWindow!.webContents) {
+            flightStripSimPresence?.update(connected);
+          }
         },
         onStateClear: () => {
           if (!sender.isDestroyed()) sender.send('xplaneService:stateClear');
