@@ -1141,7 +1141,8 @@
     "detach": "Otwórz Flight Strip we własnym oknie",
     "lock": "Zablokuj: kliknięcia trafiają do X-Plane",
     "unlock": "Odblokuj, aby przesunąć lub zmienić rozmiar",
-    "taxiMap": "Mapa kołowania"
+    "taxiMap": "Mapa kołowania",
+    "taxiMapNoRoute": "Brak zaplanowanej trasy kołowania. Wybierz bramkę w panelu lotniska i zaplanuj ją tam."
   },
   "taxiGuidance": {
     "on": "Na",

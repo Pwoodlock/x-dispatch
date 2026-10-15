@@ -1141,7 +1141,8 @@
     "detach": "Ouvrir le Flight Strip dans sa propre fenêtre",
     "lock": "Verrouiller : les clics passent à X-Plane",
     "unlock": "Déverrouiller pour déplacer ou redimensionner",
-    "taxiMap": "Carte de roulage"
+    "taxiMap": "Carte de roulage",
+    "taxiMapNoRoute": "Aucun itinéraire de roulage prévu. Sélectionnez une porte dans le panneau de l'aéroport et planifiez-le là."
   },
   "taxiGuidance": {
     "on": "Sur",

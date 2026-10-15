@@ -1141,7 +1141,8 @@
     "detach": "Flight Strip を専用ウインドウで開く",
     "lock": "ロック: クリックを X-Plane に通す",
     "unlock": "ロックを解除して移動・サイズ変更",
-    "taxiMap": "タキシーマップ"
+    "taxiMap": "タキシーマップ",
+    "taxiMapNoRoute": "タキシールートがまだありません。空港パネルでゲートを選択し、そこでルートを計画してください。"
   },
   "taxiGuidance": {
     "on": "走行中",

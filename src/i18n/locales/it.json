@@ -1141,7 +1141,8 @@
     "detach": "Apri il Flight Strip in una finestra propria",
     "lock": "Blocca: i clic passano a X-Plane",
     "unlock": "Sblocca per spostare o ridimensionare",
-    "taxiMap": "Mappa di rullaggio"
+    "taxiMap": "Mappa di rullaggio",
+    "taxiMapNoRoute": "Nessun percorso di rullaggio pianificato. Seleziona un gate nel pannello dell'aeroporto e pianificalo lì."
   },
   "taxiGuidance": {
     "on": "Su",

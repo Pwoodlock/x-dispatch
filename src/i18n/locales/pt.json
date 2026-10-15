@@ -1141,7 +1141,8 @@
     "detach": "Abrir o Flight Strip numa janela própria",
     "lock": "Bloquear: os cliques passam para o X-Plane",
     "unlock": "Desbloquear para mover ou redimensionar",
-    "taxiMap": "Mapa de táxi"
+    "taxiMap": "Mapa de táxi",
+    "taxiMapNoRoute": "Nenhuma rota de táxi planejada. Selecione um portão no painel do aeroporto e planeje-a lá."
   },
   "taxiGuidance": {
     "on": "Na",

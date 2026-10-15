@@ -1141,7 +1141,8 @@
     "detach": "Set the Flight Strip loose in its own porthole",
     "lock": "Lash it: clicks sail through to X-Plane",
     "unlock": "Unlash to move or resize",
-    "taxiMap": "Taxi chart, arr"
+    "taxiMap": "Taxi chart, arr",
+    "taxiMapNoRoute": "No taxi course charted yet, matey. Pick a berth in the airport panel and chart one there."
   },
   "taxiGuidance": {
     "on": "On",

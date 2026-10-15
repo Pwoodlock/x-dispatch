@@ -1,6 +1,7 @@
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Lock, LockOpen, Map as MapIcon, X } from 'lucide-react';
+import { toast } from 'sonner';
 import FlightStrip from '@/components/Map/widgets/FlightStrip';
 import TaxiMiniMap from '@/components/Map/widgets/TaxiMiniMap';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils/helpers';
 import { useFlightStripWindowOptions } from '@/queries';
 import { usePlaneStateStream } from '@/queries/useXPlaneWebSocket';
 import { usePlaneStore } from '@/stores/planeStore';
+import { useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 
 const dragStyle = { WebkitAppRegion: 'drag' } as CSSProperties;
 const noDragStyle = { WebkitAppRegion: 'no-drag' } as CSSProperties;
@@ -117,6 +119,14 @@ export function FlightStripWindow() {
   // EXPERIMENT (exp/taxi-mini-map): the taxi map panel under the strip.
   const [taxiMap, setTaxiMap] = useState(false);
   const airborne = usePlaneStore((s) => s.state?.onGround === false);
+  const hasRoute = useTaxiGuidanceStore((s) => !!(s.departure ?? s.arrival));
+  const toggleTaxiMap = () => {
+    if (!taxiMap && !hasRoute) {
+      toast.info(t('flightStrip.taxiMapNoRoute'));
+      return;
+    }
+    setTaxiMap((open) => !open);
+  };
   const scale = useFitScale(frameRef, stripRef);
   useReportStripShape(stripRef);
   useReportGrip(gripRef);
@@ -164,7 +174,7 @@ export function FlightStripWindow() {
           variant="ghost"
           size="icon-xs"
           className={cn(taxiMap ? 'text-primary' : 'text-muted-foreground')}
-          onClick={() => setTaxiMap((open) => !open)}
+          onClick={toggleTaxiMap}
           aria-pressed={taxiMap}
           aria-label={t('flightStrip.taxiMap')}
           tooltip={t('flightStrip.taxiMap')}

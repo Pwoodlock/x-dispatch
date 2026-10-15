@@ -1,6 +1,7 @@
 import { MotionConfig } from 'motion/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { FlightStripWindow } from './components/FlightStripWindow';
+import { Toaster } from './components/ui/sonner';
 import { TooltipProvider } from './components/ui/tooltip';
 import './i18n';
 import { QueryProvider } from './queries';
@@ -21,6 +22,7 @@ export default function FlightStripApp() {
         <MotionConfig reducedMotion="user">
           <TooltipProvider delayDuration={500} skipDelayDuration={300}>
             <FlightStripWindow />
+            <Toaster position="top-center" />
           </TooltipProvider>
         </MotionConfig>
       </QueryProvider>

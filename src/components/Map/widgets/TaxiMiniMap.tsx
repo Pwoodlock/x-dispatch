@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { LinearFeatureLayer } from '@/components/Map/layers/airport/LinearFeatureLayer';
 import { PavementLayer } from '@/components/Map/layers/airport/PavementLayer';
 import { RunwayLayer } from '@/components/Map/layers/airport/RunwayLayer';
@@ -15,6 +16,7 @@ import {
   setTaxiRoute,
 } from '@/components/Map/layers/dynamic/TaxiRouteLayer';
 import { bearingDeg } from '@/lib/flightplan/builder/geometry';
+import '@/lib/map/maplibreWorker';
 import { AirportParser } from '@/lib/parsers/apt';
 import type { GuidanceRoute } from '@/lib/taxiGuidance';
 import { usePlaneStore } from '@/stores/planeStore';
@@ -31,6 +33,13 @@ const AIRCRAFT_FROM_TOP = 0.62;
 /** Camera moves smaller than this (degrees, about 1 m / 0.5°) are skipped. */
 const MIN_MOVE_DEG = 0.00001;
 const MIN_TURN_DEG = 0.5;
+/** X-Plane sends about ten samples a second; the camera glides from one to the next. */
+const GLIDE_MIN_MS = 50;
+const GLIDE_MAX_MS = 250;
+/** Gliding redraws the map every frame; 60 a second is smooth enough for taxiing. */
+const MIN_FRAME_MS = 1000 / 60 - 1;
+/** Sharper than the screen costs fill rate for no visible gain. */
+const MAX_PIXEL_RATIO = 2;
 
 const EMPTY_STYLE: maplibregl.StyleSpecification = {
   version: 8,
@@ -43,6 +52,15 @@ interface Pose {
   lon: number;
   lat: number;
   heading: number;
+}
+
+function lerpPose(a: Pose, b: Pose, t: number): Pose {
+  const turn = ((((b.heading - a.heading) % 360) + 540) % 360) - 180;
+  return {
+    lon: a.lon + (b.lon - a.lon) * t,
+    lat: a.lat + (b.lat - a.lat) * t,
+    heading: a.heading + turn * t,
+  };
 }
 
 function aircraftElement(): HTMLElement {
@@ -113,24 +131,17 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
     let ready = false;
     let drawnIcao: string | null = null;
     let drawnRoute: GuidanceRoute | null = null;
-    let lastPose: Pose | null = null;
+    let target: Pose | null = null;
+    let shown: Pose | null = null;
+    let glideFrom: Pose | null = null;
+    let glideStart = 0;
+    let glideMs = GLIDE_MIN_MS;
+    let lastSampleAt = 0;
+    let lastDrawAt = 0;
     let frame = 0;
 
-    // At most one camera move per frame, and none while the aircraft sits still.
-    const follow = () => {
-      frame = 0;
-      if (!ready) return;
-      const pose = currentPose(activeRoute());
-      if (!pose) return;
-      if (
-        lastPose &&
-        Math.abs(pose.lon - lastPose.lon) < MIN_MOVE_DEG &&
-        Math.abs(pose.lat - lastPose.lat) < MIN_MOVE_DEG &&
-        Math.abs(pose.heading - lastPose.heading) < MIN_TURN_DEG
-      ) {
-        return;
-      }
-      lastPose = pose;
+    const draw = (pose: Pose) => {
+      shown = pose;
       marker.setLngLat([pose.lon, pose.lat]);
       map.jumpTo({
         center: [pose.lon, pose.lat],
@@ -143,8 +154,45 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
         },
       });
     };
-    const scheduleFollow = () => {
-      if (!frame) frame = requestAnimationFrame(follow);
+
+    // Runs only while gliding toward the latest sample; idle once the camera is there.
+    const glide = (now: number) => {
+      frame = 0;
+      if (!ready || !target) return;
+      if (!glideFrom) {
+        draw(target);
+        return;
+      }
+      if (now - lastDrawAt < MIN_FRAME_MS) {
+        frame = requestAnimationFrame(glide);
+        return;
+      }
+      lastDrawAt = now;
+      const t = Math.min(1, (now - glideStart) / glideMs);
+      draw(lerpPose(glideFrom, target, t));
+      if (t < 1) frame = requestAnimationFrame(glide);
+    };
+
+    const follow = (jump = false) => {
+      if (!ready) return;
+      const pose = currentPose(activeRoute());
+      if (!pose) return;
+      if (
+        !jump &&
+        target &&
+        Math.abs(pose.lon - target.lon) < MIN_MOVE_DEG &&
+        Math.abs(pose.lat - target.lat) < MIN_MOVE_DEG &&
+        Math.abs(pose.heading - target.heading) < MIN_TURN_DEG
+      ) {
+        return;
+      }
+      const now = performance.now();
+      glideMs = Math.min(GLIDE_MAX_MS, Math.max(GLIDE_MIN_MS, now - lastSampleAt));
+      lastSampleAt = now;
+      glideFrom = jump ? null : shown;
+      glideStart = now;
+      target = pose;
+      if (!frame) frame = requestAnimationFrame(glide);
     };
 
     // The route's airport once per airport (pavement, runways, hold lines), then the route.
@@ -174,8 +222,7 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
       // The airport layers land above the route; keep the green path and the labels on top.
       bringTaxiRouteToFront(map);
       bringTaxiMapLabelsToFront(map);
-      lastPose = null;
-      scheduleFollow();
+      follow(true);
     };
 
     map.on('load', () => {
@@ -185,9 +232,9 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
       addTaxiMapLabelLayers(map);
       ready = true;
       void syncRoute();
-      scheduleFollow();
+      follow(true);
     });
-    const unsubscribePlane = usePlaneStore.subscribe(scheduleFollow);
+    const unsubscribePlane = usePlaneStore.subscribe(() => follow());
     const unsubscribeRoute = useTaxiGuidanceStore.subscribe(() => void syncRoute());
 
     return () => {
@@ -201,7 +248,9 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
   }, []);
 
   useEffect(() => {
-    mapRef.current?.setPixelRatio((window.devicePixelRatio || 1) * Math.max(1, scale));
+    mapRef.current?.setPixelRatio(
+      Math.min(MAX_PIXEL_RATIO, (window.devicePixelRatio || 1) * Math.max(1, scale))
+    );
   }, [scale]);
 
   return <div ref={containerRef} className="h-full w-full" />;
