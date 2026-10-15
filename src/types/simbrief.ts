@@ -215,12 +215,13 @@ export interface SimBriefLandingRunway {
   max_weight_wet: string;
 }
 
+/** Either half can be missing for aircraft without full TLR support. */
 export interface SimBriefTLR {
-  takeoff: {
+  takeoff?: {
     conditions: SimBriefTakeoffConditions;
     runway: SimBriefTakeoffRunway[];
   };
-  landing: {
+  landing?: {
     conditions: SimBriefLandingConditions;
     distance_dry: SimBriefLandingDistance;
     distance_wet: SimBriefLandingDistance;
