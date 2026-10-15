@@ -114,6 +114,19 @@ export function applyFlightStripWindowOptions(
   } else {
     win.setAlwaysOnTop(false);
   }
+  applyFlightStripMouse(win, options, { capture, platform });
+}
+
+/**
+ * Only whether clicks pass through. The cursor watch calls this alone: re-raising
+ * the window as the cursor reaches the grip could swallow the click that follows.
+ */
+export function applyFlightStripMouse(
+  win: Pick<FlightStripWindowLike, 'isDestroyed' | 'setIgnoreMouseEvents'>,
+  options: FlightStripWindowOptions,
+  { capture, platform }: { capture: boolean; platform: NodeJS.Platform }
+): void {
+  if (win.isDestroyed()) return;
   const ignore = ignoresMouse(options, capture);
   // Linux cannot forward mouse moves, so there the grip stays hidden while locked.
   if (ignore && platform !== 'linux') win.setIgnoreMouseEvents(true, { forward: true });

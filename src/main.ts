@@ -34,6 +34,7 @@ import {
   DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS,
   type FlightStripGripRect,
   type FlightStripWindowOptions,
+  applyFlightStripMouse,
   applyFlightStripWindowOptions,
   cursorOnGrip,
   parseFlightStripWindowOptions,
@@ -637,7 +638,11 @@ const FLIGHT_STRIP_CAPTURE_POLL_MS = 50;
 function setFlightStripCapture(capture: boolean): void {
   if (flightStripCapture === capture) return;
   flightStripCapture = capture;
-  applyFlightStripOptions();
+  if (!isFlightStripWindowOpen()) return;
+  applyFlightStripMouse(flightStripWindow!, flightStripOptions, {
+    capture,
+    platform: process.platform,
+  });
 }
 
 /** Runs the cursor watch exactly while an open strip is locked. */
