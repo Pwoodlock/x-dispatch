@@ -113,8 +113,19 @@ describe('slimOfp', () => {
     expect(slim.alternate.map((a) => a.icao_code)).toEqual(['KPHL']);
     expect(slim.sigmets).toHaveLength(1);
     expect(slim.origin.notam).toEqual([]);
-    expect(slim.tlr?.takeoff.runway).toHaveLength(1);
-    expect(slim.tlr?.landing.runway).toEqual([]);
+    expect(slim.tlr?.takeoff?.runway).toHaveLength(1);
+    expect(slim.tlr?.landing?.runway).toEqual([]);
+  });
+
+  it('drops an empty TLR placeholder, and a TLR half that is missing', () => {
+    // v2 writes `tlr: []` when runway analysis is off or the aircraft has no TLR data.
+    expect(slimOfp({ ...fixture, tlr: [] }).tlr).toBeUndefined();
+    expect(slimOfp({ ...fixture, tlr: {} }).tlr).toBeUndefined();
+    expect(slimOfp({ ...fixture, tlr: { takeoff: {}, landing: '' } }).tlr).toBeUndefined();
+
+    const takeoffOnly = slimOfp({ ...fixture, tlr: { takeoff: fixture.tlr.takeoff } }).tlr;
+    expect(takeoffOnly?.takeoff?.runway).toEqual(fixture.tlr.takeoff.runway);
+    expect(takeoffOnly?.landing).toBeUndefined();
   });
 
   it('turns an empty navlog placeholder into an empty array instead of dropping it', () => {

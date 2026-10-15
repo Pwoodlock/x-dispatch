@@ -18,15 +18,15 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
   const { tlr, general, origin, destination } = data;
 
   // Get the planned runway data from TLR
-  const takeoffRunway = tlr?.takeoff.runway.find(
-    (r) => r.identifier === tlr.takeoff.conditions.planned_runway
-  );
-  const landingRunway = tlr?.landing.runway.find(
-    (r) => r.identifier === tlr.landing.conditions.planned_runway
-  );
+  const takeoffConditions = tlr?.takeoff?.conditions;
+  const landingConditions = tlr?.landing?.conditions;
 
-  const takeoffConditions = tlr?.takeoff.conditions;
-  const landingConditions = tlr?.landing.conditions;
+  const takeoffRunway = tlr?.takeoff?.runway.find(
+    (r) => r.identifier === takeoffConditions?.planned_runway
+  );
+  const landingRunway = tlr?.landing?.runway.find(
+    (r) => r.identifier === landingConditions?.planned_runway
+  );
 
   // Parse step climbs
   const stepClimbs = general.stepclimb_string ? parseStepClimbs(general.stepclimb_string) : [];

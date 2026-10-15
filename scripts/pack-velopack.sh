@@ -34,8 +34,10 @@ esac
 case "$(uname -s)" in
   MINGW* | MSYS* | CYGWIN*)
     BASE=win
+    # --verbose: vpk 1.2.161 logs an unreadable --icon only at debug level, then ships
+    # Setup.exe without one. icon.ico must keep an AND mask on every BMP frame.
     PLATFORM_ARGS=(--packDir "out/X-Dispatch-win32-$ARCH" --mainExe x-dispatch.exe
-      --icon assets/icon.ico --runtime "win-$ARCH" --noPortable)
+      --icon assets/icon.ico --runtime "win-$ARCH" --noPortable --verbose)
     INSTALLER_GLOB='*-Setup.exe'
     INSTALLER_NAME="X-Dispatch-$VERSION-windows-$ARCH.exe"
     ;;

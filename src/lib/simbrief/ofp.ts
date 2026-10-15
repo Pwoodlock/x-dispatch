@@ -116,23 +116,28 @@ export function slimOfp(raw: Record<string, unknown>): SimBriefOFP {
   if (isRecord(raw.origin)) out.origin = normaliseAirport(raw.origin);
   if (isRecord(raw.destination)) out.destination = normaliseAirport(raw.destination);
   if (isRecord(raw.atc)) out.atc = { ...raw.atc, fir_enroute: listOf<string>(raw.atc.fir_enroute) };
-  if (isRecord(raw.tlr)) {
-    const tlr = raw.tlr;
-    out.tlr = {
-      ...tlr,
-      takeoff: isRecord(tlr.takeoff)
-        ? { ...tlr.takeoff, runway: listOf(tlr.takeoff.runway) }
-        : tlr.takeoff,
-      landing: isRecord(tlr.landing)
-        ? { ...tlr.landing, runway: listOf(tlr.landing.runway) }
-        : tlr.landing,
-    };
-  }
+  out.tlr = normaliseTlr(raw.tlr);
   if (isRecord(raw.files)) {
     const { file: _file, ...files } = raw.files;
     out.files = files;
   }
   return out as unknown as SimBriefOFP;
+}
+
+/**
+ * The takeoff and landing reports, each kept only when SimBrief wrote it out. An aircraft
+ * without TLR support comes back as an empty placeholder (`{}`), or with one half missing.
+ */
+function normaliseTlr(tlr: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(tlr)) return undefined;
+  const half = (part: unknown) =>
+    isRecord(part) && Object.keys(part).length > 0
+      ? { ...part, runway: listOf(part.runway) }
+      : undefined;
+  const takeoff = half(tlr.takeoff);
+  const landing = half(tlr.landing);
+  if (!takeoff && !landing) return undefined;
+  return { ...tlr, takeoff, landing };
 }
 
 /** NOTAMs as an array; the ATIS block is not shown anywhere. */

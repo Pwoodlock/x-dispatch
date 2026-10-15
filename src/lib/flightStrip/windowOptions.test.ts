@@ -3,6 +3,7 @@ import {
   DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS,
   type FlightStripWindowLike,
   applyFlightStripWindowOptions,
+  cursorOnGrip,
   ignoresMouse,
   parseFlightStripWindowOptions,
   parseGripRect,
@@ -116,5 +117,26 @@ describe('parseGripRect', () => {
     ]) {
       expect(parseGripRect(input)).toBeNull();
     }
+  });
+});
+
+describe('cursorOnGrip', () => {
+  const content = { x: 100, y: 50, width: 1000, height: 120 };
+  const grip = { x: 960, y: 4, width: 24, height: 24 };
+
+  it('finds the cursor on the grip, in screen pixels', () => {
+    expect(cursorOnGrip({ x: 1060, y: 54 }, content, grip)).toBe(true);
+    expect(cursorOnGrip({ x: 1083, y: 77 }, content, grip)).toBe(true);
+  });
+
+  it('is off the grip anywhere else, the rest of the strip included', () => {
+    expect(cursorOnGrip({ x: 1059, y: 60 }, content, grip)).toBe(false);
+    expect(cursorOnGrip({ x: 1084, y: 60 }, content, grip)).toBe(false);
+    expect(cursorOnGrip({ x: 1070, y: 78 }, content, grip)).toBe(false);
+    expect(cursorOnGrip({ x: 500, y: 100 }, content, grip)).toBe(false);
+  });
+
+  it('is off the grip before the strip has reported one', () => {
+    expect(cursorOnGrip({ x: 1060, y: 54 }, content, null)).toBe(false);
   });
 });

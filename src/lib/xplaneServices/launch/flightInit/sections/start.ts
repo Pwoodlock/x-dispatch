@@ -1,3 +1,4 @@
+import { normalizeRunwayName } from '@/lib/flightplan/builder/runways';
 import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { StartPosition } from '@/types/position';
@@ -64,7 +65,10 @@ export function buildRamp(pos: StartPosition): RampBlock {
 export function buildRunway(pos: StartPosition): RunwayBlock {
   const block: RunwayBlock = {
     airport_id: pos.airport,
-    runway: pos.name,
+    // apt.dat writes many runways with one digit ("8L" at KATL), but the flight API only
+    // knows the two-digit form: it refuses "8L" with missing_runway and starts on "08L".
+    // Helipads and anything else that is not a runway end go out unchanged.
+    runway: normalizeRunwayName(pos.name) ?? pos.name,
   };
   if (pos.approachDistanceNm != null) {
     block.final_distance_in_nautical_miles = float(pos.approachDistanceNm);

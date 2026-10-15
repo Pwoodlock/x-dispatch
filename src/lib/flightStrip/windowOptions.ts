@@ -61,6 +61,27 @@ export function parseGripRect(input: unknown): FlightStripGripRect | null {
     : null;
 }
 
+/**
+ * Whether the cursor (screen pixels) is on the grip, given the window's content
+ * bounds. Main polls this while locked: forwarded mouse moves are too unreliable on
+ * Windows to wait for, and a missed one let the first click pass through the lock.
+ */
+export function cursorOnGrip(
+  cursor: { x: number; y: number },
+  content: { x: number; y: number },
+  grip: FlightStripGripRect | null
+): boolean {
+  if (!grip) return false;
+  const left = content.x + grip.x;
+  const top = content.y + grip.y;
+  return (
+    cursor.x >= left &&
+    cursor.y >= top &&
+    cursor.x < left + grip.width &&
+    cursor.y < top + grip.height
+  );
+}
+
 /** Locked passes clicks through, except while the pointer is on the grip (`capture`). */
 export function ignoresMouse(options: FlightStripWindowOptions, capture: boolean): boolean {
   return options.locked && !capture;
