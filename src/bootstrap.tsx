@@ -6,7 +6,10 @@ import { initSentryContext } from '@/lib/sentry/sentryContext';
 import { TRANSIENT_NET_ERROR_PATTERN } from '@/lib/sentry/transientNetErrors';
 import { BRIDGE_CALL_TIMEOUT_MS, withTimeout } from '@/lib/startup/startupFallback';
 import { showStartupFailure } from '@/lib/startup/startupPage';
-import App from './App';
+
+/** The detached flight strip is the same renderer opened with ?view=flight-strip. */
+const isFlightStripView =
+  new URLSearchParams(window.location.search).get('view') === 'flight-strip';
 
 // Initialize app - check crash reports setting first
 export async function bootstrap(): Promise<void> {
@@ -25,7 +28,10 @@ export async function bootstrap(): Promise<void> {
         {
           dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
           release: `x-dispatch@${await window.appAPI.getVersion()}`,
-          integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+          // Replay keeps a rolling recording in memory; the strip redraws ten times a second.
+          integrations: isFlightStripView
+            ? [Sentry.browserTracingIntegration()]
+            : [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
           ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
           tracesSampleRate: 1.0,
           // The free plan holds 50 replays a month: keep them for sessions with an error.
@@ -41,12 +47,16 @@ export async function bootstrap(): Promise<void> {
     window.appAPI.log.warn('Sentry skipped at startup', String(err));
   }
 
+  const { default: Root } = isFlightStripView
+    ? await import('./FlightStripApp')
+    : await import('./App');
+
   ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
     // An error no boundary catches unmounts the whole tree, which would leave a blank page.
     onUncaughtError: reactErrorHandler((error) => showStartupFailure(error, 'render')),
   }).render(
     <React.StrictMode>
-      <App />
+      <Root />
     </React.StrictMode>
   );
 }
