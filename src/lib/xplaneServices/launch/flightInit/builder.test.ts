@@ -238,6 +238,46 @@ describe('buildFlightInit start position: runway', () => {
     expect(out.runway_start?.runway).toBe('27R');
   });
 
+  describe('runway name', () => {
+    // apt.dat writes about a tenth of airports' runways with one digit ("8L" at KATL), but
+    // X-Plane's flight API only knows the two-digit form: X-Plane 12.4.3 refuses "8L" with
+    // missing_runway ("runway unrecognized: '8L'") and starts the flight on "08L".
+    const sentRunway = (name: string) =>
+      buildFlightInit({ ...baseParams, startPosition: runwayStart({ name, airport: 'KATL' }) })
+        .runway_start?.runway;
+
+    // Every apt.dat runway-end suffix: none, left/centre/right, S (ski/gravel),
+    // T (true heading), W (water).
+    const suffixes = ['', 'L', 'C', 'R', 'S', 'T', 'W'];
+    const numbers = (from: number, to: number) =>
+      Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+    it('sends the runway X-Plane refused in the field as the form it accepts', () => {
+      expect(sentRunway('8L')).toBe('08L');
+    });
+
+    it.each(numbers(1, 9).flatMap((n) => suffixes.map((s) => [`${n}${s}`, `0${n}${s}`])))(
+      'pads one-digit runway %s to %s',
+      (name, expected) => {
+        expect(sentRunway(name)).toBe(expected);
+      }
+    );
+
+    // Everything that launches today must go out unchanged.
+    it.each(
+      numbers(1, 36).flatMap((n) => suffixes.map((s) => `${String(n).padStart(2, '0')}${s}`))
+    )('sends two-digit runway %s unchanged', (name) => {
+      expect(sentRunway(name)).toBe(name);
+    });
+
+    it.each(['H1', 'H12', 'H', '1A', '8LL', 'L8', ''])(
+      'sends any other name (helipads included) unchanged: %j',
+      (name) => {
+        expect(sentRunway(name)).toBe(name);
+      }
+    );
+  });
+
   it('adds final_distance_in_nautical_miles when approachDistanceNm is set, with decimal', () => {
     const out = buildFlightInit({
       ...baseParams,
