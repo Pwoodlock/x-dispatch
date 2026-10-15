@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useUnits } from '@/hooks/useUnits';
+import { flightPlanTaxiTarget, replansAutoRoute } from '@/lib/taxiGraph/autoPlan';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { getRolloutEnd } from '@/lib/taxiGraph/rolloutEnd';
 import type { GuidanceSource } from '@/lib/taxiGuidance';
@@ -123,36 +124,64 @@ export default function TaxiRouteInline() {
     }
   };
 
-  // With no route yet: reopen the one kept for guidance from this gate, or else plan
-  // one from the flight plan's runway when this is its departure or arrival airport.
-  // Keyed on the planner being empty rather than a once-flag, so a remount (which
-  // resets the planner) restores the route too.
+  // The flight plan's airports and runways (SimBrief or our planner), as plain values so a
+  // plan imported or changed while this gate is open re-runs the effect below.
+  const planDepartureIcao = useFlightPlanStore((s) => s.departure?.icao);
+  const planDepartureRunway = useFlightPlanStore((s) => s.departure?.runway);
+  const planArrivalIcao = useFlightPlanStore((s) => s.arrival?.icao);
+  const planArrivalRunway = useFlightPlanStore((s) => s.arrival?.runway);
+
+  // With no route yet, reopen the one kept for guidance from this gate. Then take an AUTO
+  // route to the flight plan's runway when this is its departure or arrival airport: into
+  // an empty planner, or over an AUTO route to another runway; never over the pilot's own.
+  // Keyed on the planner's content rather than a once-flag, so a remount (which resets
+  // the planner) restores the route too.
   useEffect(() => {
     if (!graph || !startPosition || !icao) return;
-    if (useTaxiRouteStore.getState().networkNodeIds.length > 0) return;
-
     const here = icao.toUpperCase();
-    const kept = guidanceRoutes(useTaxiGuidanceStore.getState()).find(
-      (r) => r.icao === here && r.gateName === startPosition.name
-    );
-    if (kept) {
-      restoreRoute(kept);
-      return;
+    const hasRoute = () => {
+      const s = useTaxiRouteStore.getState();
+      return s.networkNodeIds.length > 0 || s.waypoints.length > 0;
+    };
+
+    if (!hasRoute()) {
+      const kept = guidanceRoutes(useTaxiGuidanceStore.getState()).find(
+        (r) => r.icao === here && r.gateName === startPosition.name
+      );
+      if (kept) restoreRoute(kept);
     }
 
     const { departure, arrival } = useFlightPlanStore.getState();
-    const plan =
-      departure?.icao.toUpperCase() === here && departure.runway
-        ? { direction: 'departure' as const, runway: departure.runway }
-        : arrival?.icao.toUpperCase() === here && arrival.runway
-          ? { direction: 'arrival' as const, runway: arrival.runway }
-          : null;
-    if (!plan || !runwayEnds.some((r) => r.name === plan.runway)) return;
-    setDirection(plan.direction);
-    handleRunwaySelect(plan.runway, plan.direction, 'auto');
-    // Runs once, when the graph and gate are first known.
+    const target = flightPlanTaxiTarget(
+      here,
+      departure,
+      arrival,
+      runwayEnds.map((r) => r.name)
+    );
+    if (!target) return;
+    const planner = useTaxiRouteStore.getState();
+    const replan = replansAutoRoute(
+      {
+        hasRoute: hasRoute(),
+        source: planner.source,
+        direction: planner.direction,
+        runway: planner.selectedRunway,
+      },
+      target
+    );
+    if (!replan) return;
+    setDirection(target.direction);
+    handleRunwaySelect(target.runway, target.direction, 'auto');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, startPosition, icao]);
+  }, [
+    graph,
+    startPosition,
+    icao,
+    planDepartureIcao,
+    planDepartureRunway,
+    planArrivalIcao,
+    planArrivalRunway,
+  ]);
 
   const handleExport = async () => {
     const result = await writeFtgRoute();
