@@ -10,6 +10,7 @@ import { aspectChanged } from '@/lib/flightStrip/windowFit';
 import { cn } from '@/lib/utils/helpers';
 import { useFlightStripWindowOptions } from '@/queries';
 import { usePlaneStateStream } from '@/queries/useXPlaneWebSocket';
+import { usePlaneStore } from '@/stores/planeStore';
 
 const dragStyle = { WebkitAppRegion: 'drag' } as CSSProperties;
 const noDragStyle = { WebkitAppRegion: 'no-drag' } as CSSProperties;
@@ -115,6 +116,7 @@ export function FlightStripWindow() {
   const gripRef = useRef<HTMLDivElement>(null);
   // EXPERIMENT (exp/taxi-mini-map): the taxi map panel under the strip.
   const [taxiMap, setTaxiMap] = useState(false);
+  const airborne = usePlaneStore((s) => s.state?.onGround === false);
   const scale = useFitScale(frameRef, stripRef);
   useReportStripShape(stripRef);
   useReportGrip(gripRef);
@@ -132,15 +134,21 @@ export function FlightStripWindow() {
           className="shrink-0"
           style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}
         >
-          <FlightStrip detached onCenterPlane={() => {}} />
-          {taxiMap && (
-            <div
-              className="border-border bg-card mt-1 h-56 w-0 min-w-full overflow-hidden rounded-lg border"
-              style={noDragStyle}
-            >
-              <TaxiMiniMap />
-            </div>
-          )}
+          <FlightStrip
+            detached
+            onCenterPlane={() => {}}
+            footer={
+              taxiMap &&
+              !airborne && (
+                <div
+                  className="border-border/50 h-56 w-0 min-w-full overflow-hidden rounded-b-xl border-t"
+                  style={noDragStyle}
+                >
+                  <TaxiMiniMap scale={scale} />
+                </div>
+              )
+            }
+          />
         </div>
       </div>
       <div

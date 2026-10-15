@@ -22,6 +22,8 @@ interface FlightStripProps {
   onCenterPlane: () => void;
   /** Shown in its own window: the window moves and sizes it, no map actions. */
   detached?: boolean;
+  /** Shown at the bottom of the strip's card, under the taxi guidance. */
+  footer?: ReactNode;
 }
 
 // --- Formatting helpers ---
@@ -102,7 +104,7 @@ function useStripDrag(detached: boolean) {
 
 // --- Main component ---
 
-export default function FlightStrip({ onCenterPlane, detached = false }: FlightStripProps) {
+export default function FlightStrip({ onCenterPlane, detached = false, footer }: FlightStripProps) {
   const planeState = usePlaneStore((s) => s.state);
   const connected = usePlaneStore((s) => s.connected);
   const { t } = useTranslation();
@@ -337,6 +339,7 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
 
             {/* Turn-by-turn taxi guidance, on the ground with a planned route */}
             <TaxiGuidanceRow />
+            {footer}
           </div>
         </motion.div>
       )}

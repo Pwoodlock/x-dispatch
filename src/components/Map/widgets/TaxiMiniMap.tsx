@@ -4,6 +4,12 @@ import { LinearFeatureLayer } from '@/components/Map/layers/airport/LinearFeatur
 import { PavementLayer } from '@/components/Map/layers/airport/PavementLayer';
 import { RunwayLayer } from '@/components/Map/layers/airport/RunwayLayer';
 import {
+  addTaxiMapLabelLayers,
+  bringTaxiMapLabelsToFront,
+  setTaxiMapAirportLabels,
+  setTaxiMapRouteLabels,
+} from '@/components/Map/layers/dynamic/TaxiMapLabelsLayer';
+import {
   addTaxiRouteLayer,
   bringTaxiRouteToFront,
   setTaxiRoute,
@@ -67,8 +73,14 @@ function currentPose(route: GuidanceRoute | null): Pose | null {
   return { lon: a.lon, lat: a.lat, heading };
 }
 
-export default function TaxiMiniMap() {
+interface TaxiMiniMapProps {
+  /** CSS scale the strip window applies; the map renders sharper to match. */
+  scale: number;
+}
+
+export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -90,6 +102,7 @@ export default function TaxiMiniMap() {
       scrollZoom: { around: 'center' },
       fadeDuration: 0,
     });
+    mapRef.current = map;
     const marker = new maplibregl.Marker({
       element: aircraftElement(),
       rotationAlignment: 'viewport',
@@ -151,13 +164,16 @@ export default function TaxiMiniMap() {
         for (const layer of [new PavementLayer(), new RunwayLayer(), new LinearFeatureLayer()]) {
           if (layer.hasData(airport)) await layer.render(map, airport);
         }
+        setTaxiMapAirportLabels(map, airport);
       }
       setTaxiRoute(
         map,
         route.points.map((p) => ({ longitude: p.lon, latitude: p.lat }))
       );
-      // The airport layers land above the route; keep the green path on top.
+      setTaxiMapRouteLabels(map, route);
+      // The airport layers land above the route; keep the green path and the labels on top.
       bringTaxiRouteToFront(map);
+      bringTaxiMapLabelsToFront(map);
       lastPose = null;
       scheduleFollow();
     };
@@ -166,6 +182,7 @@ export default function TaxiMiniMap() {
       // Only here is the style certain to be loaded: addTaxiRouteLayer quietly does
       // nothing while the airport layers are still loading.
       addTaxiRouteLayer(map);
+      addTaxiMapLabelLayers(map);
       ready = true;
       void syncRoute();
       scheduleFollow();
@@ -179,8 +196,13 @@ export default function TaxiMiniMap() {
       if (frame) cancelAnimationFrame(frame);
       marker.remove();
       map.remove();
+      mapRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    mapRef.current?.setPixelRatio((window.devicePixelRatio || 1) * Math.max(1, scale));
+  }, [scale]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
