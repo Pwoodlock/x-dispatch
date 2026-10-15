@@ -1,7 +1,9 @@
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, LockOpen, X } from 'lucide-react';
+import { Lock, LockOpen, Map as MapIcon, X } from 'lucide-react';
+import { toast } from 'sonner';
 import FlightStrip from '@/components/Map/widgets/FlightStrip';
+import TaxiMiniMap from '@/components/Map/widgets/TaxiMiniMap';
 import { Button } from '@/components/ui/button';
 import { useFlightStripGuidance } from '@/hooks/useFlightStripGuidance';
 import { useSettingsStorageSync } from '@/hooks/useSettingsStorageSync';
@@ -9,6 +11,8 @@ import { aspectChanged } from '@/lib/flightStrip/windowFit';
 import { cn } from '@/lib/utils/helpers';
 import { useFlightStripWindowOptions } from '@/queries';
 import { usePlaneStateStream } from '@/queries/useXPlaneWebSocket';
+import { usePlaneStore } from '@/stores/planeStore';
+import { useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 
 const dragStyle = { WebkitAppRegion: 'drag' } as CSSProperties;
 const noDragStyle = { WebkitAppRegion: 'no-drag' } as CSSProperties;
@@ -67,11 +71,11 @@ function useReportStripShape(contentRef: React.RefObject<HTMLDivElement | null>)
 }
 
 /**
- * Tells main where the lock grip is whenever it moves or resizes (window resize,
- * Interface Zoom, the close button coming and going), so main can watch the cursor
- * over it. The rect goes in screen pixels: Interface Zoom scales CSS pixels.
+ * Tells main where the strip's buttons are whenever they move or resize (window resize,
+ * Interface Zoom, the strip's scale), so main can watch the cursor over them. The rect
+ * goes in screen pixels: Interface Zoom scales CSS pixels.
  */
-function useReportGrip(gripRef: React.RefObject<HTMLDivElement | null>) {
+function useReportGrip(gripRef: React.RefObject<HTMLDivElement | null>, scale: number) {
   useEffect(() => {
     const grip = gripRef.current;
     if (!grip) return;
@@ -94,14 +98,14 @@ function useReportGrip(gripRef: React.RefObject<HTMLDivElement | null>) {
       observer.disconnect();
       window.removeEventListener('resize', report);
     };
-  }, [gripRef]);
+  }, [gripRef, scale]);
 }
 
 /**
  * The whole renderer of the detached flight strip window. The window has no title bar:
  * unlocked, the strip area drags it, the edges resize it and the strip scales to fit.
- * Locked, main lets every click through to the simulator and a faint lock stays in the
- * corner; main watches the cursor and lets the lock alone take clicks.
+ * Locked, main lets every click through to the simulator; main watches the cursor and
+ * lets the strip's buttons alone take clicks.
  */
 export function FlightStripWindow() {
   usePlaneStateStream();
@@ -112,13 +116,24 @@ export function FlightStripWindow() {
   const frameRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const gripRef = useRef<HTMLDivElement>(null);
+  // EXPERIMENT (exp/taxi-mini-map): the taxi map panel under the strip.
+  const [taxiMap, setTaxiMap] = useState(false);
+  const airborne = usePlaneStore((s) => s.state?.onGround === false);
+  const hasRoute = useTaxiGuidanceStore((s) => !!(s.departure ?? s.arrival));
+  const toggleTaxiMap = () => {
+    if (!taxiMap && !hasRoute) {
+      toast.info(t('flightStrip.taxiMapNoRoute'));
+      return;
+    }
+    setTaxiMap((open) => !open);
+  };
   const scale = useFitScale(frameRef, stripRef);
   useReportStripShape(stripRef);
-  useReportGrip(gripRef);
+  useReportGrip(gripRef, scale);
 
   return (
     // The padding stays outside the drag region so the window edges keep resizing.
-    <div className="group bg-background relative h-screen w-screen overflow-hidden p-1">
+    <div className="bg-background relative h-screen w-screen overflow-hidden p-1">
       <div
         ref={frameRef}
         className="flex h-full w-full items-center justify-center overflow-hidden"
@@ -129,47 +144,63 @@ export function FlightStripWindow() {
           className="shrink-0"
           style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}
         >
-          <FlightStrip detached onCenterPlane={() => {}} />
+          <FlightStrip
+            detached
+            onCenterPlane={() => {}}
+            actions={
+              <div ref={gripRef} className="flex flex-col" style={noDragStyle}>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="text-muted-foreground h-5 w-5"
+                  onClick={() => window.close()}
+                  aria-label={t('common.close')}
+                  tooltip={t('common.close')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className={cn('h-5 w-5', locked ? 'text-primary' : 'text-muted-foreground')}
+                  // A locked window can miss the first click, so pilots double-click; the
+                  // second click of a double-click would lock it again.
+                  onClick={(event) => {
+                    if (event.detail > 1) return;
+                    window.appAPI.toggleFlightStripLock();
+                  }}
+                  aria-pressed={locked}
+                  aria-label={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
+                  tooltip={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
+                >
+                  {locked ? <Lock className="h-3 w-3" /> : <LockOpen className="h-3 w-3" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className={cn('h-5 w-5', taxiMap ? 'text-primary' : 'text-muted-foreground')}
+                  onClick={toggleTaxiMap}
+                  aria-pressed={taxiMap}
+                  aria-label={t('flightStrip.taxiMap')}
+                  tooltip={t('flightStrip.taxiMap')}
+                >
+                  <MapIcon className="h-3 w-3" />
+                </Button>
+              </div>
+            }
+            footer={
+              taxiMap &&
+              !airborne && (
+                <div
+                  className="border-border/50 h-56 w-0 min-w-full overflow-hidden rounded-b-xl border-t"
+                  style={noDragStyle}
+                >
+                  <TaxiMiniMap scale={scale} />
+                </div>
+              )
+            }
+          />
         </div>
-      </div>
-      <div
-        ref={gripRef}
-        className={cn(
-          'bg-background/80 absolute top-1 right-1 flex items-center gap-0.5 rounded-sm transition-opacity group-hover:opacity-100 focus-within:opacity-100',
-          // Locked, the lock stays faintly visible so the pilot knows why the strip will not move.
-          locked ? 'opacity-60' : 'opacity-0'
-        )}
-        style={noDragStyle}
-      >
-        {/* Close sits left of the lock so unlocking never puts it under the cursor. */}
-        {!locked && (
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            className="text-muted-foreground"
-            onClick={() => window.close()}
-            aria-label={t('common.close')}
-            tooltip={t('common.close')}
-          >
-            <X className="h-3.5 w-3.5" />
-          </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          className={cn(locked ? 'text-primary' : 'text-muted-foreground')}
-          // A locked window can miss the first click, so pilots double-click; the
-          // second click of a double-click would lock it again.
-          onClick={(event) => {
-            if (event.detail > 1) return;
-            window.appAPI.toggleFlightStripLock();
-          }}
-          aria-pressed={locked}
-          aria-label={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
-          tooltip={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
-        >
-          {locked ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5" />}
-        </Button>
       </div>
     </div>
   );

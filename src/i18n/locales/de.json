@@ -1140,7 +1140,9 @@
     "reconnectTooltip": "Verbindung zum X-Plane-Simulator erzwingen",
     "detach": "Flight Strip in einem eigenen Fenster öffnen",
     "lock": "Sperren: Klicks gehen an X-Plane",
-    "unlock": "Entsperren zum Verschieben oder Ändern der Größe"
+    "unlock": "Entsperren zum Verschieben oder Ändern der Größe",
+    "taxiMap": "Rollkarte",
+    "taxiMapNoRoute": "Noch keine Rollroute geplant. Wähle im Flughafen-Panel ein Gate und plane dort eine."
   },
   "taxiGuidance": {
     "on": "Auf",

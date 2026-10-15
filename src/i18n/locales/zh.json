@@ -1140,7 +1140,9 @@
     "reconnectTooltip": "强制重新连接到 X-Plane 模拟器",
     "detach": "在独立窗口中打开 Flight Strip",
     "lock": "锁定:点击传到 X-Plane",
-    "unlock": "解锁以移动或调整大小"
+    "unlock": "解锁以移动或调整大小",
+    "taxiMap": "滑行地图",
+    "taxiMapNoRoute": "尚未规划滑行路线。请在机场面板中选择停机位并在那里规划路线。"
   },
   "taxiGuidance": {
     "on": "当前",

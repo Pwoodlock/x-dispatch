@@ -2,7 +2,6 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query';
 import { MotionConfig } from 'motion/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { FlightStripWindow } from './components/FlightStripWindow';
 import Map from './components/Map';
 import { OfflineBanner } from './components/OfflineBanner';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
@@ -169,10 +168,6 @@ function AppContent() {
   );
 }
 
-/** The detached flight strip is the same renderer opened with ?view=flight-strip. */
-const isFlightStripView =
-  new URLSearchParams(window.location.search).get('view') === 'flight-strip';
-
 function App() {
   return (
     <ErrorBoundary>
@@ -180,16 +175,10 @@ function App() {
         <MotionConfig reducedMotion="user">
           {/* Native tooltip cadence: a beat before the first one, instant between neighbors */}
           <TooltipProvider delayDuration={500} skipDelayDuration={300}>
-            {isFlightStripView ? (
-              <FlightStripWindow />
-            ) : (
-              <>
-                <AppContent />
-                <UpdateAvailableToast />
-                <Toaster position="bottom-center" />
-                <RemoteConnectionBanner />
-              </>
-            )}
+            <AppContent />
+            <UpdateAvailableToast />
+            <Toaster position="bottom-center" />
+            <RemoteConnectionBanner />
           </TooltipProvider>
         </MotionConfig>
       </QueryProvider>

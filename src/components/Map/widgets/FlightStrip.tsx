@@ -22,6 +22,10 @@ interface FlightStripProps {
   onCenterPlane: () => void;
   /** Shown in its own window: the window moves and sizes it, no map actions. */
   detached?: boolean;
+  /** Buttons at the right end of the detached strip, where the map strip has its own. */
+  actions?: ReactNode;
+  /** Shown at the bottom of the strip's card, under the taxi guidance. */
+  footer?: ReactNode;
 }
 
 // --- Formatting helpers ---
@@ -102,7 +106,12 @@ function useStripDrag(detached: boolean) {
 
 // --- Main component ---
 
-export default function FlightStrip({ onCenterPlane, detached = false }: FlightStripProps) {
+export default function FlightStrip({
+  onCenterPlane,
+  detached = false,
+  actions,
+  footer,
+}: FlightStripProps) {
   const planeState = usePlaneStore((s) => s.state);
   const connected = usePlaneStore((s) => s.connected);
   const { t } = useTranslation();
@@ -303,6 +312,9 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
 
               {!detached && <GroupSeparator />}
 
+              {/* Small window buttons stacked in the top-right corner */}
+              {detached && actions && <div className="self-start py-0.5 pr-0.5">{actions}</div>}
+
               {/* Center / Follow and pop-out buttons; the detached window has neither */}
               {!detached && (
                 <div className="flex items-center gap-0.5 px-1.5 py-1.5">
@@ -337,6 +349,7 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
 
             {/* Turn-by-turn taxi guidance, on the ground with a planned route */}
             <TaxiGuidanceRow />
+            {footer}
           </div>
         </motion.div>
       )}
@@ -366,58 +379,79 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+/** Size of the sky and ground layer; large enough to cover the dial at any roll and pitch. */
+const ADI_LAYER_WIDTH = 120;
+const ADI_LAYER_HEIGHT = 200;
+const ADI_SIZE = ADI_RADIUS * 2 + 2;
+
 /**
  * Minimal artificial horizon. Samples arrive at 10 Hz; a short linear CSS
  * transition on the transform glides between them, so it stays smooth with
- * no per-frame JS.
+ * no per-frame JS. The moving sky and ground are an HTML layer, not SVG: the
+ * compositor runs an HTML transform transition on its own, while an SVG one
+ * restyles and lays out the page on every frame.
  */
 function MiniAttitude({ pitch, roll }: { pitch: number | undefined; roll: number | undefined }) {
   if (pitch === undefined || roll === undefined || isNaN(pitch) || isNaN(roll)) return null;
 
   const pitchPx = clamp(pitch, -ADI_MAX_PITCH_DEG, ADI_MAX_PITCH_DEG) * ADI_PX_PER_DEG;
   const rollDeg = clamp(roll, -ADI_MAX_ROLL_DEG, ADI_MAX_ROLL_DEG);
+  const horizonY = ADI_LAYER_HEIGHT / 2;
+  const centerX = ADI_LAYER_WIDTH / 2;
 
   return (
-    <svg
-      width={ADI_RADIUS * 2 + 2}
-      height={ADI_RADIUS * 2 + 2}
-      viewBox="-20 -20 40 40"
-      className="shrink-0"
-      aria-hidden
-    >
-      <defs>
-        <clipPath id="flight-strip-adi-clip">
-          <circle r={ADI_RADIUS} />
-        </clipPath>
-      </defs>
-      <g clipPath="url(#flight-strip-adi-clip)">
-        <g
+    <div className="relative shrink-0" style={{ width: ADI_SIZE, height: ADI_SIZE }} aria-hidden>
+      <div
+        className="absolute overflow-hidden rounded-full"
+        style={{ inset: ADI_SIZE / 2 - ADI_RADIUS }}
+      >
+        <div
+          className="absolute"
           style={{
-            transformBox: 'fill-box',
-            transformOrigin: 'center',
+            width: ADI_LAYER_WIDTH,
+            height: ADI_LAYER_HEIGHT,
+            left: ADI_RADIUS - centerX,
+            top: ADI_RADIUS - horizonY,
+            background: `linear-gradient(to bottom, ${ADI_SKY} 50%, ${ADI_GROUND} 50%)`,
             // rotate first so the pitch offset moves perpendicular to the horizon
             transform: `rotate(${-rollDeg}deg) translateY(${pitchPx}px)`,
             transition: 'transform 120ms linear',
+            willChange: 'transform',
           }}
         >
-          <rect x={-60} y={-100} width={120} height={100} fill={ADI_SKY} />
-          <rect x={-60} y={0} width={120} height={100} fill={ADI_GROUND} />
-          <rect x={-60} y={-0.5} width={120} height={1} fill={ADI_HORIZON} />
-          <rect x={-7} y={-8.3} width={14} height={0.6} fill={ADI_HORIZON} opacity={0.55} />
-          <rect x={-7} y={7.7} width={14} height={0.6} fill={ADI_HORIZON} opacity={0.55} />
-        </g>
-      </g>
-      {/* fixed miniature aircraft */}
-      <path
-        d="M -9 0 L -3.5 0 L -1.8 2.4 L 0 0 L 1.8 2.4 L 3.5 0 L 9 0"
-        fill="none"
-        className="stroke-cat-amber"
-        strokeWidth={1.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle r={ADI_RADIUS} fill="none" strokeWidth={1} className="stroke-border" />
-    </svg>
+          <div
+            className="absolute inset-x-0"
+            style={{ top: horizonY - 0.5, height: 1, background: ADI_HORIZON }}
+          />
+          {[-8, 8].map((y) => (
+            <div
+              key={y}
+              className="absolute"
+              style={{
+                left: centerX - 7,
+                top: horizonY + y - 0.3,
+                width: 14,
+                height: 0.6,
+                background: ADI_HORIZON,
+                opacity: 0.55,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+      <svg width={ADI_SIZE} height={ADI_SIZE} viewBox="-20 -20 40 40" className="absolute inset-0">
+        {/* fixed miniature aircraft */}
+        <path
+          d="M -9 0 L -3.5 0 L -1.8 2.4 L 0 0 L 1.8 2.4 L 3.5 0 L 9 0"
+          fill="none"
+          className="stroke-cat-amber"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle r={ADI_RADIUS} fill="none" strokeWidth={1} className="stroke-border" />
+      </svg>
+    </div>
   );
 }
 

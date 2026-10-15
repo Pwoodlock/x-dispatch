@@ -1140,7 +1140,9 @@
     "reconnectTooltip": "Force a reconnect to X-Plane",
     "detach": "Open the Flight Strip in its own window",
     "lock": "Lock: clicks pass through to X-Plane",
-    "unlock": "Unlock to move or resize"
+    "unlock": "Unlock to move or resize",
+    "taxiMap": "Taxi map",
+    "taxiMapNoRoute": "No taxi route planned yet. Select a gate in the airport panel and plan one there."
   },
   "taxiGuidance": {
     "on": "On",
