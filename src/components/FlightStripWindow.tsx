@@ -148,35 +148,21 @@ export function FlightStripWindow() {
             detached
             onCenterPlane={() => {}}
             actions={
-              <div ref={gripRef} className="flex items-center gap-0.5" style={noDragStyle}>
+              <div ref={gripRef} className="flex flex-col" style={noDragStyle}>
                 <Button
                   variant="ghost"
-                  size="icon-sm"
-                  className={cn(taxiMap ? 'text-primary' : 'text-muted-foreground')}
-                  onClick={toggleTaxiMap}
-                  aria-pressed={taxiMap}
-                  aria-label={t('flightStrip.taxiMap')}
-                  tooltip={t('flightStrip.taxiMap')}
-                >
-                  <MapIcon className="h-4 w-4" />
-                </Button>
-                {/* Close sits left of the lock so unlocking never puts it under the cursor.
-                    Locked, it keeps its space so the strip and its window stay the same size. */}
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className={cn('text-muted-foreground', locked && 'invisible')}
-                  disabled={locked}
+                  size="icon-xs"
+                  className="text-muted-foreground h-5 w-5"
                   onClick={() => window.close()}
                   aria-label={t('common.close')}
                   tooltip={t('common.close')}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3" />
                 </Button>
                 <Button
                   variant="ghost"
-                  size="icon-sm"
-                  className={cn(locked ? 'text-primary' : 'text-muted-foreground')}
+                  size="icon-xs"
+                  className={cn('h-5 w-5', locked ? 'text-primary' : 'text-muted-foreground')}
                   // A locked window can miss the first click, so pilots double-click; the
                   // second click of a double-click would lock it again.
                   onClick={(event) => {
@@ -187,7 +173,18 @@ export function FlightStripWindow() {
                   aria-label={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
                   tooltip={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
                 >
-                  {locked ? <Lock className="h-4 w-4" /> : <LockOpen className="h-4 w-4" />}
+                  {locked ? <Lock className="h-3 w-3" /> : <LockOpen className="h-3 w-3" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className={cn('h-5 w-5', taxiMap ? 'text-primary' : 'text-muted-foreground')}
+                  onClick={toggleTaxiMap}
+                  aria-pressed={taxiMap}
+                  aria-label={t('flightStrip.taxiMap')}
+                  tooltip={t('flightStrip.taxiMap')}
+                >
+                  <MapIcon className="h-3 w-3" />
                 </Button>
               </div>
             }

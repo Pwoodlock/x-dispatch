@@ -310,9 +310,10 @@ export default function FlightStrip({
                 </div>
               )}
 
-              {(!detached || actions) && <GroupSeparator />}
+              {!detached && <GroupSeparator />}
 
-              {detached && actions && <div className="px-1.5 py-1.5">{actions}</div>}
+              {/* Small window buttons stacked in the top-right corner */}
+              {detached && actions && <div className="self-start py-0.5 pr-0.5">{actions}</div>}
 
               {/* Center / Follow and pop-out buttons; the detached window has neither */}
               {!detached && (
