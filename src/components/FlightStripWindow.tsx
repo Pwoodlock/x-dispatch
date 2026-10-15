@@ -1,7 +1,8 @@
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, LockOpen, X } from 'lucide-react';
+import { Lock, LockOpen, Map as MapIcon, X } from 'lucide-react';
 import FlightStrip from '@/components/Map/widgets/FlightStrip';
+import TaxiMiniMap from '@/components/Map/widgets/TaxiMiniMap';
 import { Button } from '@/components/ui/button';
 import { useFlightStripGuidance } from '@/hooks/useFlightStripGuidance';
 import { useSettingsStorageSync } from '@/hooks/useSettingsStorageSync';
@@ -112,6 +113,8 @@ export function FlightStripWindow() {
   const frameRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const gripRef = useRef<HTMLDivElement>(null);
+  // EXPERIMENT (exp/taxi-mini-map): the taxi map panel under the strip.
+  const [taxiMap, setTaxiMap] = useState(false);
   const scale = useFitScale(frameRef, stripRef);
   useReportStripShape(stripRef);
   useReportGrip(gripRef);
@@ -130,6 +133,14 @@ export function FlightStripWindow() {
           style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}
         >
           <FlightStrip detached onCenterPlane={() => {}} />
+          {taxiMap && (
+            <div
+              className="border-border bg-card mt-1 h-56 w-0 min-w-full overflow-hidden rounded-lg border"
+              style={noDragStyle}
+            >
+              <TaxiMiniMap />
+            </div>
+          )}
         </div>
       </div>
       <div
@@ -141,6 +152,17 @@ export function FlightStripWindow() {
         )}
         style={noDragStyle}
       >
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className={cn(taxiMap ? 'text-primary' : 'text-muted-foreground')}
+          onClick={() => setTaxiMap((open) => !open)}
+          aria-pressed={taxiMap}
+          aria-label={t('flightStrip.taxiMap')}
+          tooltip={t('flightStrip.taxiMap')}
+        >
+          <MapIcon className="h-3.5 w-3.5" />
+        </Button>
         {/* Close sits left of the lock so unlocking never puts it under the cursor. */}
         {!locked && (
           <Button

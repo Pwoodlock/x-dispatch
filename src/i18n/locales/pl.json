@@ -1140,7 +1140,8 @@
     "reconnectTooltip": "Wymuś ponowne połączenie z symulatorem X-Plane",
     "detach": "Otwórz Flight Strip we własnym oknie",
     "lock": "Zablokuj: kliknięcia trafiają do X-Plane",
-    "unlock": "Odblokuj, aby przesunąć lub zmienić rozmiar"
+    "unlock": "Odblokuj, aby przesunąć lub zmienić rozmiar",
+    "taxiMap": "Mapa kołowania"
   },
   "taxiGuidance": {
     "on": "Na",

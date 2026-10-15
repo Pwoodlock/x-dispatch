@@ -1140,7 +1140,8 @@
     "reconnectTooltip": "X-Plane シミュレーターへの再接続を実行",
     "detach": "Flight Strip を専用ウインドウで開く",
     "lock": "ロック: クリックを X-Plane に通す",
-    "unlock": "ロックを解除して移動・サイズ変更"
+    "unlock": "ロックを解除して移動・サイズ変更",
+    "taxiMap": "タキシーマップ"
   },
   "taxiGuidance": {
     "on": "走行中",

@@ -1140,7 +1140,8 @@
     "reconnectTooltip": "Forçar nova ligação ao simulador X-Plane",
     "detach": "Abrir o Flight Strip numa janela própria",
     "lock": "Bloquear: os cliques passam para o X-Plane",
-    "unlock": "Desbloquear para mover ou redimensionar"
+    "unlock": "Desbloquear para mover ou redimensionar",
+    "taxiMap": "Mapa de táxi"
   },
   "taxiGuidance": {
     "on": "Na",

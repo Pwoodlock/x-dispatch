@@ -1140,7 +1140,8 @@
     "reconnectTooltip": "Force a reconnect to X-Plane",
     "detach": "Open the Flight Strip in its own window",
     "lock": "Lock: clicks pass through to X-Plane",
-    "unlock": "Unlock to move or resize"
+    "unlock": "Unlock to move or resize",
+    "taxiMap": "Taxi map"
   },
   "taxiGuidance": {
     "on": "On",

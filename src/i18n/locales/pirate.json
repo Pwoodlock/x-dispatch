@@ -1140,7 +1140,8 @@
     "reconnectTooltip": "Force reconnect ta X-Plane simulator",
     "detach": "Set the Flight Strip loose in its own porthole",
     "lock": "Lash it: clicks sail through to X-Plane",
-    "unlock": "Unlash to move or resize"
+    "unlock": "Unlash to move or resize",
+    "taxiMap": "Taxi chart, arr"
   },
   "taxiGuidance": {
     "on": "On",
