@@ -68,9 +68,6 @@ export interface PlaneState extends Coordinates {
   tailNumber?: string;
   /** Full wingspan in metres, twice the model's half extent. */
   wingspanM?: number;
-  navLightsOn?: boolean;
-  beaconOn?: boolean;
-  strobesOn?: boolean;
 }
 
 export interface PlanePosition {

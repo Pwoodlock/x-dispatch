@@ -58,9 +58,6 @@ const STATE_DATAREF_NAMES = [
   'sim/aircraft/view/acf_ui_name',
   'sim/aircraft/view/acf_tailnum',
   'sim/aircraft/view/acf_size_x',
-  'sim/cockpit2/switches/navigation_lights_on',
-  'sim/cockpit2/switches/beacon_on',
-  'sim/cockpit2/switches/strobe_lights_on',
   'sim/cockpit2/autopilot/heading_dial_deg_mag_pilot',
   'sim/cockpit2/autopilot/altitude_dial_ft',
   'sim/cockpit2/autopilot/airspeed_dial_kts_mach',
@@ -77,13 +74,7 @@ const TEXT_DATAREF_MAPPING: Record<string, 'icaoType' | 'aircraftName' | 'tailNu
   'sim/aircraft/view/acf_tailnum': 'tailNumber',
 };
 
-const SWITCH_DATAREF_MAPPING: Record<
-  string,
-  'navLightsOn' | 'beaconOn' | 'strobesOn' | 'apAirspeedIsMach'
-> = {
-  'sim/cockpit2/switches/navigation_lights_on': 'navLightsOn',
-  'sim/cockpit2/switches/beacon_on': 'beaconOn',
-  'sim/cockpit2/switches/strobe_lights_on': 'strobesOn',
+const SWITCH_DATAREF_MAPPING: Record<string, 'apAirspeedIsMach'> = {
   'sim/cockpit2/autopilot/airspeed_is_mach': 'apAirspeedIsMach',
 };
 
