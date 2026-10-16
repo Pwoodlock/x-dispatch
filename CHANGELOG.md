@@ -11,9 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Edit, add and total up your logbook.** Change a flight's airports, aircraft, times and landings, add a flight by hand, and see totals at the top: flights, block and air time, distance, landings, average and best touchdown.
 - **Export and import the logbook as CSV.** Export every flight to a spreadsheet, and import one back; flights already in the logbook are skipped.
+- **Remove a point from your taxi route** by double-clicking it, and undo any change to the route one step at a time.
+
+### Changed
+
+- **Reshaping a taxi route is easier to follow.** While you drag the route, the point slides along the taxiway under your cursor and shows its name, the new route is drawn in place of the old one, and it turns red where there is no way through; letting go there keeps the route you had. Points you add stay on the route instead of being dropped when it passes them twice.
+- **Taxi routes keep to taxiways wide enough for your stand's size.** A narrower taxiway is used only when there is no other way.
+- **The Flight Strip's taxi map no longer pops open when you land.** It closes at takeoff and opens again only when you press the map button.
+- **X-Dispatch uses less CPU while it sits behind X-Plane.** The main map stops following your aircraft while the window is hidden and catches up as soon as you bring it back.
 
 ### Fixed
 
+- **Taxi routes to the runway stop at the holding point.** A departure route now ends where you hold short, at the entry nearest the runway end, instead of running onto the runway or back down it. Routes no longer double back on themselves or take an exit the wrong way, and they cross runways only when there is no way around. An arrival route starts at the exit you can make after your rollout, not at the far end of the runway. Fields without a parallel taxiway still get a route that backtracks the runway.
+- **Taxi routes start and end right at your stand.** The route used to begin at the next junction along the taxiway, sometimes a few hundred metres away.
+- **The taxi route distance is right again.** A route that crossed or used a runway showed a much longer distance than you would taxi.
 - **A locked Flight Strip can be unlocked again on Windows.** With display scaling above 100%, the lock button sat where clicks no longer reached it, so the strip stayed locked.
 - **The satellite basemap no longer starts with terrain shading on it.** With shading switched on for another basemap, the imagery came up darkened by hillshade and contour lines until the switch was toggled.
 
