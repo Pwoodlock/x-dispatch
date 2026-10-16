@@ -2089,9 +2089,7 @@
       "date": "Datum und Uhrzeit",
       "departure": "Abflug",
       "arrival": "Ankunft",
-      "icao": "ICAO",
       "airportName": "Flughafenname",
-      "aircraftIcao": "Typ (ICAO)",
       "aircraftName": "Flugzeug",
       "livery": "Bemalung",
       "blockMinutes": "Blockzeit (min)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "Distanz (NM)",
       "landings": "Landungen",
       "manualHint": "Ein von Hand hinzugefügter Flug hat keine Spur und keinen Landebericht.",
-      "editHint": "Spur und Landebericht bleiben wie aufgezeichnet."
+      "editHint": "Spur und Landebericht bleiben wie aufgezeichnet.",
+      "pickAircraft": "Flugzeug wählen",
+      "defaultLivery": "Standard-Bemalung"
     }
   },
   "landing": {

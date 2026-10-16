@@ -2089,9 +2089,7 @@
       "date": "Date et heure",
       "departure": "Départ",
       "arrival": "Arrivée",
-      "icao": "OACI",
       "airportName": "Nom de l’aéroport",
-      "aircraftIcao": "Type (OACI)",
       "aircraftName": "Avion",
       "livery": "Livrée",
       "blockMinutes": "Temps bloc (min)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "Distance (NM)",
       "landings": "Atterrissages",
       "manualHint": "Un vol ajouté à la main n’a ni trace ni rapport d’atterrissage.",
-      "editHint": "La trace et le rapport d’atterrissage restent tels qu’enregistrés."
+      "editHint": "La trace et le rapport d’atterrissage restent tels qu’enregistrés.",
+      "pickAircraft": "Choisir un avion",
+      "defaultLivery": "Livrée par défaut"
     }
   },
   "landing": {

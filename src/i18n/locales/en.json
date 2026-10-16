@@ -2089,9 +2089,7 @@
       "date": "Date and time",
       "departure": "Departure",
       "arrival": "Arrival",
-      "icao": "ICAO",
       "airportName": "Airport name",
-      "aircraftIcao": "Type (ICAO)",
       "aircraftName": "Aircraft",
       "livery": "Livery",
       "blockMinutes": "Block time (min)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "Distance (NM)",
       "landings": "Landings",
       "manualHint": "A flight added by hand has no track or landing report.",
-      "editHint": "The track and landing report stay as recorded."
+      "editHint": "The track and landing report stay as recorded.",
+      "pickAircraft": "Choose an aircraft",
+      "defaultLivery": "Default livery"
     }
   },
   "landing": {

@@ -2089,9 +2089,7 @@
       "date": "Data i godzina",
       "departure": "Odlot",
       "arrival": "Przylot",
-      "icao": "ICAO",
       "airportName": "Nazwa lotniska",
-      "aircraftIcao": "Typ (ICAO)",
       "aircraftName": "Samolot",
       "livery": "Malowanie",
       "blockMinutes": "Czas blokowy (min)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "Dystans (NM)",
       "landings": "Lądowania",
       "manualHint": "Lot dodany ręcznie nie ma śladu ani raportu lądowania.",
-      "editHint": "Ślad i raport lądowania pozostają takie, jak zapisano."
+      "editHint": "Ślad i raport lądowania pozostają takie, jak zapisano.",
+      "pickAircraft": "Wybierz samolot",
+      "defaultLivery": "Domyślne malowanie"
     }
   },
   "landing": {

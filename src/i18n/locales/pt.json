@@ -2089,9 +2089,7 @@
       "date": "Data e hora",
       "departure": "Partida",
       "arrival": "Chegada",
-      "icao": "ICAO",
       "airportName": "Nome do aeroporto",
-      "aircraftIcao": "Tipo (ICAO)",
       "aircraftName": "Aeronave",
       "livery": "Pintura",
       "blockMinutes": "Tempo de calço (min)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "Distância (NM)",
       "landings": "Pousos",
       "manualHint": "Um voo adicionado à mão não tem trilha nem relatório de pouso.",
-      "editHint": "A trilha e o relatório de pouso ficam como foram gravados."
+      "editHint": "A trilha e o relatório de pouso ficam como foram gravados.",
+      "pickAircraft": "Escolha uma aeronave",
+      "defaultLivery": "Pintura padrão"
     }
   },
   "landing": {

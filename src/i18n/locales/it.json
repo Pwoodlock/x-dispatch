@@ -2089,9 +2089,7 @@
       "date": "Data e ora",
       "departure": "Partenza",
       "arrival": "Arrivo",
-      "icao": "ICAO",
       "airportName": "Nome aeroporto",
-      "aircraftIcao": "Tipo (ICAO)",
       "aircraftName": "Aereo",
       "livery": "Livrea",
       "blockMinutes": "Tempo blocchi (min)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "Distanza (NM)",
       "landings": "Atterraggi",
       "manualHint": "Un volo aggiunto a mano non ha traccia né rapporto di atterraggio.",
-      "editHint": "Traccia e rapporto di atterraggio restano come registrati."
+      "editHint": "Traccia e rapporto di atterraggio restano come registrati.",
+      "pickAircraft": "Scegli un aereo",
+      "defaultLivery": "Livrea predefinita"
     }
   },
   "landing": {

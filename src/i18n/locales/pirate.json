@@ -2089,9 +2089,7 @@
       "date": "Date and time",
       "departure": "Departure",
       "arrival": "Arrival",
-      "icao": "ICAO",
       "airportName": "Port name",
-      "aircraftIcao": "Type (ICAO)",
       "aircraftName": "Vessel",
       "livery": "Livery",
       "blockMinutes": "Block time (min)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "Distance (NM)",
       "landings": "Landings",
       "manualHint": "A voyage added by hand has no track nor landing report.",
-      "editHint": "The track and landing report stay as recorded."
+      "editHint": "The track and landing report stay as recorded.",
+      "pickAircraft": "Pick a vessel",
+      "defaultLivery": "Default livery"
     }
   },
   "landing": {

@@ -2089,9 +2089,7 @@
       "date": "日期和时间",
       "departure": "出发",
       "arrival": "到达",
-      "icao": "ICAO",
       "airportName": "机场名称",
-      "aircraftIcao": "机型 (ICAO)",
       "aircraftName": "飞机",
       "livery": "涂装",
       "blockMinutes": "轮挡时间 (分钟)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "距离 (NM)",
       "landings": "着陆次数",
       "manualHint": "手动添加的航班没有航迹和着陆报告。",
-      "editHint": "航迹和着陆报告保持记录时的状态。"
+      "editHint": "航迹和着陆报告保持记录时的状态。",
+      "pickAircraft": "选择飞机",
+      "defaultLivery": "默认涂装"
     }
   },
   "landing": {

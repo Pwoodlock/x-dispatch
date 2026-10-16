@@ -2089,9 +2089,7 @@
       "date": "Fecha y hora",
       "departure": "Salida",
       "arrival": "Llegada",
-      "icao": "ICAO",
       "airportName": "Nombre del aeropuerto",
-      "aircraftIcao": "Tipo (ICAO)",
       "aircraftName": "Aeronave",
       "livery": "Librea",
       "blockMinutes": "Tiempo calzos (min)",
@@ -2099,7 +2097,9 @@
       "distanceNm": "Distancia (NM)",
       "landings": "Aterrizajes",
       "manualHint": "Un vuelo añadido a mano no tiene traza ni informe de aterrizaje.",
-      "editHint": "La traza y el informe de aterrizaje se mantienen tal como se grabaron."
+      "editHint": "La traza y el informe de aterrizaje se mantienen tal como se grabaron.",
+      "pickAircraft": "Elige una aeronave",
+      "defaultLivery": "Librea por defecto"
     }
   },
   "landing": {
