@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-10-16
+
 ### Added
 
 - **Edit, add and total up your logbook.** Change a flight's airports, aircraft, times and landings, add a flight by hand, and see totals at the top: flights, block and air time, distance, landings, average and best touchdown.
@@ -284,7 +286,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.7.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.0...HEAD
+[2.8.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.3...v2.5.0
