@@ -2070,7 +2070,36 @@
     "copyImage": "Copier en image",
     "imageCopied": "Carte d'atterrissage copiée dans le presse-papiers",
     "imageCopyFailed": "Impossible de copier la carte d'atterrissage",
-    "earlierLandings": "Touchers précédents de ce vol : {{rates}} fpm"
+    "earlierLandings": "Touchers précédents de ce vol : {{rates}} fpm",
+    "addFlight": "Ajouter un vol",
+    "editFlight": "Modifier le vol",
+    "importCsv": "Importer un CSV",
+    "exportCsv": "Exporter en CSV",
+    "exported": "Carnet exporté : {{count}} vols",
+    "exportFailed": "Impossible d’exporter le carnet",
+    "imported": "{{imported}} vols importés, {{skipped}} déjà dans le carnet, {{rejected}} illisibles",
+    "importFailed": "Impossible d’importer le carnet",
+    "saveFailed": "Impossible d’enregistrer le vol",
+    "totals": {
+      "flights": "Vols",
+      "avgTouchdown": "Toucher moyen",
+      "bestTouchdown": "Meilleur toucher"
+    },
+    "edit": {
+      "date": "Date et heure",
+      "departure": "Départ",
+      "arrival": "Arrivée",
+      "aircraftName": "Avion",
+      "livery": "Livrée",
+      "blockMinutes": "Temps bloc (min)",
+      "airMinutes": "Temps de vol (min)",
+      "distanceNm": "Distance (NM)",
+      "landings": "Atterrissages",
+      "manualHint": "Un vol ajouté à la main n’a ni trace ni rapport d’atterrissage.",
+      "editHint": "La trace et le rapport d’atterrissage restent tels qu’enregistrés.",
+      "pickAircraft": "Choisir un avion",
+      "defaultLivery": "Livrée par défaut"
+    }
   },
   "landing": {
     "title": "Atterrissage",

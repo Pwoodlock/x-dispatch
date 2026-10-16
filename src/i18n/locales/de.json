@@ -2070,7 +2070,36 @@
     "copyImage": "Als Bild kopieren",
     "imageCopied": "Landekarte in die Zwischenablage kopiert",
     "imageCopyFailed": "Landekarte konnte nicht kopiert werden",
-    "earlierLandings": "Frühere Aufsetzer in diesem Flug: {{rates}} fpm"
+    "earlierLandings": "Frühere Aufsetzer in diesem Flug: {{rates}} fpm",
+    "addFlight": "Flug hinzufügen",
+    "editFlight": "Flug bearbeiten",
+    "importCsv": "CSV importieren",
+    "exportCsv": "CSV exportieren",
+    "exported": "Logbuch exportiert: {{count}} Flüge",
+    "exportFailed": "Das Logbuch konnte nicht exportiert werden",
+    "imported": "{{imported}} Flüge importiert, {{skipped}} bereits im Logbuch, {{rejected}} nicht lesbar",
+    "importFailed": "Das Logbuch konnte nicht importiert werden",
+    "saveFailed": "Der Flug konnte nicht gespeichert werden",
+    "totals": {
+      "flights": "Flüge",
+      "avgTouchdown": "Ø Aufsetzen",
+      "bestTouchdown": "Bestes Aufsetzen"
+    },
+    "edit": {
+      "date": "Datum und Uhrzeit",
+      "departure": "Abflug",
+      "arrival": "Ankunft",
+      "aircraftName": "Flugzeug",
+      "livery": "Bemalung",
+      "blockMinutes": "Blockzeit (min)",
+      "airMinutes": "Flugzeit (min)",
+      "distanceNm": "Distanz (NM)",
+      "landings": "Landungen",
+      "manualHint": "Ein von Hand hinzugefügter Flug hat keine Spur und keinen Landebericht.",
+      "editHint": "Spur und Landebericht bleiben wie aufgezeichnet.",
+      "pickAircraft": "Flugzeug wählen",
+      "defaultLivery": "Standard-Bemalung"
+    }
   },
   "landing": {
     "title": "Landung",

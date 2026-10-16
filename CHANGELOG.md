@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Edit, add and total up your logbook.** Change a flight's airports, aircraft, times and landings, add a flight by hand, and see totals at the top: flights, block and air time, distance, landings, average and best touchdown.
+- **Export and import the logbook as CSV.** Export every flight to a spreadsheet, and import one back; flights already in the logbook are skipped.
+
 ### Fixed
 
 - **A locked Flight Strip can be unlocked again on Windows.** With display scaling above 100%, the lock button sat where clicks no longer reached it, so the strip stayed locked.
+- **The satellite basemap no longer starts with terrain shading on it.** With shading switched on for another basemap, the imagery came up darkened by hillshade and contour lines until the switch was toggled.
 
 ## [2.7.0] - 2026-10-16
 

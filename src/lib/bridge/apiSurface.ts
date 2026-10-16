@@ -4,6 +4,7 @@
  * Both build the same objects from a transport; the channel names live only here,
  * so the desktop and a tablet cannot drift apart.
  */
+import type { FlightEditInput } from '@/lib/flightRecorder/flightEdit';
 import type {
   FlightStripGripRect,
   FlightStripWindowOptions,
@@ -427,6 +428,10 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       setAircraftHint: (hint: AircraftHint | null) => t.invoke('flights:setAircraftHint', hint),
       setEnabled: (enabled: boolean) => t.invoke('flights:setEnabled', enabled),
       openFolder: () => t.invoke('flights:openFolder'),
+      update: (id: string, input: FlightEditInput) => t.invoke('flights:update', id, input),
+      create: (input: FlightEditInput) => t.invoke('flights:create', input),
+      exportCsv: () => t.invoke('flights:exportCsv'),
+      importCsv: () => t.invoke('flights:importCsv'),
       onEvent: (callback: (event: FlightRecorderEvent) => void) => t.on('flights:event', callback),
     },
 

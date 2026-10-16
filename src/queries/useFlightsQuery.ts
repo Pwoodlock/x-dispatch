@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import i18n from 'i18next';
 import { buildUnitFormatters } from '@/hooks/useUnits';
+import type { FlightEditInput } from '@/lib/flightRecorder/flightEdit';
 import type { FeetPerMinute } from '@/lib/utils/units';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -34,6 +35,35 @@ export function useDeleteFlight() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => window.flightsAPI.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: flightKeys.all }),
+  });
+}
+
+export function useUpdateFlight() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: FlightEditInput }) =>
+      window.flightsAPI.update(id, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: flightKeys.all }),
+  });
+}
+
+export function useCreateFlight() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: FlightEditInput) => window.flightsAPI.create(input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: flightKeys.all }),
+  });
+}
+
+export function useExportFlightsCsv() {
+  return useMutation({ mutationFn: () => window.flightsAPI.exportCsv() });
+}
+
+export function useImportFlightsCsv() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => window.flightsAPI.importCsv(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: flightKeys.all }),
   });
 }

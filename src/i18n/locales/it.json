@@ -2070,7 +2070,36 @@
     "copyImage": "Copia come immagine",
     "imageCopied": "Scheda di atterraggio copiata negli appunti",
     "imageCopyFailed": "Impossibile copiare la scheda di atterraggio",
-    "earlierLandings": "Contatti precedenti in questo volo: {{rates}} fpm"
+    "earlierLandings": "Contatti precedenti in questo volo: {{rates}} fpm",
+    "addFlight": "Aggiungi volo",
+    "editFlight": "Modifica volo",
+    "importCsv": "Importa CSV",
+    "exportCsv": "Esporta CSV",
+    "exported": "Logbook esportato: {{count}} voli",
+    "exportFailed": "Impossibile esportare il logbook",
+    "imported": "{{imported}} voli importati, {{skipped}} già nel logbook, {{rejected}} illeggibili",
+    "importFailed": "Impossibile importare il logbook",
+    "saveFailed": "Impossibile salvare il volo",
+    "totals": {
+      "flights": "Voli",
+      "avgTouchdown": "Contatto medio",
+      "bestTouchdown": "Miglior contatto"
+    },
+    "edit": {
+      "date": "Data e ora",
+      "departure": "Partenza",
+      "arrival": "Arrivo",
+      "aircraftName": "Aereo",
+      "livery": "Livrea",
+      "blockMinutes": "Tempo blocchi (min)",
+      "airMinutes": "Tempo di volo (min)",
+      "distanceNm": "Distanza (NM)",
+      "landings": "Atterraggi",
+      "manualHint": "Un volo aggiunto a mano non ha traccia né rapporto di atterraggio.",
+      "editHint": "Traccia e rapporto di atterraggio restano come registrati.",
+      "pickAircraft": "Scegli un aereo",
+      "defaultLivery": "Livrea predefinita"
+    }
   },
   "landing": {
     "title": "Atterraggio",

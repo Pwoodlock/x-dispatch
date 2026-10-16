@@ -268,6 +268,7 @@ export async function resyncCustomScenery(
 export {
   getAirportBreakdown,
   getAirportCount,
+  getAirportName,
   getAirportsInBounds,
   getDistinctCountries,
 } from './airportCache';

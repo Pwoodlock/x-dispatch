@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import '@/lib/map/maplibreWorker';
+import { terrainShadingAllowed } from '@/lib/map/terrainShading';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { ATC_ROLE_COLORS, stationLabel } from '@/lib/networkTraffic/atcRoles';
 import type { DistanceUnit } from '@/lib/utils/units';
@@ -243,7 +244,7 @@ export function useMapSetup({
       // drop on style changes.
       captureBasemapSnapshot(map);
       setupGlobeProjection(map);
-      setup3DTerrain(map);
+      setup3DTerrain(map, terrainShadingAllowed(mapStyleUrl));
       setupAirportsLayer(
         map,
         airportsRef.current,

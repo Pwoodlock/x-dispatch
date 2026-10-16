@@ -66,7 +66,10 @@ export class FlightStore {
 
   create(flight: FlightSummary): void {
     const index = this.readIndex();
-    index.flights = [flight, ...index.flights.filter((f) => f.id !== flight.id)];
+    // Newest first by start time: a flight added by hand or imported may be older.
+    index.flights = [flight, ...index.flights.filter((f) => f.id !== flight.id)].sort(
+      (a, b) => b.startedAt - a.startedAt
+    );
     this.writeIndex();
     fs.mkdirSync(this.dir, { recursive: true });
     fs.writeFileSync(this.filePath(flight.id), this.serialize({ type: 'meta', flight }));
@@ -77,7 +80,17 @@ export class FlightStore {
     const at = index.flights.findIndex((f) => f.id === flight.id);
     if (at === -1) index.flights.unshift(flight);
     else index.flights[at] = flight;
+    index.flights.sort((a, b) => b.startedAt - a.startedAt);
     this.writeIndex();
+  }
+
+  /**
+   * An edited summary: the index changes and a fresh meta line goes into the
+   * flight file, so a rebuilt index keeps the edit.
+   */
+  async replace(flight: FlightSummary): Promise<void> {
+    this.update(flight);
+    await this.enqueue(flight.id, this.serialize({ type: 'meta', flight }));
   }
 
   appendTrack(id: string, points: TrackPointTuple[]): Promise<void> {
@@ -184,8 +197,12 @@ export class FlightStore {
     const flights: FlightSummary[] = [];
     for (const name of names) {
       const id = name.slice(0, -'.jsonl'.length);
-      const first = this.readLines(id).next().value as FlightLine | undefined;
-      if (first?.type === 'meta') flights.push(first.flight);
+      // The last meta line wins: edits append one after the original.
+      let meta: FlightSummary | null = null;
+      for (const line of this.readLines(id)) {
+        if (line.type === 'meta') meta = line.flight;
+      }
+      if (meta) flights.push(meta);
     }
     return flights.sort((a, b) => b.startedAt - a.startedAt);
   }

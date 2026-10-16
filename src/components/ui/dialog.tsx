@@ -61,6 +61,8 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 interface DialogPanelProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
   /** Centers via Motion's transform; drop translate classes when set. */
   centered?: boolean;
+  /** For a dialog stacked over another: raise the overlay with the content. */
+  overlayClassName?: string;
 }
 
 /**
@@ -70,13 +72,13 @@ interface DialogPanelProps extends React.ComponentPropsWithoutRef<typeof DialogP
 const DialogPanel = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogPanelProps
->(({ className, children, centered, onInteractOutside, ...props }, ref) => {
+>(({ className, children, centered, overlayClassName, onInteractOutside, ...props }, ref) => {
   const open = React.useContext(DialogOpenContext);
   return (
     <AnimatePresence>
       {open && (
         <DialogPortal forceMount>
-          <DialogOverlay />
+          <DialogOverlay className={overlayClassName} />
           <DialogPrimitive.Content
             ref={ref}
             forceMount
@@ -120,13 +122,14 @@ DialogPanel.displayName = 'DialogPanel';
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { overlayClassName?: string }
+>(({ className, children, overlayClassName, ...props }, ref) => {
   const { t } = useTranslation();
   return (
     <DialogPanel
       ref={ref}
       centered
+      overlayClassName={overlayClassName}
       className={cn(
         'border-border bg-popover fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg gap-4 border p-6 sm:rounded-lg',
         className

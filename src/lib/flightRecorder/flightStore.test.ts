@@ -93,6 +93,24 @@ describe('FlightStore', () => {
     expect(rebuilt.list().map((f) => f.id)).toEqual(['b', 'a']);
   });
 
+  it('orders by start time, so an older flight added later does not land on top', async () => {
+    store.create(summary('new', { startedAt: 20 }));
+    store.create(summary('old', { startedAt: 10 }));
+    expect(store.list().map((f) => f.id)).toEqual(['new', 'old']);
+    await store.replace(summary('old', { startedAt: 30 }));
+    expect(store.list().map((f) => f.id)).toEqual(['old', 'new']);
+  });
+
+  it('keeps an edited summary through an index rebuild', async () => {
+    store.create(summary('a', { startedAt: 10 }));
+    await store.replace(
+      summary('a', { startedAt: 10, departure: { icao: 'LSZH', name: 'Zurich' } })
+    );
+    fs.rmSync(path.join(dir, 'index.json'));
+    const rebuilt = new FlightStore(dir);
+    expect(rebuilt.list()[0]?.departure?.icao).toBe('LSZH');
+  });
+
   it('marks flights left active by a crash as aborted at their last point', async () => {
     store.create(summary('crashed'));
     await store.appendTrack('crashed', [

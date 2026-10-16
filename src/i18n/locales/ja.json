@@ -2070,7 +2070,36 @@
     "copyImage": "画像としてコピー",
     "imageCopied": "着陸カードをクリップボードにコピーしました",
     "imageCopyFailed": "着陸カードをコピーできませんでした",
-    "earlierLandings": "このフライトでの以前の接地: {{rates}} fpm"
+    "earlierLandings": "このフライトでの以前の接地: {{rates}} fpm",
+    "addFlight": "フライトを追加",
+    "editFlight": "フライトを編集",
+    "importCsv": "CSV をインポート",
+    "exportCsv": "CSV をエクスポート",
+    "exported": "ログブックをエクスポートしました: {{count}} フライト",
+    "exportFailed": "ログブックをエクスポートできませんでした",
+    "imported": "{{imported}} フライトをインポート、{{skipped}} は既にログブックにあり、{{rejected}} は読み取れません",
+    "importFailed": "ログブックをインポートできませんでした",
+    "saveFailed": "フライトを保存できませんでした",
+    "totals": {
+      "flights": "フライト",
+      "avgTouchdown": "平均接地",
+      "bestTouchdown": "最良接地"
+    },
+    "edit": {
+      "date": "日時",
+      "departure": "出発",
+      "arrival": "到着",
+      "aircraftName": "機体",
+      "livery": "塗装",
+      "blockMinutes": "ブロックタイム (分)",
+      "airMinutes": "飛行時間 (分)",
+      "distanceNm": "距離 (NM)",
+      "landings": "着陸回数",
+      "manualHint": "手動で追加したフライトには航跡と着陸レポートがありません。",
+      "editHint": "航跡と着陸レポートは記録どおりに保持されます。",
+      "pickAircraft": "機体を選択",
+      "defaultLivery": "デフォルト塗装"
+    }
   },
   "landing": {
     "title": "着陸",

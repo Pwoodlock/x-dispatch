@@ -2070,7 +2070,36 @@
     "copyImage": "复制为图片",
     "imageCopied": "着陆卡片已复制到剪贴板",
     "imageCopyFailed": "无法复制着陆卡片",
-    "earlierLandings": "本次飞行中较早的接地：{{rates}} fpm"
+    "earlierLandings": "本次飞行中较早的接地：{{rates}} fpm",
+    "addFlight": "添加航班",
+    "editFlight": "编辑航班",
+    "importCsv": "导入 CSV",
+    "exportCsv": "导出 CSV",
+    "exported": "飞行日志已导出：{{count}} 个航班",
+    "exportFailed": "无法导出飞行日志",
+    "imported": "已导入 {{imported}} 个航班，{{skipped}} 个已在日志中，{{rejected}} 个无法读取",
+    "importFailed": "无法导入飞行日志",
+    "saveFailed": "无法保存航班",
+    "totals": {
+      "flights": "航班",
+      "avgTouchdown": "平均接地",
+      "bestTouchdown": "最佳接地"
+    },
+    "edit": {
+      "date": "日期和时间",
+      "departure": "出发",
+      "arrival": "到达",
+      "aircraftName": "飞机",
+      "livery": "涂装",
+      "blockMinutes": "轮挡时间 (分钟)",
+      "airMinutes": "空中时间 (分钟)",
+      "distanceNm": "距离 (NM)",
+      "landings": "着陆次数",
+      "manualHint": "手动添加的航班没有航迹和着陆报告。",
+      "editHint": "航迹和着陆报告保持记录时的状态。",
+      "pickAircraft": "选择飞机",
+      "defaultLivery": "默认涂装"
+    }
   },
   "landing": {
     "title": "着陆",
