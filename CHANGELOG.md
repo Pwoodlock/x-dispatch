@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A locked Flight Strip can be unlocked again on Windows.** With display scaling above 100%, the lock button sat where clicks no longer reached it, so the strip stayed locked.
+
 ## [2.7.0] - 2026-10-16
 
 ### Added

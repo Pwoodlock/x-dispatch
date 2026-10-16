@@ -73,21 +73,17 @@ function useReportStripShape(contentRef: React.RefObject<HTMLDivElement | null>)
 /**
  * Tells main where the strip's buttons are whenever they move or resize (window resize,
  * Interface Zoom, the strip's scale), so main can watch the cursor over them. The rect
- * goes in screen pixels: Interface Zoom scales CSS pixels.
+ * goes in CSS pixels; main knows the zoom factor that turns them into screen pixels.
+ * (`outerWidth / innerWidth` is not that factor: on Windows `outerWidth` is physical
+ * pixels plus the invisible resize borders.)
  */
 function useReportGrip(gripRef: React.RefObject<HTMLDivElement | null>, scale: number) {
   useEffect(() => {
     const grip = gripRef.current;
     if (!grip) return;
     const report = () => {
-      const zoom = window.outerWidth / window.innerWidth || 1;
       const { x, y, width, height } = grip.getBoundingClientRect();
-      window.appAPI.setFlightStripGrip({
-        x: x * zoom,
-        y: y * zoom,
-        width: width * zoom,
-        height: height * zoom,
-      });
+      window.appAPI.setFlightStripGrip({ x, y, width, height });
     };
     const observer = new ResizeObserver(report);
     observer.observe(grip);

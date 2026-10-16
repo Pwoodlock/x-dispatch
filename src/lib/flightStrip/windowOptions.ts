@@ -42,7 +42,7 @@ export function parseFlightStripWindowOptions(input: unknown): FlightStripWindow
   return out;
 }
 
-/** The lock grip in the strip window's content area, in screen (DIP) pixels. */
+/** The lock grip in the strip window's content area. */
 export interface FlightStripGripRect {
   x: number;
   y: number;
@@ -59,6 +59,20 @@ export function parseGripRect(input: unknown): FlightStripGripRect | null {
   return valid(x, 0) && valid(y, 0) && valid(width, 1) && valid(height, 1)
     ? { x, y, width, height }
     : null;
+}
+
+/**
+ * The grip the strip reports in CSS pixels, in screen (DIP) pixels. Interface Zoom
+ * is the page zoom factor, so one CSS pixel is `zoom` DIP.
+ */
+export function gripRectToScreen(grip: FlightStripGripRect, zoom: number): FlightStripGripRect {
+  const factor = Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
+  return {
+    x: grip.x * factor,
+    y: grip.y * factor,
+    width: grip.width * factor,
+    height: grip.height * factor,
+  };
 }
 
 /**
