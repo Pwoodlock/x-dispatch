@@ -1,18 +1,15 @@
 import { app } from 'electron';
-import { type SQLJsDatabase as DrizzleDatabase, drizzle } from 'drizzle-orm/sql-js';
-import { migrate } from 'drizzle-orm/sql-js/migrator';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
+import { type DatabaseSync, type SqliteDatabase, drizzleNodeSqlite, openSqlite } from './client';
 import * as schema from './schema';
 
-// Dynamic require for sql.js to avoid bundling issues
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const initSqlJs = require('sql.js') as typeof import('sql.js').default;
-type SqlJsDatabase = import('sql.js').Database;
+type DrizzleDatabase = SqliteDatabase<typeof schema>;
 
-let db: DrizzleDatabase<typeof schema> | null = null;
-let sqlite: SqlJsDatabase | null = null;
+let db: DrizzleDatabase | null = null;
+let sqlite: DatabaseSync | null = null;
 let dbPath: string = '';
 let migrationsFolder: string = '';
 
@@ -39,7 +36,7 @@ function getSchemaFingerprint(): string {
 
 /**
  * Clean up leftover .old-* database files from previous failed deletions (Windows file lock workaround)
- * and temp files from interrupted saves.
+ * and temp files from interrupted saves of the old whole-file writer.
  */
 function cleanupOldDbFiles(): void {
   try {
@@ -110,14 +107,17 @@ function deleteStaleDb(fingerprint: string): boolean {
 }
 
 /**
- * Drops the in-memory database without writing it back, deletes the cache files
- * and relaunches; the next launch rebuilds everything from X-Plane's files.
+ * Closes the database, deletes the cache files and relaunches; the next launch
+ * rebuilds everything from X-Plane's files.
  */
 function discardDbAndRelaunch(): void {
+  try {
+    sqlite?.close();
+  } catch {
+    /* already closed */
+  }
   sqlite = null;
   db = null;
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = null;
   try {
     if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
   } catch {
@@ -125,6 +125,13 @@ function discardDbAndRelaunch(): void {
       fs.renameSync(dbPath, `${dbPath}.old-${Date.now()}`);
     } catch {
       /* give up on cleanup */
+    }
+  }
+  for (const suffix of ['-wal', '-shm']) {
+    try {
+      fs.rmSync(dbPath + suffix, { force: true });
+    } catch {
+      /* non-critical */
     }
   }
   try {
@@ -152,7 +159,15 @@ export function recoverFromCorruption(err: unknown): boolean {
   return true;
 }
 
-export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
+/** Empties a stale database that could not be deleted, so the migrations rebuild it in place. */
+function dropAllTables(handle: DatabaseSync): void {
+  const tables = handle
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+    .all() as { name: string }[];
+  for (const { name } of tables) handle.exec(`DROP TABLE IF EXISTS "${name}"`);
+}
+
+export async function initDb(): Promise<DrizzleDatabase> {
   if (db) return db;
 
   dbPath = getDbPath();
@@ -165,21 +180,21 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
   const fingerprint = getSchemaFingerprint();
   const staleRemoved = deleteStaleDb(fingerprint);
 
-  const SQL = await initSqlJs();
-
-  // Try opening existing DB, fall back to fresh DB on any error.
-  // The DB is a cache — safe to delete and rebuild from X-Plane files.
-  let data: Buffer | undefined;
-  if (staleRemoved && fs.existsSync(dbPath)) {
-    data = await fs.promises.readFile(dbPath);
-  }
-
+  // The DB is a cache — on any open error it is deleted and rebuilt from X-Plane files.
   try {
-    sqlite = new SQL.Database(data);
-    db = drizzle(sqlite, { schema });
-    migrate(db, { migrationsFolder });
-    // A new database exists only in memory until written.
-    dirty = !data;
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    sqlite = openSqlite(dbPath);
+    // No fsync: an OS crash can at worst corrupt a cache that recovery deletes and rebuilds.
+    // The larger checkpoint and page cache bring a full rescan back to sql.js speed.
+    // TODO: SQLite documents WAL as unsupported on network filesystems, which userData sits on
+    // under Windows folder redirection or an NFS home. If that shows up, set
+    // `PRAGMA locking_mode = EXCLUSIVE` before WAL: the index then stays in memory, no -shm file.
+    sqlite.exec(
+      'PRAGMA journal_mode = WAL; PRAGMA synchronous = OFF; PRAGMA wal_autocheckpoint = 10000; PRAGMA cache_size = -32768;'
+    );
+    if (!staleRemoved) dropAllTables(sqlite);
+    db = drizzleNodeSqlite(sqlite, schema);
+    migrate(db as never, { migrationsFolder });
   } catch (err) {
     logger.data.warn(`Database open/migrate failed, deleting and restarting: ${err}`);
     discardDbAndRelaunch();
@@ -192,7 +207,7 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
   return db;
 }
 
-export function getDb(): DrizzleDatabase<typeof schema> {
+export function getDb(): DrizzleDatabase {
   if (!db) {
     throw new Error('Database not initialized. Call initDb() first.');
   }
@@ -206,109 +221,13 @@ export function isDbReady(): boolean {
   return db !== null;
 }
 
-/** Raw sql.js handle for debug queries — only use in dev tools */
-export function getSqlite(): SqlJsDatabase | null {
+/** Raw node:sqlite handle for debug queries — only use in dev tools */
+export function getSqlite(): DatabaseSync | null {
   return sqlite;
-}
-
-// Saves are debounced: several loaders finishing over a load session
-// (navaids, waypoints, airways, airspaces, airports) used to each serialize
-// and write the entire database, which runs to hundreds of MB. Each save
-// request pushes the timer back, so one write lands after the last loader —
-// the window must outlast the gaps between them. The DB is a rebuildable
-// cache, so deferring the write costs nothing on a crash, and quit flushes
-// synchronously regardless.
-const SAVE_COALESCE_MS = 5000;
-let saveTimer: NodeJS.Timeout | null = null;
-let saveInFlight = false;
-let saveQueued = false;
-/** Changes not yet on disk. Quit skips the write without them: the file runs to hundreds of MB. */
-let dirty = false;
-
-function exportDbBuffer(): Buffer | null {
-  if (!sqlite || !dbPath) return null;
-  return Buffer.from(sqlite.export());
-}
-
-async function writeDbToDisk(): Promise<void> {
-  if (saveInFlight) {
-    saveQueued = true;
-    return;
-  }
-  saveInFlight = true;
-  try {
-    // Cleared before the export, so a change made during the write marks it dirty again.
-    dirty = false;
-    const buffer = exportDbBuffer();
-    if (!buffer) return;
-    const dir = path.dirname(dbPath);
-    await fs.promises.mkdir(dir, { recursive: true });
-    // Write to a sibling temp file and rename so a crash mid-write never
-    // leaves a truncated database behind.
-    const tmpPath = `${dbPath}.tmp`;
-    await fs.promises.writeFile(tmpPath, buffer);
-    try {
-      await fs.promises.rename(tmpPath, dbPath);
-    } catch {
-      // Rename over a locked file can fail on Windows — fall back to in-place
-      await fs.promises.writeFile(dbPath, buffer);
-      await fs.promises.rm(tmpPath, { force: true });
-    }
-    logger.data.info('Database saved to disk');
-  } catch (err) {
-    dirty = true; // quit retries it
-    logger.data.warn(`Database save failed: ${err}`);
-  } finally {
-    saveInFlight = false;
-    if (saveQueued) {
-      saveQueued = false;
-      void writeDbToDisk();
-    }
-  }
-}
-
-/** Whether a background write is still running; tests wait on it before quitting. */
-export function isSaveInFlight(): boolean {
-  return saveInFlight;
-}
-
-export function saveDb(): void {
-  if (!sqlite || !dbPath) return;
-  dirty = true;
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    saveTimer = null;
-    void writeDbToDisk();
-  }, SAVE_COALESCE_MS);
-}
-
-/** Synchronous final write for shutdown, after which deferred saves are moot. */
-function flushDbSync(): void {
-  if (saveTimer) {
-    clearTimeout(saveTimer);
-    saveTimer = null;
-  }
-  if (!dirty) return;
-  const buffer = exportDbBuffer();
-  if (!buffer) return;
-  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-  // Same temp-and-rename as the debounced save: a quit cut short must not truncate the file.
-  // Its own temp name, so a background save still writing cannot interleave with it.
-  const tmpPath = `${dbPath}.quit.tmp`;
-  fs.writeFileSync(tmpPath, buffer);
-  try {
-    fs.renameSync(tmpPath, dbPath);
-  } catch {
-    fs.writeFileSync(dbPath, buffer);
-    fs.rmSync(tmpPath, { force: true });
-  }
-  dirty = false;
-  logger.data.info('Database saved to disk');
 }
 
 export function closeDb(): void {
   if (sqlite) {
-    flushDbSync();
     sqlite.close();
     sqlite = null;
     db = null;

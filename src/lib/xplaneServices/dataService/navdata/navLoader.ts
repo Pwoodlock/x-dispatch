@@ -54,7 +54,6 @@ import {
   insertAirways,
   insertNavaids,
   insertWaypoints,
-  persistNavDatabase,
   updateNavFileMeta,
 } from './navCache';
 
@@ -135,7 +134,6 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
 
   // Update file metadata
   updateNavFileMeta(navPath, 'navaids', data.length);
-  persistNavDatabase();
 
   const elapsed = Date.now() - startTime;
 
@@ -209,7 +207,6 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
 
   // Update file metadata
   updateNavFileMeta(fixPath, 'waypoints', data.length);
-  persistNavDatabase();
 
   const elapsed = Date.now() - startTime;
   logger.data.info(`Loaded ${stats.parsed} waypoints in ${elapsed}ms (insert: ${insertTime}ms)`);
@@ -270,7 +267,6 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
 
   // Update file metadata
   updateNavFileMeta(awyPath, 'airways', data.length);
-  persistNavDatabase();
 
   const elapsed = Date.now() - startTime;
   logger.data.info(
@@ -337,7 +333,6 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
 
   // Update file metadata
   updateNavFileMeta(airspacePath, 'airspaces', data.length);
-  persistNavDatabase();
 
   const elapsed = Date.now() - startTime;
   logger.data.info(`Loaded ${stats.parsed} airspaces in ${elapsed}ms (insert: ${insertTime}ms)`);

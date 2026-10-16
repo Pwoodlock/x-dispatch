@@ -5,11 +5,9 @@ import type { ConfigEnv, Plugin, UserConfig } from 'vite';
 export const builtins = ['electron', ...builtinModules.map((m) => [m, `node:${m}`]).flat()];
 
 // Modules that should not be bundled:
-// - sql.js: WASM-based SQLite, needs to load .wasm files at runtime
 // - ws, bufferutil, utf-8-validate: WebSocket with native C++ bindings
 export const external = [
   ...builtins,
-  'sql.js',
   'ws',
   'bufferutil',
   'utf-8-validate',

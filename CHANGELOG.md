@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Taxi routes keep to taxiways wide enough for your stand's size.** A narrower taxiway is used only when there is no other way.
 - **The Flight Strip's taxi map no longer pops open when you land.** It closes at takeoff and opens again only when you press the map button.
 - **X-Dispatch uses less CPU while it sits behind X-Plane.** The main map stops following your aircraft while the window is hidden and catches up as soon as you bring it back.
+- **X-Dispatch uses about 500 MB less memory and starts faster.** The navigation and airport data now stays on disk instead of being loaded into memory at launch.
 
 ### Fixed
 

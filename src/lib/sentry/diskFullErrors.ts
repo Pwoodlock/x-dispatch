@@ -1,7 +1,7 @@
 /**
  * `ENOSPC` means the user's disk filled up mid-write. Node raises it from any
  * fs call, so it reaches Sentry from wherever we happened to be writing at the
- * time — the tile cache, `saveDb`, the launcher — landing as several separate
+ * time — the tile cache, the database, the launcher — landing as several separate
  * issues that all say the same thing about the machine and nothing about the
  * app. Callers already handle the failure; only the report is dropped.
  *

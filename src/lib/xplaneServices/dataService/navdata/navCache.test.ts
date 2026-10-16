@@ -44,7 +44,6 @@ vi.mock('@/lib/db', async () => {
   return {
     ...schema,
     getDb: () => getTestDb(),
-    saveDb: vi.fn(),
   };
 });
 
@@ -62,7 +61,6 @@ const {
   getAllAirwaysFromDb,
   getAirwayCount,
   clearAirways,
-  persistNavDatabase,
   PARSER_VERSIONS,
   checkNavCacheValidity,
 } = await import('./navCache');
@@ -277,12 +275,6 @@ describe('navCache pipeline', () => {
       clearAirways();
       expect(getAirwayCount()).toBe(0);
     });
-  });
-
-  // ---- persistNavDatabase (saveDb no-op mock) ----
-
-  it('persistNavDatabase does not throw', async () => {
-    expect(() => persistNavDatabase()).not.toThrow();
   });
 });
 

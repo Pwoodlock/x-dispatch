@@ -40,14 +40,13 @@ vi.mock('@/lib/utils/logger', () => {
 // ---------------------------------------------------------------------------
 // Mock @/lib/db so airportCache uses the test DB instead of the Electron DB.
 // The schema tables (airports, airportsCustom, aptFileMeta) are re-exported
-// from the real schema module — we only replace getDb / saveDb.
+// from the real schema module — we only replace getDb.
 // ---------------------------------------------------------------------------
 vi.mock('@/lib/db', async () => {
   const schema = await import('@/lib/db/schema');
   return {
     ...schema,
     getDb: () => getTestDb(),
-    saveDb: vi.fn(),
   };
 });
 
@@ -59,7 +58,6 @@ const {
   getAirportCount,
   clearAirports,
   clearCustomAirports,
-  persistDatabase,
   detectAptFileChanges,
   updateStoredFileMeta,
   getStoredFileMeta,
@@ -302,12 +300,6 @@ describe('airportCache pipeline', () => {
     );
     await insertAirports(large);
     expect(getAirportCount()).toBe(650);
-  });
-
-  // ---- persistDatabase (saveDb no-op mock) ----
-
-  it('persistDatabase does not throw', async () => {
-    expect(() => persistDatabase()).not.toThrow();
   });
 });
 

@@ -5,7 +5,7 @@
  */
 import { and, count, eq, gte, like, lte } from 'drizzle-orm';
 import * as fs from 'fs';
-import { airports, airportsCustom, aptFileMeta, getDb, saveDb } from '@/lib/db';
+import { airports, airportsCustom, aptFileMeta, getDb } from '@/lib/db';
 import logger from '@/lib/utils/logger';
 import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type {
@@ -250,13 +250,6 @@ export async function insertCustomAirports(airportEntries: ParsedAirportEntry[])
     const chunk = airportArray.slice(i, i + CHUNK_SIZE);
     db.insert(airportsCustom).values(chunk).run();
   }
-}
-
-/**
- * Save database to disk
- */
-export function persistDatabase(): void {
-  saveDb();
 }
 
 /**
