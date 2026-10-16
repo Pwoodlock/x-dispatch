@@ -38,6 +38,7 @@ const CATEGORY_PREFIXES: { prefix: string; category: 'airport' | 'nav' | 'dynami
   { prefix: 'nav-', category: 'nav' },
   { prefix: 'vatsim-', category: 'dynamic' },
   { prefix: 'ivao-', category: 'dynamic' },
+  { prefix: 'network-', category: 'dynamic' },
   { prefix: 'procedure-', category: 'dynamic' },
   { prefix: 'flightplan-', category: 'dynamic' },
   { prefix: 'range-rings-', category: 'dynamic' },

@@ -27,8 +27,8 @@ import {
   useUsageTracking,
   useVatsimSectorQuery,
 } from '@/queries';
-import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
+import { useNetworkTraffic } from '@/queries/useNetworkTraffic';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
@@ -44,8 +44,6 @@ import { PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
 import {
   applyAirportTheme,
   applyNavVisibilityChange,
-  toggleIvaoLayer,
-  toggleVatsimLayer,
   useAirfieldLights,
   useAirfieldStrobes,
   useAirportFilters,
@@ -59,12 +57,14 @@ import {
   useFlightTrail,
   useGroundWeather,
   // useIdleOrbit, // disabled for GPU perf (#59)
-  useIvaoSync,
   useMapContextMenu,
   useMapSetup,
   useMeasureTool,
   useNatTracksSync,
   useNavLayerSync,
+  useNetworkAtcSync,
+  useNetworkRouteSync,
+  useNetworkTrafficSync,
   usePinDrop,
   useProcedureRouteSync,
   useRangeRingsSync,
@@ -75,9 +75,7 @@ import {
   useTaxiRouteSync,
   useTerrainShading,
   useTrackControl,
-  useVatsimAirportAtcSync,
   useVatsimSectorSync,
-  useVatsimSync,
 } from './hooks';
 import { useOwnAircraftLights } from './hooks/useOwnAircraftLights';
 import { useProfileControl } from './hooks/useProfileControl';
@@ -87,19 +85,16 @@ import { useSimTraffic } from './hooks/useSimTraffic';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
   addFlightPlanLayer,
-  bringIvaoLayersToTop,
+  applyNetworkAtcTheme,
+  bringNetworkAtcLayersToTop,
+  bringNetworkRouteLayersToTop,
+  bringNetworkTrafficLayersToTop,
   bringPlaneLayerToTop,
-  bringVatsimAirportAtcLayersToTop,
-  bringVatsimLayersToTop,
   bringVatsimSectorLayersToTop,
   firLayer,
   fitMapToFlightPlan,
   removeFlightPlanLayer,
-  removeIvaoPilotLayer,
   removePlaneLayer,
-  removeVatsimAirportAtcLayer,
-  removeVatsimPilotLayer,
-  removeVatsimSectorLayer,
   updatePlaneLayer,
 } from './layers';
 import './map-animations.css';
@@ -111,12 +106,21 @@ import LandingReportCard from './widgets/LandingReportCard';
 import MapContextMenu from './widgets/MapContextMenu';
 import MeasureLabel from './widgets/MeasureLabel';
 import NavInfoPopup from './widgets/NavInfoPopup';
+import NetworkPopup from './widgets/NetworkPopup';
 import ReplayWidget from './widgets/ReplayWidget';
 import StandHoverCard from './widgets/StandHoverCard';
-import VatsimPopup from './widgets/VatsimPopup';
 
 interface MapProps {
   airports: Airport[];
+}
+
+/** Network overlays sit above airport geometry: sectors, then ATC badges, the selected route, the pilots. */
+function bringNetworkOverlaysToTop(map: maplibregl.Map): void {
+  bringVatsimSectorLayersToTop(map);
+  bringNetworkAtcLayersToTop(map);
+  bringNetworkRouteLayersToTop(map);
+  bringNetworkTrafficLayersToTop(map, 'vatsim');
+  bringNetworkTrafficLayersToTop(map, 'ivao');
 }
 
 const CLICKABLE_LAYERS = [
@@ -209,26 +213,12 @@ export default function Map({ airports }: MapProps) {
     }
   }, []);
 
-  const ivaoPopupRef = useRef<maplibregl.Popup | null>(null);
-
   // Map initialization
   const { mapRef, mapContainerRef } = useMapSetup({
     airports,
     mapStyleUrl,
     onAirportClick: handleAirportClick,
   });
-
-  // Initialize IVAO popup
-  useEffect(() => {
-    if (!ivaoPopupRef.current) {
-      ivaoPopupRef.current = new maplibregl.Popup({
-        closeButton: true,
-        closeOnClick: true,
-        className: 'ivao-popup',
-        maxWidth: '300px',
-      });
-    }
-  }, []);
 
   // Airport renderer
   const {
@@ -245,12 +235,7 @@ export default function Map({ airports }: MapProps) {
     stopAnimationsRef.current = stopAnimations;
     applyLayerVisibilityRef.current = applyLayerVisibility;
     bringNetworkLayersToTopRef.current = () => {
-      if (mapRef.current) {
-        bringVatsimSectorLayersToTop(mapRef.current);
-        bringVatsimAirportAtcLayersToTop(mapRef.current);
-        bringVatsimLayersToTop(mapRef.current);
-        bringIvaoLayersToTop(mapRef.current);
-      }
+      if (mapRef.current) bringNetworkOverlaysToTop(mapRef.current);
     };
   }, [renderAirport, startAnimations, stopAnimations, applyLayerVisibility, mapRef]);
 
@@ -308,7 +293,14 @@ export default function Map({ airports }: MapProps) {
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
   const { data: vatsimSectorResult } = useVatsimSectorQuery(vatsimEnabled);
-  const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
+
+  // The two networks never show together; the store switches one off when the other goes on.
+  const {
+    network: activeNetwork,
+    pilots: networkPilots,
+    stations: networkStations,
+  } = useNetworkTraffic();
+  const basemapTheme = useMemo(() => getBasemapTheme(mapStyleUrl), [mapStyleUrl]);
 
   // Plane tracker - live position via WebSocket. Snapshots go to planeStore;
   // this component only subscribes to the connection flag so a position
@@ -367,12 +359,9 @@ export default function Map({ airports }: MapProps) {
     navVisibility,
   });
 
-  // Vatsim sync
-  useVatsimSync({
-    mapRef,
-    vatsimData,
-    vatsimEnabled,
-  });
+  // Online network traffic, and the selected pilot's route
+  useNetworkTrafficSync({ mapRef, network: activeNetwork, pilots: networkPilots });
+  useNetworkRouteSync({ mapRef, airports, pilots: networkPilots });
 
   useVatsimSectorSync({
     mapRef,
@@ -381,20 +370,19 @@ export default function Map({ airports }: MapProps) {
     vatsimEnabled,
   });
 
-  useVatsimAirportAtcSync({
-    mapRef,
-    airports,
-    vatsimData,
-    vatsimEnabled,
-  });
+  useNetworkAtcSync({ mapRef, airports, stations: networkStations, theme: basemapTheme });
 
-  // IVAO sync
-  useIvaoSync({
-    mapRef,
-    ivaoPopupRef,
-    ivaoData,
-    ivaoEnabled,
-  });
+  // Nav and airport layers added later would cover the network marks; every style change
+  // re-asserts the order. The move is a no-op once they are on top, so this settles at once.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !activeNetwork) return;
+    const keepOnTop = () => bringNetworkOverlaysToTop(map);
+    map.on('styledata', keepOnTop);
+    return () => {
+      map.off('styledata', keepOnTop);
+    };
+  }, [mapRef, activeNetwork]);
 
   // Preview line for the planner's Explore flyout
   useRouteLineSync({
@@ -593,6 +581,7 @@ export default function Map({ airports }: MapProps) {
     // setPaintProperty is safe.
     map.once('style.load', () => {
       applyAirportTheme(map, getBasemapTheme(mapStyleUrl));
+      applyNetworkAtcTheme(map, getBasemapTheme(mapStyleUrl));
     });
   }, [mapStyleUrl, mapRef]);
 
@@ -715,12 +704,7 @@ export default function Map({ airports }: MapProps) {
           startAnimations();
           applyLayerVisibility(layerVisibility);
           // Bring network layers to top after airport rendering
-          if (mapRef.current) {
-            bringVatsimSectorLayersToTop(mapRef.current);
-            bringVatsimAirportAtcLayersToTop(mapRef.current);
-            bringVatsimLayersToTop(mapRef.current);
-            bringIvaoLayersToTop(mapRef.current);
-          }
+          if (mapRef.current) bringNetworkOverlaysToTop(mapRef.current);
         }, 100);
       }
     },
@@ -795,43 +779,14 @@ export default function Map({ airports }: MapProps) {
     setWeatherRadarEnabled(!weatherRadarEnabled);
   }, [weatherRadarEnabled, setWeatherRadarEnabled]);
 
+  // The sync hooks take each network's layers off the map when its flag drops.
   const handleToggleVatsim = useCallback(() => {
-    if (vatsimEnabled) {
-      setVatsimEnabled(false);
-      if (mapRef.current) {
-        removeVatsimPilotLayer(mapRef.current);
-        removeVatsimSectorLayer(mapRef.current);
-        removeVatsimAirportAtcLayer(mapRef.current);
-      }
-    } else {
-      // Disable IVAO when enabling VATSIM
-      if (ivaoEnabled) {
-        setIvaoEnabled(false);
-        if (mapRef.current) removeIvaoPilotLayer(mapRef.current);
-      }
-      setVatsimEnabled(true);
-      toggleVatsimLayer(mapRef, true);
-    }
-  }, [mapRef, vatsimEnabled, ivaoEnabled, setVatsimEnabled, setIvaoEnabled]);
+    setVatsimEnabled(!vatsimEnabled);
+  }, [vatsimEnabled, setVatsimEnabled]);
 
   const handleToggleIvao = useCallback(() => {
-    if (ivaoEnabled) {
-      setIvaoEnabled(false);
-      if (mapRef.current) removeIvaoPilotLayer(mapRef.current);
-    } else {
-      // Disable VATSIM when enabling IVAO
-      if (vatsimEnabled) {
-        setVatsimEnabled(false);
-        if (mapRef.current) {
-          removeVatsimPilotLayer(mapRef.current);
-          removeVatsimSectorLayer(mapRef.current);
-          removeVatsimAirportAtcLayer(mapRef.current);
-        }
-      }
-      setIvaoEnabled(true);
-      toggleIvaoLayer(mapRef, ivaoPopupRef, true);
-    }
-  }, [mapRef, ivaoPopupRef, vatsimEnabled, ivaoEnabled, setVatsimEnabled, setIvaoEnabled]);
+    setIvaoEnabled(!ivaoEnabled);
+  }, [ivaoEnabled, setIvaoEnabled]);
 
   const handleTogglePlaneTracker = useCallback(() => {
     if (showPlaneTracker) {
@@ -985,7 +940,7 @@ export default function Map({ airports }: MapProps) {
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
       <StandHoverCard />
       <NavInfoPopup mapRef={mapRef} airports={airports} />
-      {vatsimEnabled && <VatsimPopup mapRef={mapRef} airports={airports} vatsimData={vatsimData} />}
+      {activeNetwork && <NetworkPopup mapRef={mapRef} airports={airports} pilots={networkPilots} />}
       <MapContextMenu mapRef={mapRef} onStartHere={handleStartHere} />
       <MeasureLabel mapRef={mapRef} />
 

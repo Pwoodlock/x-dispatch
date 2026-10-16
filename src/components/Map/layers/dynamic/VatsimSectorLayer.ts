@@ -1,4 +1,5 @@
 import * as maplibregl from 'maplibre-gl';
+import { ATC_ROLE_COLORS } from '@/lib/networkTraffic/atcRoles';
 import { buildActiveFirMatches, buildActiveTraconMatches } from '@/lib/vatsimSectors/match';
 import type { VatsimController } from '@/types/vatsim';
 import type { VatsimSectorDataset } from '@/types/vatsimSectors';
@@ -38,12 +39,14 @@ const LABEL_LAYER_ID = 'vatsim-sectors-labels';
 const TRACON_FILL_LAYER_ID = 'vatsim-tracon-active-fill';
 const TRACON_OUTLINE_LAYER_ID = 'vatsim-tracon-active-outline';
 
+/** Centre sectors in the CTR role colour, approach sectors in the APP role colour, so the
+ * map, the label strip and the panel speak one ATC palette. */
 const SECTOR_STYLE = {
   inactiveLine: '#717880',
-  activeLine: '#34d399',
+  activeLine: ATC_ROLE_COLORS.CTR,
   labelBg: '#0d131a',
-  traconFill: 'rgba(245, 158, 11, 0.10)',
-  traconOutline: '#f59e0b',
+  traconFill: 'rgba(139, 92, 246, 0.10)',
+  traconOutline: ATC_ROLE_COLORS.APP,
 } as const;
 
 type Coordinate = [number, number];

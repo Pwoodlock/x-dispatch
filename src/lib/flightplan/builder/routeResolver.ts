@@ -14,7 +14,7 @@ import type { AirwaySegment } from '@/types/navigation';
 import { narrowBand, pairBand, segmentAllowsDirection, segmentsForPair } from './airwayRules';
 import { type LatLon, pathDistanceNm } from './geometry';
 import { getOceanicTracks, isTrackName, trackSegments } from './oceanicTracks';
-import { type LexedToken, lexRoute, stripEndpoints } from './routeTokens';
+import { type LexedToken, isProcedureName, lexRoute, stripEndpoints } from './routeTokens';
 import type { LevelBand, PlanDraft, RouteResolution, RouteToken } from './types';
 
 /** Idents are looked up within this radius of the previous point; legs longer than this are rare. */
@@ -168,6 +168,8 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
     cursor = point;
     lastFixId = point.id;
   };
+  const withOriginal = (token: RouteToken, lexedToken: LexedToken): RouteToken =>
+    lexedToken.original ? { ...token, original: lexedToken.original } : token;
   const failAirway = (issue: RouteToken['issue']) => {
     if (!pendingAirway) return;
     pendingAirway.token.status = 'invalid';
@@ -189,14 +191,19 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
     }
 
     if (lexedToken.kind === 'latlon' && lexedToken.latLon) {
-      tokens.push({ text: lexedToken.text, kind: 'latlon', status: 'ok' });
+      tokens.push(
+        withOriginal({ text: lexedToken.text, kind: 'latlon', status: 'ok' }, lexedToken)
+      );
       failAirway('airwayEndsAtCoordinate');
       push({ id: lexedToken.text, type: 28, ...lexedToken.latLon }, 'DRCT');
       continue;
     }
 
     if (lexedToken.kind === 'airway') {
-      const token: RouteToken = { text: lexedToken.text, kind: 'airway', status: 'ok' };
+      const token = withOriginal(
+        { text: lexedToken.text, kind: 'airway', status: 'ok' },
+        lexedToken
+      );
       tokens.push(token);
       if (airwaySegments(lexedToken.text).length === 0) {
         // Not an airway after all: some fixes carry digits. Try it as a point.
@@ -235,11 +242,14 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
     }
 
     const point = resolveIdent(lexedToken.text, cursor);
-    const token: RouteToken = {
-      text: lexedToken.text,
-      kind: point ? (point.type === 11 ? 'fix' : 'navaid') : 'fix',
-      status: point ? 'ok' : 'unknown',
-    };
+    const token = withOriginal(
+      {
+        text: lexedToken.text,
+        kind: point ? (point.type === 11 ? 'fix' : 'navaid') : 'fix',
+        status: point ? 'ok' : 'unknown',
+      },
+      lexedToken
+    );
     tokens.push(token);
     if (!point) {
       token.issue = 'notFound';
@@ -274,6 +284,11 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
     }
 
     push(point, 'DRCT');
+  }
+
+  // A SID or STAR name filed at either end is not a fix the database would know.
+  for (const token of [tokens[0], tokens[tokens.length - 1]]) {
+    if (token?.status === 'unknown' && isProcedureName(token.text)) token.issue = 'procedureName';
   }
 
   failAirway('airwayNoFixAfter');

@@ -203,6 +203,14 @@
     "directRoute": "Напрямую, без точек маршрута",
     "routeSummary": "{{fixes}} точек на {{airways}} воздушных трассах",
     "notUsed": "Не использованы",
+    "adjusted": "Исправлено",
+    "routeFromPilot": "Из плана, поданного пилотом",
+    "adjustments": {
+      "speedLevel_one": "Убрана {{count}} отметка скорости и эшелона",
+      "speedLevel_other": "Убрано отметок скорости и эшелона: {{count}}",
+      "sid": "{{name}} перенесено в SID вылета",
+      "star": "{{name}} перенесено в STAR прилёта"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "Поменять вылет и прилёт",
     "newPlan": "Новый план",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "Трасса должна заканчиваться точкой, а не координатой",
       "trackPartial": "Обозначение трека указывается только для всего трека; для части укажите его точки",
       "airwayWrongWay": "Эта трасса односторонняя, а маршрут идёт по ней в обратную сторону",
-      "airwayLevel": "Эта трасса действует только {{levels}}, не на эшелоне полёта"
+      "airwayLevel": "Эта трасса действует только {{levels}}, не на эшелоне полёта",
+      "procedureName": "Имя SID или STAR; планировщик берёт их из списков выбора"
     },
     "setStart": "Начать в аэропорту вылета",
     "showOnMap": "Показать на карте",
@@ -2123,15 +2132,29 @@
     "distance": "Расстояние",
     "noPlane": "Нет позиции самолёта"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "Высота",
     "filedAltitude": "Заявленная высота",
     "groundSpeed": "Путевая скорость",
     "heading": "Курс",
-    "aircraft": "Тип ВС",
+    "alternate": "Запасной",
     "squawk": "Код ответчика",
     "route": "Маршрут",
-    "noFlightPlan": "План полёта не подан"
+    "noFlightPlan": "План полёта не подан",
+    "flown": "Пройдено {{distance}}",
+    "remaining": "Осталось {{distance}}",
+    "useAsPlan": "Сделать моим планом полёта",
+    "airportsUnknown": "Аэропортов нет в базе данных X-Plane",
+    "phase": {
+      "departing": "Вылет",
+      "departed": "Взлетел",
+      "climbing": "Набор высоты",
+      "cruising": "Крейсерский полёт",
+      "descending": "Снижение",
+      "arriving": "Прибытие",
+      "arrived": "Прибыл",
+      "unknown": "Статус неизвестен"
+    }
   },
   "mapContextMenu": {
     "startHere": "Начать здесь",

@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Airport } from '@/lib/xplaneServices/dataService';
 import type { VatsimData } from '@/types/vatsim';
 import type { VatsimSectorDataset } from '@/types/vatsimSectors';
-import {
-  buildActiveFirMatches,
-  buildActiveTraconMatches,
-  buildAirportAtcSummaries,
-  getControllerRole,
-} from './match';
+import { buildActiveFirMatches, buildActiveTraconMatches, getControllerRole } from './match';
 
 const dataset: VatsimSectorDataset = {
   version: { vatspy: 'v1', simaware: 's1', builtAt: '2026-05-04T00:00:00.000Z' },
@@ -166,35 +160,6 @@ const liveData = {
   lastUpdate: new Date('2026-05-04T00:00:00.000Z'),
 } satisfies VatsimData;
 
-const airports = [
-  {
-    icao: 'EGLL',
-    iataCode: 'LHR',
-    name: 'London Heathrow',
-    lon: -0.4619,
-    lat: 51.4706,
-    isCustom: false,
-    type: 'land',
-    surfaceType: 'paved',
-    runwayCount: 2,
-    elevation: 83,
-    country: 'United Kingdom',
-  },
-  {
-    icao: 'KJFK',
-    iataCode: 'JFK',
-    name: 'John F Kennedy Intl',
-    lon: -73.7781,
-    lat: 40.6413,
-    isCustom: false,
-    type: 'land',
-    surfaceType: 'paved',
-    runwayCount: 4,
-    elevation: 13,
-    country: 'United States',
-  },
-] satisfies Airport[];
-
 describe('getControllerRole', () => {
   it('maps DEL/GND/TWR/APP/CTR/ATIS roles from callsigns', () => {
     expect(getControllerRole(liveData.controllers[0]!)).toBe('CTR');
@@ -225,49 +190,5 @@ describe('buildActiveTraconMatches', () => {
     const matches = buildActiveTraconMatches(dataset, [liveData.controllers[4]!]);
 
     expect(matches.map((match) => match.traconId)).toEqual(['EGLL_APP']);
-  });
-});
-
-describe('buildAirportAtcSummaries', () => {
-  it('groups controllers and ATIS by airport and creates only A/D/G/T badges', () => {
-    const summaries = buildAirportAtcSummaries(liveData, airports);
-
-    expect(summaries).toHaveLength(1);
-    expect(summaries[0]?.icao).toBe('EGLL');
-    expect(summaries[0]?.badges.map((badge) => badge.letter)).toEqual(['D', 'G', 'T', 'A']);
-    expect(summaries[0]?.controllers.map((controller) => controller.callsign)).toEqual([
-      'EGLL_DEL',
-      'EGLL_GND',
-      'EGLL_TWR',
-      'EGLL_APP',
-      'EGLL_ATIS',
-    ]);
-  });
-
-  it('resolves short callsigns through airport IATA codes', () => {
-    const summaries = buildAirportAtcSummaries(
-      {
-        ...liveData,
-        controllers: [
-          {
-            ...liveData.controllers[3]!,
-            callsign: 'JFK_TWR',
-            name: 'Kennedy Tower',
-          },
-        ],
-        atis: [
-          {
-            ...liveData.atis[0]!,
-            callsign: 'JFK_ATIS',
-            name: 'Kennedy ATIS',
-          },
-        ],
-      },
-      airports
-    );
-
-    expect(summaries).toHaveLength(1);
-    expect(summaries[0]?.icao).toBe('KJFK');
-    expect(summaries[0]?.badges.map((badge) => badge.letter)).toEqual(['T', 'A']);
   });
 });

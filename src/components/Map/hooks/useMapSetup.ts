@@ -3,12 +3,14 @@ import * as maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import '@/lib/map/maplibreWorker';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
+import { ATC_ROLE_COLORS, stationLabel } from '@/lib/networkTraffic/atcRoles';
 import type { DistanceUnit } from '@/lib/utils/units';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { ilsLayer } from '../layers/navigation';
+import { overlayClaimsClick } from '../layers/types';
 import {
   setSelectedAirportIcao,
   setupAirportsLayer,
@@ -328,6 +330,26 @@ export function useMapSetup({
   };
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(
+    /[&<>"]/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c
+  );
+}
+
+/** The positions online at the airport, one line each, for the hover tooltip. */
+function onlineStationsHtml(icao: string): string {
+  const staffing = useMapStore.getState().atcStaffing[icao.toUpperCase()];
+  if (!staffing) return '';
+  const rows = staffing.stations
+    .map(
+      (s) =>
+        `<div class="flex justify-between gap-3"><span style="color:${ATC_ROLE_COLORS[s.role]}">${escapeHtml(stationLabel(s))}</span><span class="text-muted-foreground tabular-nums">${escapeHtml(s.frequency)}</span></div>`
+    )
+    .join('');
+  return `<div class="mt-1.5 border-t border-border/40 pt-1.5 font-mono text-xs">${rows}</div>`;
+}
+
 export function setupAirportPopup(
   map: maplibregl.Map,
   popupRef: PopupRef,
@@ -350,7 +372,7 @@ export function setupAirportPopup(
     popupRef.current
       ?.setLngLat(coordinates)
       .setHTML(
-        `<div class="bg-card text-foreground px-3 py-2 rounded-lg border border-border"><div class="font-mono font-bold text-info">${icao}</div><div class="text-muted-foreground text-sm">${name}</div></div>`
+        `<div class="bg-card text-foreground px-3 py-2 rounded-lg border border-border"><div class="font-mono font-bold text-info">${icao}</div><div class="text-muted-foreground text-sm">${name}</div>${onlineStationsHtml(icao)}</div>`
       )
       .addTo(map);
   });
@@ -364,6 +386,8 @@ export function setupAirportPopup(
     const feature = e.features?.[0];
     if (!feature?.properties?.icao) return;
     if (feature.geometry.type !== 'Point') return;
+    // A network pilot or ATC badge over the airport takes the click.
+    if (overlayClaimsClick(map, e.point)) return;
     const icao = feature.properties.icao as string;
     const coords = feature.geometry.coordinates.slice() as [number, number];
     await onAirportClick(icao, coords);

@@ -3,6 +3,7 @@ import type { FMSFlightPlan } from '@/types/fms';
 import type { ResolvedProcedure } from '@/types/navigation';
 import {
   composePlan,
+  filedProcedureChoice,
   matchProcedure,
   planForFile,
   proceduresForRunway,
@@ -318,5 +319,40 @@ describe('suggestProcedures', () => {
       suggestProcedures({ sids: [], stars: [], approaches, arrivalRunway: '27' }).approach
     ).toBeUndefined();
     expect(suggestProcedures({ sids: [], stars: [], approaches }).approach).toBeUndefined();
+  });
+});
+
+describe('filedProcedureChoice', () => {
+  const published = [
+    { name: 'VIICE2', transition: 'ZQA', runway: '08L', waypoints: [] },
+    { name: 'VIICE2', transition: 'HOBEE', runway: '08L', waypoints: [] },
+    { name: 'ROCKT3', transition: null, runway: null, waypoints: [] },
+    { name: 'NANJ4R', transition: null, runway: '25', waypoints: [] },
+  ] as unknown as ResolvedProcedure[];
+
+  it('takes the transition named beside the procedure in the route', () => {
+    expect(filedProcedureChoice(published, 'VIICE2', 'ZQA')).toEqual({
+      name: 'VIICE2',
+      transition: 'ZQA',
+    });
+    expect(filedProcedureChoice(published, 'VIICE2', 'NOWHERE')).toEqual({
+      name: 'VIICE2',
+      transition: 'ZQA',
+    });
+  });
+
+  it('prefers the plain variant and gives up on an unpublished name', () => {
+    expect(filedProcedureChoice(published, 'ROCKT3', 'TIBOS')).toEqual({
+      name: 'ROCKT3',
+      transition: null,
+    });
+    expect(filedProcedureChoice(published, 'NOPE1', undefined)).toBeNull();
+  });
+
+  it('finds a seven-letter filed name under its six-character stored form', () => {
+    expect(filedProcedureChoice(published, 'NANJO4R', 'NANJO')).toEqual({
+      name: 'NANJ4R',
+      transition: null,
+    });
   });
 });

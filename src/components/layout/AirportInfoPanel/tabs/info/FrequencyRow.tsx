@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import type { AtcBadgeVariant } from '@/lib/networkTraffic/atcRoles';
 import { cn } from '@/lib/utils/helpers';
-import type { VatsimAirportAtcRow } from '@/types/vatsimSectors';
 import { TuneStrip } from './TuneStrip';
 
 export function FrequencyRow({
@@ -50,7 +50,7 @@ export function FrequencyRow({
             >
               {live?.badgeLabel ?? row.label}
             </Badge>
-            {showName && (
+            {showName && !live && (
               <span className="text-muted-foreground/70 truncate text-xs">{row.staticName}</span>
             )}
           </div>
@@ -72,10 +72,20 @@ export function FrequencyRow({
           </div>
         </div>
         {live && (
-          <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 pl-[1.65rem] text-xs">
-            <span className="text-foreground/80 font-mono">{live.callsign}</span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="truncate">{live.controllerName}</span>
+          <div className="text-muted-foreground mt-0.5 flex min-w-0 items-center gap-1.5 pl-[1.65rem] text-xs">
+            {showName && (
+              <>
+                <span className="truncate">{row.staticName}</span>
+                <span className="text-muted-foreground/40">·</span>
+              </>
+            )}
+            <span className="text-foreground/80 shrink-0 font-mono">{live.callsign}</span>
+            {live.controllerName && (
+              <>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="truncate">{live.controllerName}</span>
+              </>
+            )}
           </div>
         )}
       </Button>
@@ -96,15 +106,15 @@ export function FrequencyRow({
 /**
  * Renderer-shape row for the merged Frequencies list. A row is either:
  *  - a static apt.dat frequency, optionally enriched with a matched live
- *    VATSIM controller (`live` populated)
- *  - a VATSIM-only "extra" (CTR, FSS, additional same-role controllers)
+ *    network controller (`live` populated)
+ *  - a network-only "extra" (CTR, FSS, additional same-role controllers)
  *    where there's no static counterpart (`staticName` / `staticFreq` undefined,
  *    `live` always populated).
  */
 export interface MergedFreqRow {
   id: string;
   label: string;
-  badgeVariant: VatsimAirportAtcRow['badgeVariant'];
+  badgeVariant: AtcBadgeVariant;
   staticName?: string;
   staticFreq?: string;
   live?: {

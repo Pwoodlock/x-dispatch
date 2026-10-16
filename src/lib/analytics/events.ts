@@ -469,6 +469,8 @@ const EVENT_SCHEMA = {
   explore_tab_opened: { tab: oneOf(ANALYTICS_EXPLORE_TABS) },
   /** An airport, route or event picked in Explore; the tab only, never what was picked. */
   explore_item_selected: { tab: oneOf(ANALYTICS_EXPLORE_TABS) },
+  /** A network pilot's filed plan taken into the planner; the network only, never the route. */
+  network_plan_used: { network: oneOf(['vatsim', 'ivao']) },
   explore_filter_selected: {
     tab: oneOf(['weather']),
     filter: oneOf(ANALYTICS_EXPLORE_FILTERS),

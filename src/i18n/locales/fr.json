@@ -203,6 +203,14 @@
     "directRoute": "Direct, aucun point en route",
     "routeSummary": "{{fixes}} points sur {{airways}} routes aériennes",
     "notUsed": "Non utilisés",
+    "adjusted": "Ajustés",
+    "routeFromPilot": "Du plan déposé par un pilote",
+    "adjustments": {
+      "speedLevel_one": "{{count}} indication de vitesse et de niveau retirée",
+      "speedLevel_other": "{{count}} indications de vitesse et de niveau retirées",
+      "sid": "{{name}} reporté dans la SID de départ",
+      "star": "{{name}} reporté dans la STAR d'arrivée"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "Inverser départ et arrivée",
     "newPlan": "Nouveau plan",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "Une voie aérienne doit finir sur un point, pas une coordonnée",
       "trackPartial": "L'indicatif d'un track ne se dépose que pour le track entier ; sinon, déposez ses points",
       "airwayWrongWay": "Cette voie aérienne est à sens unique et la route la parcourt à contresens",
-      "airwayLevel": "Cette voie aérienne ne vaut que de {{levels}}, pas au niveau de croisière"
+      "airwayLevel": "Cette voie aérienne ne vaut que de {{levels}}, pas au niveau de croisière",
+      "procedureName": "Un nom de SID ou de STAR ; le planificateur les prend dans les sélecteurs"
     },
     "setStart": "Démarrer au départ",
     "showOnMap": "Afficher sur la carte",
@@ -2123,15 +2132,29 @@
     "distance": "Distance",
     "noPlane": "Position avion inconnue"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "Altitude",
     "filedAltitude": "Altitude déposée",
     "groundSpeed": "Vitesse sol",
     "heading": "Cap",
-    "aircraft": "Appareil",
+    "alternate": "Dégagement",
     "squawk": "Transpondeur",
     "route": "Route",
-    "noFlightPlan": "Aucun plan de vol déposé"
+    "noFlightPlan": "Aucun plan de vol déposé",
+    "flown": "{{distance}} parcourus",
+    "remaining": "{{distance}} restants",
+    "useAsPlan": "Utiliser comme mon plan de vol",
+    "airportsUnknown": "Aéroports absents de la base de données X-Plane",
+    "phase": {
+      "departing": "Au départ",
+      "departed": "Décollé",
+      "climbing": "En montée",
+      "cruising": "En croisière",
+      "descending": "En descente",
+      "arriving": "En arrivée",
+      "arrived": "Arrivé",
+      "unknown": "Statut inconnu"
+    }
   },
   "mapContextMenu": {
     "startHere": "Démarrer ici",

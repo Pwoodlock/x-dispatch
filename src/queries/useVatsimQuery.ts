@@ -10,11 +10,6 @@ import type {
 
 export type { VatsimPilot, VatsimData, VatsimController, VatsimATIS, VatsimPrefile };
 
-export type AirportCallsignMatch = {
-  icao: string;
-  iata?: string | null;
-};
-
 const vatsimKeys = {
   all: ['vatsim'] as const,
   data: ['vatsim', 'data'] as const,
@@ -49,52 +44,6 @@ export function useVatsimQuery(enabled: boolean = false) {
   });
 }
 
-export function getPilotsInBounds(
-  data: VatsimData | undefined,
-  bounds: { north: number; south: number; east: number; west: number }
-): VatsimPilot[] {
-  if (!data) return [];
-  return data.pilots.filter(
-    (p) =>
-      p.latitude >= bounds.south &&
-      p.latitude <= bounds.north &&
-      p.longitude >= bounds.west &&
-      p.longitude <= bounds.east
-  );
-}
-
-export function getPilotsNearAirport(
-  data: VatsimData | undefined,
-  lat: number,
-  lon: number,
-  radiusNm: number = 50
-): VatsimPilot[] {
-  if (!data) return [];
-  const radiusDeg = radiusNm / 60;
-  return data.pilots.filter((p) => {
-    const dLat = Math.abs(p.latitude - lat);
-    const dLon = Math.abs(p.longitude - lon);
-    return dLat < radiusDeg && dLon < radiusDeg;
-  });
-}
-
-function getAirportMatchPrefixes(airport: string | AirportCallsignMatch): Set<string> {
-  if (typeof airport === 'string') {
-    return new Set([airport.toUpperCase()]);
-  }
-
-  const prefixes = new Set<string>([airport.icao.toUpperCase()]);
-  if (airport.iata) {
-    prefixes.add(airport.iata.toUpperCase());
-  }
-  return prefixes;
-}
-
-function callsignMatchesAirport(callsign: string, airport: string | AirportCallsignMatch): boolean {
-  const prefix = callsign.toUpperCase().split('_')[0] ?? '';
-  return getAirportMatchPrefixes(airport).has(prefix);
-}
-
 /** Every callsign prefix with a controller or ATIS online, for airport lookups in bulk. */
 export function getStaffedCallsignPrefixes(data: VatsimData | undefined): Set<string> {
   const prefixes = new Set<string>();
@@ -104,73 +53,4 @@ export function getStaffedCallsignPrefixes(data: VatsimData | undefined): Set<st
     if (prefix) prefixes.add(prefix);
   }
   return prefixes;
-}
-
-export function getControllersForAirport(
-  data: VatsimData | undefined,
-  airport: string | AirportCallsignMatch
-): VatsimController[] {
-  if (!data) return [];
-  return data.controllers.filter((controller) =>
-    callsignMatchesAirport(controller.callsign, airport)
-  );
-}
-
-export function getATISForAirport(
-  data: VatsimData | undefined,
-  airport: string | AirportCallsignMatch
-): VatsimATIS[] {
-  if (!data) return [];
-  return data.atis.filter((atis) => callsignMatchesAirport(atis.callsign, airport));
-}
-
-export function getPrefilesForAirport(data: VatsimData | undefined, icao: string): VatsimPrefile[] {
-  if (!data?.prefiles) return [];
-  const upperIcao = icao.toUpperCase();
-  return data.prefiles.filter(
-    (p) =>
-      p.flight_plan?.departure?.toUpperCase() === upperIcao ||
-      p.flight_plan?.arrival?.toUpperCase() === upperIcao
-  );
-}
-
-export function getTrafficCountsForAirport(
-  data: VatsimData | undefined,
-  icao: string
-): { departures: number; arrivals: number } {
-  if (!data) return { departures: 0, arrivals: 0 };
-  const upperIcao = icao.toUpperCase();
-
-  let departures = 0;
-  let arrivals = 0;
-
-  for (const pilot of data.pilots) {
-    if (pilot.flight_plan?.departure?.toUpperCase() === upperIcao) {
-      departures++;
-    }
-    if (pilot.flight_plan?.arrival?.toUpperCase() === upperIcao) {
-      arrivals++;
-    }
-  }
-
-  return { departures, arrivals };
-}
-
-/**
- * Parse ATIS text to extract runway information
- */
-export function parseATISRunways(atis: VatsimATIS): string[] {
-  if (!atis.text_atis) return [];
-
-  const text = atis.text_atis.join(' ');
-  const runwayPattern = /R(?:WY?|Y)\s*(\d{1,2}[LRC]?)/gi;
-  const runways = new Set<string>();
-
-  let match;
-  while ((match = runwayPattern.exec(text)) !== null) {
-    const rwy = match[1];
-    if (rwy) runways.add(rwy.toUpperCase());
-  }
-
-  return Array.from(runways);
 }

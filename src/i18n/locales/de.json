@@ -203,6 +203,14 @@
     "directRoute": "Direkt, keine Streckenpunkte",
     "routeSummary": "{{fixes}} Punkte auf {{airways}} Luftstraßen",
     "notUsed": "Nicht verwendet",
+    "adjusted": "Angepasst",
+    "routeFromPilot": "Aus dem Flugplan eines Piloten",
+    "adjustments": {
+      "speedLevel_one": "{{count}} Geschwindigkeits- und Höhenangabe entfernt",
+      "speedLevel_other": "{{count}} Geschwindigkeits- und Höhenangaben entfernt",
+      "sid": "{{name}} in die Abflug-SID übernommen",
+      "star": "{{name}} in die Anflug-STAR übernommen"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "Abflug und Ankunft tauschen",
     "newPlan": "Neuer Plan",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "Eine Luftstraße muss an einem Wegpunkt enden, nicht an einer Koordinate",
       "trackPartial": "Ein Track-Kennzeichen wird nur für den ganzen Track gefiled; sonst die Punkte angeben",
       "airwayWrongWay": "Diese Luftstraße ist eine Einbahnstraße, und die Route fliegt sie in die falsche Richtung",
-      "airwayLevel": "Diese Luftstraße gilt nur für {{levels}}, nicht für die Reiseflughöhe"
+      "airwayLevel": "Diese Luftstraße gilt nur für {{levels}}, nicht für die Reiseflughöhe",
+      "procedureName": "Ein SID- oder STAR-Name; der Planer nimmt diese aus den Auswahlfeldern"
     },
     "setStart": "Am Abflug starten",
     "showOnMap": "Auf Karte zeigen",
@@ -2123,15 +2132,29 @@
     "distance": "Entfernung",
     "noPlane": "Keine Flugzeugposition"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "Höhe",
     "filedAltitude": "Geplante Flughöhe",
     "groundSpeed": "Geschwindigkeit über Grund",
     "heading": "Steuerkurs",
-    "aircraft": "Luftfahrzeug",
+    "alternate": "Ausweichflugplatz",
     "squawk": "Squawk",
     "route": "Route",
-    "noFlightPlan": "Kein Flugplan aufgegeben"
+    "noFlightPlan": "Kein Flugplan aufgegeben",
+    "flown": "{{distance}} geflogen",
+    "remaining": "{{distance}} verbleibend",
+    "useAsPlan": "Als meinen Flugplan übernehmen",
+    "airportsUnknown": "Flugplätze nicht in der X-Plane-Datenbank",
+    "phase": {
+      "departing": "Abflug",
+      "departed": "Gestartet",
+      "climbing": "Im Steigflug",
+      "cruising": "Im Reiseflug",
+      "descending": "Im Sinkflug",
+      "arriving": "Im Anflug",
+      "arrived": "Gelandet",
+      "unknown": "Status unbekannt"
+    }
   },
   "mapContextMenu": {
     "startHere": "Hier starten",

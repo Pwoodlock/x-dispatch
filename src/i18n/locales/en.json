@@ -203,6 +203,14 @@
     "directRoute": "Direct, no enroute fixes",
     "routeSummary": "{{fixes}} fixes on {{airways}} airways",
     "notUsed": "Not used",
+    "adjusted": "Adjusted",
+    "routeFromPilot": "From a pilot's filed plan",
+    "adjustments": {
+      "speedLevel_one": "{{count}} speed and level note dropped",
+      "speedLevel_other": "{{count}} speed and level notes dropped",
+      "sid": "{{name}} moved to the departure SID",
+      "star": "{{name}} moved to the arrival STAR"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "Swap departure and arrival",
     "newPlan": "New plan",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "An airway must end at a fix, not a coordinate",
       "trackPartial": "A track designator is filed only for the whole track; file its points instead",
       "airwayWrongWay": "This airway is one-way and the route flies it the wrong way",
-      "airwayLevel": "This airway is only for {{levels}}, not for the cruise level"
+      "airwayLevel": "This airway is only for {{levels}}, not for the cruise level",
+      "procedureName": "A SID or STAR name; the planner takes those from the pickers"
     },
     "setStart": "Start at departure",
     "showOnMap": "Show on map",
@@ -2123,15 +2132,29 @@
     "distance": "Distance",
     "noPlane": "No aircraft position"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "Altitude",
     "filedAltitude": "Filed altitude",
     "groundSpeed": "Ground speed",
     "heading": "Heading",
-    "aircraft": "Aircraft",
+    "alternate": "Alternate",
     "squawk": "Squawk",
     "route": "Route",
-    "noFlightPlan": "No flight plan filed"
+    "noFlightPlan": "No flight plan filed",
+    "flown": "{{distance}} flown",
+    "remaining": "{{distance}} to go",
+    "useAsPlan": "Use as my flight plan",
+    "airportsUnknown": "Airports not in X-Plane's database",
+    "phase": {
+      "departing": "Departing",
+      "departed": "Departed",
+      "climbing": "Climbing",
+      "cruising": "Cruising",
+      "descending": "Descending",
+      "arriving": "Arriving",
+      "arrived": "Arrived",
+      "unknown": "Status unknown"
+    }
   },
   "mapContextMenu": {
     "startHere": "Start anywhere here",

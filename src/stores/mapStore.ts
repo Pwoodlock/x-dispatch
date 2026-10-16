@@ -10,6 +10,7 @@ import {
   NavLayerVisibility,
 } from '@/types/layers';
 import type { RangeRingCategory } from '@/types/layers';
+import type { AirportStaffing, NetworkId } from '@/types/networkTraffic';
 
 export interface FeatureDebugInfo {
   type: 'line' | 'sign' | 'gate' | 'runway' | 'taxiway' | 'unknown';
@@ -57,8 +58,8 @@ export interface NavInfoSelection {
   longitude: number;
 }
 
-/** A VATSIM pilot or staffed airport the user clicked on the map. */
-export type VatsimSelection = { kind: 'pilot'; cid: number } | { kind: 'airport'; icao: string };
+/** The network pilot the user clicked on the map. */
+export type NetworkSelection = { kind: 'pilot'; network: NetworkId; id: number };
 
 export interface CursorElevation {
   /**
@@ -107,7 +108,9 @@ interface MapState {
   debugEnabled: boolean;
   selectedFeature: FeatureDebugInfo | null;
   navInfo: NavInfoSelection | null;
-  vatsimSelection: VatsimSelection | null;
+  networkSelection: NetworkSelection | null;
+  /** Positions online per airport ICAO on the active network; the tooltip and panel read it. */
+  atcStaffing: Record<string, AirportStaffing>;
   contextMenuPoint: MapContextPoint | null;
   vatsimEnabled: boolean;
   ivaoEnabled: boolean;
@@ -155,7 +158,8 @@ interface MapState {
   setDebugEnabled: (enabled: boolean) => void;
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setNavInfo: (info: NavInfoSelection | null) => void;
-  setVatsimSelection: (selection: VatsimSelection | null) => void;
+  setNetworkSelection: (selection: NetworkSelection | null) => void;
+  setAtcStaffing: (staffing: Record<string, AirportStaffing>) => void;
   setContextMenuPoint: (point: MapContextPoint | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
   setIvaoEnabled: (enabled: boolean) => void;
@@ -225,7 +229,8 @@ export const useMapStore = create<MapState>()(
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
       navInfo: null as NavInfoSelection | null,
-      vatsimSelection: null as VatsimSelection | null,
+      networkSelection: null as NetworkSelection | null,
+      atcStaffing: {} as Record<string, AirportStaffing>,
       contextMenuPoint: null as MapContextPoint | null,
       vatsimEnabled: false,
       simTrafficEnabled: false,
@@ -301,7 +306,8 @@ export const useMapStore = create<MapState>()(
       setDebugEnabled: (enabled) => set({ debugEnabled: enabled }),
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
       setNavInfo: (info) => set({ navInfo: info }),
-      setVatsimSelection: (selection) => set({ vatsimSelection: selection }),
+      setNetworkSelection: (selection) => set({ networkSelection: selection }),
+      setAtcStaffing: (staffing) => set({ atcStaffing: staffing }),
       setContextMenuPoint: (point) => set({ contextMenuPoint: point }),
       setVatsimEnabled: (enabled) =>
         set((state) => ({

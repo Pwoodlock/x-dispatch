@@ -1,5 +1,5 @@
 import type { MultiPolygon, Polygon } from 'geojson';
-import type { VatsimATIS, VatsimController } from './vatsim';
+import type { VatsimController } from './vatsim';
 
 export type VatsimFacilityRole = 'ATIS' | 'DEL' | 'GND' | 'TWR' | 'APP' | 'CTR' | 'FSS' | 'OTHER';
 
@@ -58,27 +58,4 @@ export interface VatsimActiveTraconMatch {
   traconId: string;
   controllers: VatsimController[];
   isTwrOnly: boolean;
-}
-
-export interface VatsimAirportAtcBadge {
-  role: 'ATIS' | 'DEL' | 'GND' | 'TWR';
-  letter: 'A' | 'D' | 'G' | 'T';
-  controllers: Array<VatsimController | VatsimATIS>;
-}
-
-export interface VatsimAirportAtcSummary {
-  icao: string;
-  controllers: Array<VatsimController | VatsimATIS>;
-  badges: VatsimAirportAtcBadge[];
-}
-
-export interface VatsimAirportAtcRow {
-  id: string;
-  role: VatsimFacilityRole;
-  badgeLabel: string;
-  badgeVariant: 'secondary' | 'warning' | 'info' | 'success' | 'danger';
-  callsign: string;
-  frequency: string;
-  summary: string;
-  detail?: string;
 }

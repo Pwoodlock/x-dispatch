@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
@@ -45,6 +46,7 @@ import {
 } from '@/lib/flightplan/builder/geometry';
 import { planningClass } from '@/lib/flightplan/builder/planningClass';
 import {
+  filedProcedureChoice,
   matchProcedure,
   procedureEntry,
   procedureExit,
@@ -52,6 +54,7 @@ import {
   proceduresForRunway,
   suggestProcedures,
 } from '@/lib/flightplan/builder/procedures';
+import { tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
 import {
   cruiseFitsTrack,
   cruiseOnTracks,
@@ -137,6 +140,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const swapEndpoints = usePlanBuilderStore((s) => s.swapEndpoints);
   const setRouteText = usePlanBuilderStore((s) => s.setRouteText);
   const removeRouteToken = usePlanBuilderStore((s) => s.removeRouteToken);
+  const routeNotes = usePlanBuilderStore((s) => s.routeNotes);
+  const routeSource = usePlanBuilderStore((s) => s.routeSource);
+  const addRouteNote = usePlanBuilderStore((s) => s.addRouteNote);
   const setCruiseAltitude = usePlanBuilderStore((s) => s.setCruiseAltitude);
   const adjustCruiseAltitude = usePlanBuilderStore((s) => s.adjustCruiseAltitude);
   const procedures = usePlanBuilderStore((s) => s.procedures);
@@ -394,10 +400,57 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         .filter(({ token }) => token.status === 'warning' && token.issue !== 'trackPartial'),
     [tokens]
   );
+  // Tokens the lexer trimmed, so the pilot can see the speed and level notes were dropped.
+  const trimmed = useMemo(
+    () => tokens.map((token, index) => ({ token, index })).filter(({ token }) => token.original),
+    [tokens]
+  );
+  // One line on what the planner did to the filed text: where it came from, what it dropped
+  // and what it moved into the pickers.
+  const adjustedSummary = [
+    routeSource ? t('planBuilder.routeFromPilot') : null,
+    trimmed.length > 0 ? t('planBuilder.adjustments.speedLevel', { count: trimmed.length }) : null,
+    ...routeNotes.map((note) => t(`planBuilder.adjustments.${note.kind}`, { name: note.text })),
+  ]
+    .filter(Boolean)
+    .join(' · ');
   const used = (tk: RouteToken) => tk.status === 'ok' || tk.status === 'warning';
   const fixCount = tokens.filter((tk) => used(tk) && tk.kind !== 'airway').length;
   const airwayCount = tokens.filter((tk) => used(tk) && tk.kind === 'airway').length;
   const ready = status === 'ready' && result !== null;
+
+  // A SID or STAR filed in the route text belongs in its picker. When the airport publishes
+  // it, the planner moves it there and says so under "Adjusted"; otherwise it stays listed as
+  // not used, with the reason.
+  useEffect(() => {
+    if (!ready || tokens.length === 0) return;
+    const typed = tokenizeRoute(routeText);
+    const move = (
+      kind: 'sid' | 'star',
+      token: RouteToken | undefined,
+      list: ResolvedProcedure[],
+      neighbour: string | undefined,
+      typedIndex: number
+    ) => {
+      if (!token || token.issue !== 'procedureName' || typedIndex < 0) return false;
+      const choice = filedProcedureChoice(list, token.text, neighbour);
+      if (!choice) return false;
+      setProcedureChoice(kind, choice);
+      addRouteNote({ text: token.text, kind });
+      removeRouteToken(typedIndex);
+      return true;
+    };
+    const first = tokens[0];
+    const last = tokens[tokens.length - 1];
+    if (move('sid', first, sids, tokens[1]?.text, first ? typed.indexOf(first.text) : -1)) return;
+    move(
+      'star',
+      last,
+      stars,
+      tokens[tokens.length - 2]?.text,
+      last ? typed.lastIndexOf(last.text) : -1
+    );
+  }, [ready, tokens, routeText, sids, stars, setProcedureChoice, addRouteNote, removeRouteToken]);
 
   // Departure, resolved en-route fixes and arrival, so the light band follows
   // the filed route rather than the great circle between the airports.
@@ -905,6 +958,24 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                       />
                     ))}
                   </ul>
+                </div>
+              )}
+              {(routeSource || routeNotes.length > 0 || trimmed.length > 0) && (
+                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                  {routeSource && (
+                    <Badge
+                      variant={routeSource === 'vatsim' ? 'success' : 'cat-blue'}
+                      className="text-2xs shrink-0 px-1.5 py-0 font-mono uppercase"
+                    >
+                      {routeSource}
+                    </Badge>
+                  )}
+                  {(routeNotes.length > 0 || trimmed.length > 0) && (
+                    <Badge variant="secondary" className="text-2xs shrink-0 px-1.5 py-0">
+                      {t('planBuilder.adjusted')}
+                    </Badge>
+                  )}
+                  <span className="text-muted-foreground min-w-0 flex-1">{adjustedSummary}</span>
                 </div>
               )}
               {checks.length > 0 && (

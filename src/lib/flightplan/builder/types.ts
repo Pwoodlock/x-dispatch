@@ -51,7 +51,9 @@ export type RouteIssue =
   /** A one-way airway walked against its published direction. */
   | 'airwayWrongWay'
   /** The cruise level is outside the airway's published level band. */
-  | 'airwayLevel';
+  | 'airwayLevel'
+  /** A SID or STAR name at either end of the route; the planner takes those from the pickers. */
+  | 'procedureName';
 
 /** Feet; null means no limit on that side. */
 export interface LevelBand {
@@ -64,6 +66,8 @@ export interface RouteToken {
   kind: RouteTokenKind;
   status: RouteTokenStatus;
   issue?: RouteIssue;
+  /** As typed, when a speed and level note ("/N0475F350") was dropped from it. */
+  original?: string;
   /** The published band of the segment behind an `airwayLevel` warning. */
   levels?: LevelBand;
 }

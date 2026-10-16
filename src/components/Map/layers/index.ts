@@ -56,28 +56,33 @@ export {
   MEASURE_LAYER_IDS,
 } from './dynamic/MeasureLayer';
 export {
-  bringVatsimLayersToTop,
-  removeVatsimPilotLayer,
-  setupVatsimClickHandler,
-  updateVatsimPilotLayer,
-} from './dynamic/VatsimLayer';
+  NETWORK_COLORS,
+  addNetworkTrafficLayer,
+  bringNetworkTrafficLayersToTop,
+  networkTrafficLayerIds,
+  removeNetworkTrafficLayer,
+  setNetworkTrafficLayerVisibility,
+  setupNetworkTrafficClickHandler,
+  updateNetworkTrafficLayer,
+} from './dynamic/NetworkTrafficLayer';
+export {
+  NETWORK_ROUTE_LAYER_IDS,
+  bringNetworkRouteLayersToTop,
+  removeNetworkRouteLayer,
+  updateNetworkRouteLayer,
+} from './dynamic/NetworkRouteLayer';
 export {
   bringVatsimSectorLayersToTop,
   removeVatsimSectorLayer,
   updateVatsimSectorLayer,
 } from './dynamic/VatsimSectorLayer';
 export {
-  bringVatsimAirportAtcLayersToTop,
-  removeVatsimAirportAtcLayer,
-  setupVatsimAirportAtcClickHandler,
-  updateVatsimAirportAtcLayer,
-} from './dynamic/VatsimAirportAtcLayer';
-export {
-  bringIvaoLayersToTop,
-  removeIvaoPilotLayer,
-  setupIvaoClickHandler,
-  updateIvaoPilotLayer,
-} from './dynamic/IvaoLayer';
+  NETWORK_ATC_LAYER_IDS,
+  applyNetworkAtcTheme,
+  bringNetworkAtcLayersToTop,
+  removeNetworkAtcLayer,
+  updateNetworkAtcLayer,
+} from './dynamic/NetworkAtcLayer';
 export {
   addRangeRingsLayer,
   removeRangeRingsLayer,
