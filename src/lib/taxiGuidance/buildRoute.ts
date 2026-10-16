@@ -1,4 +1,5 @@
 import type { TaxiGraph } from '@/lib/taxiGraph';
+import { edgeRunways } from '@/lib/taxiGraph/runwayZones';
 import type { TaxiEdge } from '@/types/apt';
 import type {
   GuidanceDirection,
@@ -6,44 +7,11 @@ import type {
   GuidancePoint,
   GuidanceRoute,
   GuidanceSource,
+  StandPoint,
 } from './types';
 
 /** Two route nodes closer than this (degrees, ~5 cm) are the same junction under different IDs. */
 const COINCIDENT_DEG = 5e-7;
-
-/** The other end of a numbered runway (`05` → `23`, `14L` → `32R`), or null for any other name. */
-function oppositeEnd(end: string): string | null {
-  const match = /^(\d{1,2})([LCR]?)$/.exec(end);
-  if (!match) return null;
-  const number = Number(match[1]);
-  if (number < 1 || number > 36) return null;
-  const opposite = number > 18 ? number - 18 : number + 18;
-  const side = ({ L: 'R', R: 'L', C: 'C', '': '' } as const)[match[2] as 'L' | 'R' | 'C' | ''];
-  return String(opposite).padStart(2, '0') + side;
-}
-
-/** One key per physical runway, whichever end a zone names: both ends sorted and joined. */
-function runwayKey(end: string): string {
-  const opposite = oppositeEnd(end);
-  return opposite ? [end, opposite].sort().join('/') : end;
-}
-
-/**
- * Runways whose zones the edge sits in. A zone may name one end or both, so
- * each end is filed under its runway. ILS critical areas only matter in low
- * visibility, so they are left out.
- */
-function legRunways(edge: TaxiEdge): string[] {
-  const keys = new Set<string>();
-  for (const zone of edge.activeZones ?? []) {
-    if (zone.type === 'ils') continue;
-    for (const end of zone.runways) keys.add(runwayKey(end));
-  }
-  if (edge.widthClass === 'runway' && edge.name) {
-    for (const end of edge.name.split('/')) keys.add(runwayKey(end));
-  }
-  return [...keys];
-}
 
 function findEdge(graph: TaxiGraph, from: number, to: number): TaxiEdge | null {
   return graph.adjacency.get(from)?.find((e) => e.toNodeId === to)?.edge ?? null;
@@ -63,11 +31,15 @@ export function buildGuidanceRoute(
     gateName: string | null;
     source: GuidanceSource;
     anchorNodeIds: number[];
+    standLink?: { from: StandPoint | null; to: StandPoint | null };
   }
 ): GuidanceRoute | null {
   const points: GuidancePoint[] = [];
   const legs: GuidanceLeg[] = [];
   let prevId: number | null = null;
+  const link = meta.standLink;
+  // The stretch from the stand's point on the taxiway to the first node.
+  if (link?.from) points.push({ lat: link.from.lat, lon: link.from.lon });
 
   for (const id of nodeIds) {
     const node = graph.nodes.get(id);
@@ -81,17 +53,24 @@ export function buildGuidanceRoute(
       prevId = id;
       continue;
     }
-    if (prevId !== null) {
-      // A* only steps along real edges; a gap the planner bridged directly has none.
+    if (prevId === null && points.length > 0) {
+      legs.push({ name: link!.from!.name, isRunway: false, runways: [] });
+    } else if (prevId !== null) {
+      // The router only steps along real edges; a gap the planner bridged directly has none.
       const edge = findEdge(graph, prevId, id);
       legs.push(
         edge
-          ? { name: edge.name, isRunway: edge.widthClass === 'runway', runways: legRunways(edge) }
+          ? { name: edge.name, isRunway: edge.widthClass === 'runway', runways: edgeRunways(edge) }
           : { name: '', isRunway: false, runways: [] }
       );
     }
     points.push({ lat: node.lat, lon: node.lon });
     prevId = id;
+  }
+
+  if (link?.to && points.length > 0) {
+    points.push({ lat: link.to.lat, lon: link.to.lon });
+    legs.push({ name: link.to.name, isRunway: false, runways: [] });
   }
 
   if (points.length < 2) return null;

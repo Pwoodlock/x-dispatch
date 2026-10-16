@@ -8,5 +8,6 @@ export type {
   GuidancePoint,
   GuidanceRoute,
   GuidanceSource,
+  StandPoint,
   TurnKind,
 } from './types';

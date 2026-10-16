@@ -131,7 +131,7 @@ describe('computeEvents', () => {
     expect(kinds).toEqual(['cross:14R/32L', 'turn', 'turn', 'holdShort:14L']);
   });
 
-  it('falls back to holding short at the route end when the scenery has no zones', () => {
+  it('holds short at the route end when it stops before the runway area', () => {
     const route = makeRoute(
       [
         [0, 0],
@@ -142,8 +142,9 @@ describe('computeEvents', () => {
     );
     const events = eventsOf(route);
     expect(events).toEqual([
-      { kind: 'holdShort', runway: '32R', at: expect.any(Number), pointIndex: null },
+      { kind: 'holdShort', runway: '32R', at: expect.any(Number), pointIndex: 1 },
     ]);
+    expect(holdBarLines(buildGeometry(route.points), events)).toHaveLength(2);
   });
 
   it('starts an arrival on the runway without a hold, and announces the exit', () => {

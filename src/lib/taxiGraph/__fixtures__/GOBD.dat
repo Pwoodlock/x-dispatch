@@ -1,0 +1,498 @@
+1    290 0 0 GOBD Blaise Diagne Intl
+100 60.05 27 922 0.25 1 3 0  01 14.6551721 -17.0726647 0 119 3 2 1 2 19 14.6868071 -17.0729615 0 121 3 1 0 2
+1300 14.672027 -17.068296 147.1 gate heavy|jets|turboprops 1
+1301 E airline baw afr klm dlh vir eth saa msr ram
+1300 14.671698 -17.068485 122.1 gate heavy|jets|turboprops 2
+1301 C airline baw afr klm dlh vir eth saa msr ram
+1300 14.671214 -17.068396 122.6 gate heavy|jets|turboprops 3
+1301 C airline baw afr klm dlh vir eth saa msr ram
+1300 14.670791 -17.068326 89.3 gate heavy|jets|turboprops 4
+1301 E airline 
+1300 14.670239 -17.068369 89.5 gate heavy|jets|turboprops 5
+1301 C airline baw afr klm dlh vir eth saa msr ram
+1300 14.669929 -17.068210 61.9 gate heavy|jets|turboprops 6
+1301 E airline baw afr klm dlh vir eth saa msr ram
+1300 14.668678 -17.068479 89.4 tie_down heavy|jets|turboprops 7
+1301 E airline 
+1300 14.668859 -17.068709 89.4 tie_down jets|turboprops 7A
+1301 C general_aviation 
+1300 14.668490 -17.068705 89.4 tie_down jets|turboprops 7B
+1301 C general_aviation 
+1300 14.673649 -17.068221 89.6 tie_down heavy|jets|turboprops 8
+1301 D airline baw afr klm dlh vir eth saa msr ram
+1300 14.667822 -17.068717 -0.5 tie_down heavy|jets|turboprops 9
+1301 E airline 
+1300 14.667592 -17.068903 -0.5 tie_down jets|turboprops 9A
+1301 C general_aviation 
+1300 14.667597 -17.068527 -0.5 tie_down jets|turboprops 9B
+1301 C general_aviation 
+1300 14.667828 -17.067965 -0.6 tie_down heavy|jets|turboprops 10
+1301 E airline 
+1300 14.667601 -17.068152 -0.5 tie_down jets|turboprops 10A
+1301 C general_aviation 
+1300 14.667606 -17.067777 -0.5 tie_down jets|turboprops 10B
+1301 C general_aviation 
+1300 14.667611 -17.067400 -0.7 tie_down heavy|jets|turboprops 11
+1301 C airline baw afr klm dlh vir eth saa msr ram
+1300 14.665479 -17.067946 179.3 tie_down heavy|jets|turboprops 12
+1301 E airline 
+1300 14.665703 -17.067758 179.4 tie_down jets|turboprops 12A
+1301 C general_aviation 
+1300 14.665698 -17.068135 179.4 tie_down jets|turboprops 12B
+1301 C general_aviation 
+1300 14.665473 -17.068696 179.4 tie_down heavy|jets|turboprops 13
+1301 E airline baw afr klm dlh vir eth saa msr ram
+1300 14.665694 -17.068511 179.4 tie_down jets|turboprops 13A
+1301 C general_aviation 
+1300 14.665690 -17.068885 179.4 tie_down jets|turboprops 13B
+1301 C general_aviation 
+1300 14.674231 -17.068777 -179.8 tie_down heavy|jets|turboprops 14
+1301 E airline baw afr klm dlh vir eth saa msr ram
+1300 14.674406 -17.068595 179.5 tie_down jets|turboprops 14A
+1301 C general_aviation 
+1300 14.674402 -17.068968 179.5 tie_down jets|turboprops 14B
+1301 C general_aviation 
+1300 14.674228 -17.068028 -179.8 tie_down heavy|jets|turboprops 15
+1301 E airline baw afr klm dlh vir eth saa msr ram
+1300 14.674415 -17.067840 179.5 tie_down jets|turboprops 15A
+1301 C general_aviation 
+1300 14.674411 -17.068217 179.5 tie_down jets|turboprops 15B
+1301 C general_aviation 
+1300 14.674303 -17.067360 -179.8 tie_down heavy|jets|turboprops 16
+1301 D airline 
+1300 14.676316 -17.067377 0.0 tie_down heavy|jets|turboprops 17
+1301 D airline 
+1300 14.676535 -17.068049 0.0 tie_down heavy|jets|turboprops 18
+1301 E airline 
+1300 14.676309 -17.068239 0.0 tie_down jets|turboprops 18A
+1301 C general_aviation 
+1300 14.676312 -17.067858 0.0 tie_down jets|turboprops 18B
+1301 C general_aviation 
+1300 14.676526 -17.068800 0.0 tie_down heavy|jets|turboprops 19
+1301 E airline baw afr klm dlh vir eth saa msr ram
+1300 14.676303 -17.068984 0.0 tie_down jets|turboprops 19A
+1301 C general_aviation 
+1300 14.676306 -17.068610 0.0 tie_down jets|turboprops 19B
+1301 C general_aviation 
+1300 14.677750 -17.068589 89.6 tie_down heavy|jets|turboprops 20
+1301 E airline 
+1300 14.677929 -17.068827 89.5 tie_down jets|turboprops 20A
+1301 C general_aviation 
+1300 14.677563 -17.068824 89.5 tie_down jets|turboprops 20B
+1301 C general_aviation 
+1300 14.678480 -17.068596 89.8 tie_down heavy|jets|turboprops 21
+1301 E airline 
+1300 14.678662 -17.068834 89.5 tie_down jets|turboprops 21A
+1301 C general_aviation 
+1300 14.678296 -17.068831 89.5 tie_down jets|turboprops 21B
+1301 C general_aviation 
+1300 14.679213 -17.068603 89.8 tie_down heavy|jets|turboprops 22
+1301 E airline 
+1300 14.679395 -17.068841 89.5 tie_down jets|turboprops 22A
+1301 C general_aviation 
+1300 14.679029 -17.068838 89.5 tie_down jets|turboprops 22B
+1301 C general_aviation 
+1300 14.680076 -17.068610 89.8 tie_down heavy|jets|turboprops 23
+1301 E airline 
+1300 14.680259 -17.068849 89.5 tie_down jets|turboprops 23A
+1301 C general_aviation 
+1300 14.679891 -17.068846 89.5 tie_down jets|turboprops 23B
+1301 C general_aviation 
+1300 14.680810 -17.068618 89.6 tie_down heavy|jets|turboprops 24
+1301 E airline 
+1300 14.680990 -17.068856 89.5 tie_down jets|turboprops 24A
+1301 C general_aviation 
+1300 14.680624 -17.068853 89.5 tie_down jets|turboprops 24B
+1301 C general_aviation 
+1300 14.681541 -17.068624 89.4 tie_down heavy|jets|turboprops 25
+1301 E airline baw afr klm dlh vir eth saa msr ram
+1300 14.681726 -17.068874 89.5 tie_down jets|turboprops 25A
+1301 C general_aviation 
+1300 14.681356 -17.068860 89.5 tie_down jets|turboprops 25B
+1301 C general_aviation 
+1300 14.682402 -17.068632 89.3 tie_down heavy|jets|turboprops 26
+1301 E airline 
+1300 14.682583 -17.068871 89.5 tie_down jets|turboprops 26A
+1301 C general_aviation 
+1300 14.682221 -17.068868 89.5 tie_down jets|turboprops 26B
+1301 C general_aviation 
+1300 14.683136 -17.068639 89.5 tie_down heavy|jets|turboprops 27
+1301 E airline baw afr klm dlh vir eth saa msr ram
+1300 14.683316 -17.068878 89.5 tie_down jets|turboprops 27A
+1301 C general_aviation 
+1300 14.682951 -17.068874 89.5 tie_down jets|turboprops 27B
+1301 C general_aviation 
+1300 14.683043 -17.067457 89.7 tie_down jets|turboprops GA1
+1301 B general_aviation 
+1300 14.682743 -17.067455 89.8 tie_down jets|turboprops GA2
+1301 B general_aviation 
+1300 14.682444 -17.067452 90.0 tie_down jets|turboprops GA3
+1301 B general_aviation 
+1300 14.682014 -17.067448 89.8 tie_down jets|turboprops GA4
+1301 B general_aviation 
+1300 14.681715 -17.067445 89.6 tie_down jets|turboprops GA5
+1301 B general_aviation 
+1300 14.681415 -17.067442 89.9 tie_down jets|turboprops GA6
+1301 B general_aviation 
+1300 14.681115 -17.067439 90.0 tie_down jets|turboprops GA7
+1301 B general_aviation 
+1300 14.680816 -17.067436 89.9 tie_down jets|turboprops GA8
+1301 B general_aviation 
+1300 14.680385 -17.067432 90.0 tie_down jets|turboprops GA9
+1301 B general_aviation 
+1300 14.680086 -17.067429 89.8 tie_down jets|turboprops GA10
+1301 B general_aviation 
+1300 14.679786 -17.067427 89.7 tie_down jets|turboprops GA11
+1301 B general_aviation 
+1300 14.679485 -17.067424 89.8 tie_down jets|turboprops GA12
+1301 B general_aviation 
+1300 14.679186 -17.067421 89.8 tie_down jets|turboprops GA13
+1301 B general_aviation 
+1300 14.678738 -17.067417 89.8 tie_down jets|turboprops GA14
+1301 B general_aviation 
+1300 14.678437 -17.067414 89.8 tie_down jets|turboprops GA15
+1301 B general_aviation 
+1300 14.678139 -17.067411 89.8 tie_down jets|turboprops GA16
+1301 B general_aviation 
+1300 14.677838 -17.067408 89.5 tie_down jets|turboprops GA17
+1301 B general_aviation 
+1300 14.677541 -17.067405 89.8 tie_down jets|turboprops GA18
+1301 B general_aviation 
+1300 14.655230 -17.077316 -91.1 tie_down heavy|jets|turboprops V1 (Cargo)
+1301 E cargo 
+1300 14.655828 -17.077322 -90.9 tie_down heavy|jets|turboprops V2 (Cargo)
+1301 D cargo 
+1300 14.691878 -17.068850 89.1 tie_down heavy|jets|turboprops|props VIP
+1301 E airline 
+1300 14.657146 -17.068379 90.1 tie_down heavy|jets|turboprops|props Maintenance
+1301 F airline 
+1300 14.686242 -17.077929 -0.2 tie_down heavy|jets|turboprops|props Military
+1301 E military 
+1200 
+1201 14.666649 -17.069154 both 0
+1201 14.655171 -17.072668 both 1
+1201 14.685725 -17.072609 both 2
+1201 14.656843 -17.072680 both 3
+1201 14.656202 -17.070771 both 4
+1201 14.656196 -17.071673 both 5
+1201 14.656192 -17.072294 both 6
+1201 14.657129 -17.070780 both 7
+1201 14.663971 -17.070845 both 8
+1201 14.666622 -17.070868 both 9
+1201 14.670774 -17.070907 both 10
+1201 14.675343 -17.070952 both 11
+1201 14.670784 -17.069771 both 12
+1201 14.678061 -17.070979 both 13
+1201 14.675353 -17.069813 both 14
+1201 14.679657 -17.070993 both 15
+1201 14.680546 -17.070999 both 16
+1201 14.685739 -17.071049 both 17
+1201 14.680548 -17.069859 both 18
+1201 14.655877 -17.072674 both 19
+1201 14.666969 -17.072776 both 20
+1201 14.665177 -17.072491 both 21
+1201 14.675334 -17.072853 both 22
+1201 14.686721 -17.071058 both 23
+1201 14.686720 -17.071482 both 24
+1201 14.686714 -17.071940 both 25
+1201 14.686705 -17.072597 both 26
+1201 14.686094 -17.072958 both 27
+1201 14.685056 -17.072947 both 28
+1201 14.677018 -17.069828 both 29
+1201 14.683341 -17.069887 both 30
+1201 14.677960 -17.071946 both 31
+1201 14.655286 -17.073056 both 32
+1201 14.655839 -17.076117 both 33
+1201 14.655244 -17.076113 both 34
+1201 14.655260 -17.074719 both 35
+1201 14.655277 -17.073511 both 36
+1201 14.686803 -17.072965 both 37
+1201 14.677030 -17.068211 both 38
+1201 14.677323 -17.067980 both 39
+1201 14.683043 -17.068034 both 40
+1201 14.666646 -17.069730 both 41
+1201 14.666667 -17.067146 both 42
+1201 14.675374 -17.067259 both 43
+1201 14.690678 -17.068998 both 44
+1201 14.687129 -17.068966 both 45
+1201 14.690671 -17.069539 both 46
+1201 14.690941 -17.069926 both 47
+1201 14.691860 -17.069932 both 48
+1201 14.686652 -17.077846 both 49
+1201 14.686699 -17.073811 both 50
+1201 14.686583 -17.073294 both 51
+1201 14.691817 -17.068086 both 52
+1201 14.691026 -17.068063 both 53
+1201 14.690689 -17.068467 both 54
+1201 14.686731 -17.069336 both 55
+1201 14.678371 -17.071435 both 56
+1201 14.676687 -17.072634 both 57
+1201 14.670754 -17.072814 both 58
+1201 14.670766 -17.071972 both 59
+1201 14.664042 -17.071821 both 60
+1201 14.663660 -17.071190 both 61
+1201 14.662401 -17.070832 both 62
+1201 14.657143 -17.069117 both 63
+1201 14.685733 -17.071477 both 64
+1201 14.685733 -17.071929 both 65
+1201 14.655568 -17.070765 both 66
+1201 14.655299 -17.071133 both 67
+1201 14.655292 -17.072181 both 68
+1201 14.655293 -17.071662 both 69
+1201 14.683145 -17.067343 both 70
+1201 14.686558 -17.078762 both 71
+1201 14.686564 -17.078071 both 72
+1201 14.685605 -17.077792 both 73
+1201 14.685589 -17.078748 both 74
+1201 14.685899 -17.078754 both 75
+1201 14.684950 -17.080145 both 76
+1201 14.684957 -17.079482 both 77
+1201 14.685887 -17.079477 both 78
+1201 14.685889 -17.079378 both 79
+1201 14.687459 -17.079391 both 80
+1201 14.687481 -17.077786 both 81
+1201 14.687476 -17.078773 both 82
+1201 14.691496 -17.068944 both 83
+1201 14.691488 -17.069770 both 84
+1201 14.692344 -17.069769 both 85
+1201 14.683580 -17.068364 both 86
+1201 14.683596 -17.067416 both 87
+1201 14.692368 -17.067415 both 88
+1201 14.683666 -17.067336 both 89
+1201 14.683559 -17.068471 both 90
+1201 14.683554 -17.069333 both 91
+1201 14.683475 -17.069422 both 92
+1201 14.681965 -17.069404 both 93
+1201 14.681971 -17.068454 both 94
+1201 14.679644 -17.068432 both 95
+1201 14.679634 -17.069383 both 96
+1201 14.677423 -17.069361 both 97
+1201 14.677310 -17.069280 both 98
+1201 14.677319 -17.068411 both 99
+1201 14.677329 -17.067704 both 100
+1201 14.677329 -17.067290 both 101
+1201 14.677330 -17.066932 both 102
+1201 14.677261 -17.066847 both 103
+1201 14.676749 -17.067703 both 104
+1201 14.676760 -17.066841 both 105
+1201 14.676633 -17.069247 both 106
+1201 14.676736 -17.069166 both 107
+1201 14.675938 -17.069239 both 108
+1201 14.675807 -17.069139 both 109
+1201 14.675826 -17.066830 both 110
+1201 14.674918 -17.066819 both 111
+1201 14.674896 -17.069114 both 112
+1201 14.674822 -17.069230 both 113
+1201 14.673974 -17.069222 both 114
+1201 14.673984 -17.068064 both 115
+1201 14.673994 -17.066910 both 116
+1201 14.674106 -17.066811 both 117
+1201 14.672485 -17.068050 both 118
+1201 14.672213 -17.068048 both 119
+1201 14.672281 -17.067665 both 120
+1201 14.672286 -17.067184 both 121
+1201 14.671800 -17.067180 both 122
+1201 14.671800 -17.067432 both 123
+1201 14.672215 -17.067436 both 124
+1201 14.669855 -17.068025 both 125
+1201 14.669856 -17.067418 both 126
+1201 14.670283 -17.067423 both 127
+1201 14.670286 -17.067164 both 128
+1201 14.669793 -17.067159 both 129
+1201 14.669590 -17.068022 both 130
+1201 14.669784 -17.067651 both 131
+1201 14.668034 -17.068008 both 132
+1201 14.668023 -17.069167 both 133
+1201 14.668045 -17.066879 both 134
+1201 14.667981 -17.066764 both 135
+1201 14.667117 -17.066754 both 136
+1201 14.667097 -17.069158 both 137
+1201 14.666619 -17.066752 both 138
+1201 14.666351 -17.066841 both 139
+1201 14.666219 -17.067051 both 140
+1201 14.666211 -17.067434 both 141
+1201 14.666193 -17.069150 both 142
+1201 14.666150 -17.069308 both 143
+1201 14.666144 -17.069829 both 144
+1201 14.665995 -17.069830 both 145
+1201 14.665252 -17.069577 both 146
+1201 14.665271 -17.069140 both 147
+1201 14.665361 -17.067426 both 148
+1201 14.665279 -17.067509 both 149
+1201 14.664526 -17.069133 both 150
+1201 14.664547 -17.066937 both 151
+1201 14.656704 -17.069060 both 152
+1201 14.656714 -17.068219 both 153
+1201 14.652075 -17.069017 both 154
+1201 14.652076 -17.068579 both 155
+1201 14.652540 -17.068581 both 156
+1201 14.651711 -17.069013 both 157
+1201 14.651648 -17.075852 both 158
+1201 14.651731 -17.075921 both 159
+1201 14.654833 -17.075953 both 160
+1201 14.654826 -17.076625 both 161
+1201 14.654829 -17.077485 both 162
+1201 14.656328 -17.077502 both 163
+1201 14.656336 -17.076634 both 164
+1201 14.685955 -17.079885 both 165
+1201 14.685945 -17.080867 both 166
+1201 14.658846 -17.080606 both 167
+1201 14.658485 -17.080547 both 168
+1201 14.658203 -17.080392 both 169
+1201 14.657911 -17.080103 both 170
+1201 14.657711 -17.079754 both 171
+1201 14.657625 -17.079363 both 172
+1201 14.657640 -17.077657 both 173
+1201 14.657554 -17.077534 both 174
+1201 14.656453 -17.077521 both 175
+1201 14.648367 -17.068984 both 176
+1201 14.648292 -17.068869 both 177
+1201 14.648289 -17.068490 both 178
+1201 14.648334 -17.068074 both 179
+1201 14.648338 -17.067728 both 180
+1201 14.648649 -17.067739 both 181
+1201 14.648642 -17.068318 both 182
+1202 28 27 twoway runway 01/19
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01,19
+1202 27 37 twoway runway 01/19
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01,19
+1202 22 28 twoway runway 01/19
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01,19
+1202 58 22 twoway runway 01/19
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01,19
+1202 20 58 twoway runway 01/19
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01,19
+1202 19 1 twoway runway 01/19
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01,19
+1202 2 65 twoway taxiway_F C2
+1204 departure 01,19
+1204 arrival 01,19
+1202 23 24 twoway taxiway_F C1
+1202 64 17 twoway taxiway_F C2
+1202 28 2 twoway taxiway_F C2
+1204 departure 01,19
+1204 arrival 01,19
+1202 18 30 twoway taxiway_E A
+1202 29 18 twoway taxiway_E A
+1202 31 15 twoway taxiway_F C3
+1202 33 34 twoway taxiway_F 
+1202 34 35 twoway taxiway_F C8
+1202 35 36 twoway taxiway_F C8
+1204 ils 01,19
+1202 36 32 twoway taxiway_F C8
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01
+1202 32 19 twoway taxiway_F C8
+1204 departure 01,19
+1204 arrival 01,19
+1202 38 39 twoway taxiway_B G
+1202 39 40 twoway taxiway_B G
+1202 29 38 twoway taxiway_B G
+1202 14 43 twoway taxiway_E J2
+1202 11 14 twoway taxiway_E A2
+1202 41 9 twoway taxiway_E A4
+1202 14 12 twoway taxiway_E A
+1202 12 41 twoway taxiway_E A
+1202 41 0 twoway taxiway_E J1
+1202 0 42 twoway taxiway_E J1
+1202 29 14 twoway taxiway_E A
+1202 16 18 twoway taxiway_E A1
+1202 45 44 twoway taxiway_E P
+1202 44 46 twoway taxiway_E P
+1202 46 47 twoway taxiway_E P
+1202 47 48 twoway taxiway_E P
+1202 49 50 twoway taxiway_F M
+1202 50 51 twoway taxiway_F M
+1204 departure 01,19
+1204 arrival 01,19
+1202 51 27 twoway taxiway_F M
+1204 departure 01,19
+1204 arrival 01,19
+1202 52 53 twoway taxiway_E P
+1202 53 54 twoway taxiway_E P
+1202 54 44 twoway taxiway_E P
+1202 55 45 twoway taxiway_E P
+1202 23 55 twoway taxiway_E P
+1202 56 13 twoway taxiway_F C3
+1202 31 56 twoway taxiway_F C3
+1202 57 31 twoway taxiway_F C3
+1204 departure 01,19
+1204 arrival 01,19
+1202 22 57 twoway taxiway_F C3
+1204 departure 01,19
+1204 arrival 01,19
+1202 10 12 twoway taxiway_E A3
+1202 59 10 twoway taxiway_F C4
+1202 60 61 twoway taxiway_F C5
+1202 61 8 twoway taxiway_F C5
+1202 60 62 twoway taxiway_F C5
+1202 21 60 twoway taxiway_F C5
+1204 departure 01,19
+1204 arrival 01,19
+1202 20 21 twoway taxiway_F C5
+1204 departure 01,19
+1204 arrival 01,19
+1202 7 63 twoway taxiway_F H
+1202 64 65 twoway taxiway_F C2
+1204 ils 01,19
+1202 24 25 twoway taxiway_F C1
+1204 ils 01,19
+1202 25 26 twoway taxiway_F C1
+1204 departure 01,19
+1204 arrival 01,19
+1202 26 27 twoway taxiway_F C1
+1204 departure 01,19
+1204 arrival 01,19
+1202 66 4 twoway taxiway_F C
+1202 4 5 twoway taxiway_F C6
+1202 5 6 twoway taxiway_F C6
+1204 departure 01,19
+1204 arrival 01,19
+1202 6 3 twoway taxiway_F C6
+1204 departure 01,19
+1204 arrival 01,19
+1202 4 7 twoway taxiway_F C
+1202 7 62 twoway taxiway_F C
+1202 62 8 twoway taxiway_F C
+1202 8 9 twoway taxiway_F C
+1202 9 10 twoway taxiway_F C
+1202 10 11 twoway taxiway_F C
+1202 11 13 twoway taxiway_F C
+1202 13 15 twoway taxiway_F C
+1202 15 16 twoway taxiway_F C
+1202 16 17 twoway taxiway_F C
+1202 17 23 twoway taxiway_F C
+1202 67 66 twoway taxiway_F C7
+1202 19 3 twoway runway 01/19
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01,19
+1202 3 20 twoway runway 01/19
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01,19
+1202 19 68 twoway taxiway_F C7
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01
+1202 68 69 twoway taxiway_F C7
+1204 departure 01,19
+1204 arrival 01,19
+1204 ils 01
+1202 69 67 twoway taxiway_F C7
+1202 59 58 twoway taxiway_F C4
+1204 departure 01,19
+1204 arrival 01,19

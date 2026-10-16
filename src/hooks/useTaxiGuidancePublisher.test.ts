@@ -5,7 +5,12 @@ import { guidanceSyncAction } from './useTaxiGuidancePublisher';
 
 type PlannerState = ReturnType<typeof useTaxiRouteStore.getState>;
 
-const graph = { adjacency: new Map(), nodes: new Map(), nodeList: [] } as TaxiGraph;
+const graph = {
+  adjacency: new Map(),
+  againstOneway: new Map(),
+  nodes: new Map(),
+  nodeList: [],
+} as TaxiGraph;
 const base: PlannerState = {
   ...useTaxiRouteStore.getState(),
   mode: 'network',
