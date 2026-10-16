@@ -114,7 +114,15 @@ export function FlightStripWindow() {
   const gripRef = useRef<HTMLDivElement>(null);
   // EXPERIMENT (exp/taxi-mini-map): the taxi map panel under the strip.
   const [taxiMap, setTaxiMap] = useState(false);
-  const airborne = usePlaneStore((s) => s.state?.onGround === false);
+  // Closed at takeoff, so it never springs open over the view at touchdown: the
+  // pilot opens it again after landing.
+  useEffect(
+    () =>
+      usePlaneStore.subscribe((s, prev) => {
+        if (s.state?.onGround === false && prev.state?.onGround === true) setTaxiMap(false);
+      }),
+    []
+  );
   const hasRoute = useTaxiGuidanceStore((s) => !!(s.departure ?? s.arrival));
   const toggleTaxiMap = () => {
     if (!taxiMap && !hasRoute) {
@@ -185,8 +193,7 @@ export function FlightStripWindow() {
               </div>
             }
             footer={
-              taxiMap &&
-              !airborne && (
+              taxiMap && (
                 <div
                   className="border-border/50 h-56 w-0 min-w-full overflow-hidden rounded-b-xl border-t"
                   style={noDragStyle}
