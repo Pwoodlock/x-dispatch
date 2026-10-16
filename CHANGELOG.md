@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-10-16
+
 ### Added
 
 - **A taxi map in the Flight Strip.** Press the map button and a heading-up view of the airport opens under the strip, with your taxi route, taxiway and runway labels and your aircraft on it. It follows you as you taxi, and tells you when no route is planned yet. Without X-Plane it previews the route from its start. It works in the popped-out strip too.
@@ -260,7 +262,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.6.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.7.0...HEAD
+[2.7.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.3...v2.5.0
 [2.4.3]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.2...v2.4.3
