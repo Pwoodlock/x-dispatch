@@ -52,7 +52,6 @@ vi.mock('@/lib/db', async () => {
       if (!live.db) throw new Error('route sweep database not loaded');
       return live.db;
     },
-    saveDb: () => {},
   };
 });
 

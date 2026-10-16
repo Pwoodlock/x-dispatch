@@ -5,7 +5,7 @@
  */
 import { type AnyColumn, type SQL, count, eq, sql } from 'drizzle-orm';
 import * as fs from 'fs';
-import { airspaces, airways, getDb, navFileMeta, navaids, saveDb, waypoints } from '@/lib/db';
+import { airspaces, airways, getDb, navFileMeta, navaids, waypoints } from '@/lib/db';
 import logger from '@/lib/utils/logger';
 import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type { Coordinates } from '@/types/geo';
@@ -1128,13 +1128,6 @@ export function getAirspacesNearPoint(
 // ============================================================================
 // Utility Functions
 // ============================================================================
-
-/**
- * Save database to disk
- */
-export function persistNavDatabase(): void {
-  saveDb();
-}
 
 /**
  * Clear all nav data from database

@@ -223,9 +223,6 @@ export function getSqlite(): DatabaseSync | null {
   return sqlite;
 }
 
-/** Writes land on disk as each statement commits; kept for the loaders that still call it. */
-export function saveDb(): void {}
-
 export function closeDb(): void {
   if (sqlite) {
     sqlite.close();

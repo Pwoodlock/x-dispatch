@@ -360,10 +360,9 @@ describe('DB integrity & recovery', () => {
       }
     });
 
-    it('tolerates saveDb before init and closeDb twice', async () => {
+    it('tolerates closeDb twice', async () => {
       vi.resetModules();
       const mod = await import('@/lib/db');
-      expect(() => mod.saveDb()).not.toThrow();
       await mod.initDb();
       mod.closeDb();
       expect(() => mod.closeDb()).not.toThrow();

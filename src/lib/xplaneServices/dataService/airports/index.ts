@@ -31,7 +31,6 @@ import {
   getStoredFileMeta,
   insertAirports,
   insertCustomAirports,
-  persistDatabase,
   updateStoredFileMeta,
 } from './airportCache';
 import {
@@ -137,9 +136,6 @@ export async function syncAirportCache(
     airportCounts.set(path, count);
   }
   updateStoredFileMeta(currentFiles, airportCounts);
-
-  // 6. Persist
-  persistDatabase();
 
   const elapsed = Date.now() - startTime;
   logger.data.info(`Stored ${allAirports.size} total airports in ${elapsed}ms`);
@@ -249,8 +245,6 @@ export async function resyncCustomScenery(
     airportCounts.set(filePath, fileCount);
   }
   updateStoredFileMeta(customFiles, airportCounts);
-
-  persistDatabase();
 
   const afterCount = customResult.airports.size;
   const elapsed = Date.now() - startTime;

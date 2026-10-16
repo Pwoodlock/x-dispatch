@@ -46,7 +46,6 @@ vi.mock('@/lib/db', async () => {
   return {
     ...schema,
     getDb: () => getTestDb(),
-    saveDb: vi.fn(),
   };
 });
 
