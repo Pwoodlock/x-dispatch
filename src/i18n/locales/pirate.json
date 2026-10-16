@@ -203,6 +203,14 @@
     "directRoute": "Straight as the crow flies, no marks on the way",
     "routeSummary": "{{fixes}} marks along {{airways}} sea lanes",
     "notUsed": "Left ashore",
+    "adjusted": "Trimmed",
+    "routeFromPilot": "From a pilot's own chart",
+    "adjustments": {
+      "speedLevel_one": "{{count}} speed an' height scribble tossed overboard",
+      "speedLevel_other": "{{count}} speed an' height scribbles tossed overboard",
+      "sid": "{{name}} hauled into the departin' SID",
+      "star": "{{name}} hauled into the arrivin' STAR"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "Swap the harbors",
     "newPlan": "Fresh chart",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "A lane must end at a mark, not a bare coordinate",
       "trackPartial": "A track's letter be filed only for the whole track; else file its points, ye scallywag",
       "airwayWrongWay": "This lane be one-way and yer course sails it against the tide",
-      "airwayLevel": "This lane be only for {{levels}}, not fer yer cruisin' height"
+      "airwayLevel": "This lane be only for {{levels}}, not fer yer cruisin' height",
+      "procedureName": "A SID or STAR name, matey; the planner takes those from the pickers"
     },
     "setStart": "Start at the harbor",
     "showOnMap": "Show on the chart",
@@ -2123,15 +2132,29 @@
     "distance": "Distance",
     "noPlane": "No ship position"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "Height",
     "filedAltitude": "Plotted height",
     "groundSpeed": "Speed o'er the ground",
     "heading": "Headin'",
-    "aircraft": "Ship",
+    "alternate": "Fallback port",
     "squawk": "Squawk",
     "route": "Course plotted",
-    "noFlightPlan": "No sailin' plan filed"
+    "noFlightPlan": "No sailin' plan filed",
+    "flown": "{{distance}} sailed",
+    "remaining": "{{distance}} to go",
+    "useAsPlan": "Make it me own sailin' plan",
+    "airportsUnknown": "Ports not on X-Plane's charts",
+    "phase": {
+      "departing": "Castin' off",
+      "departed": "Set sail",
+      "climbing": "Risin'",
+      "cruising": "Cruisin'",
+      "descending": "Comin' down",
+      "arriving": "Nearin' port",
+      "arrived": "Made port",
+      "unknown": "Whereabouts unknown"
+    }
   },
   "mapContextMenu": {
     "startHere": "Set sail from here",

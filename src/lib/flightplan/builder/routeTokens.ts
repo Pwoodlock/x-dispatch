@@ -7,6 +7,10 @@ const AIRWAY_RE = /^[A-Z]{1,2}\d{1,4}[A-Z]?$/;
 /** North Atlantic organised tracks are filed by designator, NATA to NATZ, like an airway. */
 export const NAT_TRACK_RE = /^NAT[A-Z]$/;
 const DIRECT_TOKENS = new Set(['DCT', 'DRCT', 'DIRECT']);
+/** ICAO speed and level change after a fix: VALKU/N0475F350, 43N040W/M082F380, SUGOL/N0120VFR. */
+const SPEED_LEVEL_RE = /^[NMK]\d{3,4}(?:[FASM]\d{3,4}|VFR)$/;
+/** A SID or STAR identifier: three to five letters, a digit, an optional letter (VIICE2, MODRU2T). */
+const PROCEDURE_RE = /^[A-Z]{3,5}\d[A-Z]?$/;
 /** 5230N01000E, 52N010E, 5230N01000W */
 const LATLON_DDMM_RE = /^(\d{2})(\d{2})?([NS])(\d{3})(\d{2})?([EW])$/;
 /** 52.5/10.25 or 52.5,-10.25 */
@@ -18,6 +22,21 @@ export interface LexedToken {
   text: string;
   kind: LexedKind;
   latLon?: { latitude: number; longitude: number };
+  /** As typed, when a speed and level note was dropped from it. */
+  original?: string;
+}
+
+/** Looks like a SID or STAR name rather than a fix or an airway. */
+export function isProcedureName(text: string): boolean {
+  return PROCEDURE_RE.test(text);
+}
+
+/** "VALKU/N0475F350" → VALKU with the note set aside; anything else comes back as is. */
+function dropSpeedLevel(raw: string): { text: string; original?: string } {
+  const slash = raw.indexOf('/');
+  if (slash <= 0) return { text: raw };
+  const suffix = raw.slice(slash + 1);
+  return SPEED_LEVEL_RE.test(suffix) ? { text: raw.slice(0, slash), original: raw } : { text: raw };
 }
 
 export function tokenizeRoute(routeText: string): string[] {
@@ -50,22 +69,23 @@ export function parseLatLon(token: string): { latitude: number; longitude: numbe
 /** Airways carry digits, idents almost never do; an airway straight after an airway is an ident. */
 export function lexRoute(routeText: string): LexedToken[] {
   const out: LexedToken[] = [];
-  for (const text of tokenizeRoute(routeText)) {
+  for (const raw of tokenizeRoute(routeText)) {
+    const { text, original } = dropSpeedLevel(raw);
     if (DIRECT_TOKENS.has(text)) {
       out.push({ text, kind: 'direct' });
       continue;
     }
     const latLon = parseLatLon(text);
     if (latLon) {
-      out.push({ text, kind: 'latlon', latLon });
+      out.push({ text, kind: 'latlon', latLon, original });
       continue;
     }
     const prev = out[out.length - 1];
     if ((AIRWAY_RE.test(text) || NAT_TRACK_RE.test(text)) && prev?.kind !== 'airway') {
-      out.push({ text, kind: 'airway' });
+      out.push({ text, kind: 'airway', original });
       continue;
     }
-    out.push({ text, kind: 'ident' });
+    out.push({ text, kind: 'ident', original });
   }
   return out;
 }

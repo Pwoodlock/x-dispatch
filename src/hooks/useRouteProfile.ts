@@ -165,11 +165,14 @@ export function useRouteTerrain(): {
         stepNm: TERRAIN_STEP_NM,
         maxSamples: 3000,
         onProgress: (done, total) => setProgress({ done, total }),
-        onTileError: (z, x, y, reason) =>
+        // Missing tiles are the norm over the sea; only a real failure is worth a warning.
+        onTileError: (z, x, y, reason) => {
+          if (/\b404\b/.test(String(reason))) return;
           window.appAPI.log.warn(
             `Route terrain tile ${z}/${x}/${y} failed after ${Date.now() - started} ms`,
             reason
-          ),
+          );
+        },
       });
     },
     enabled: legs.length > 0,

@@ -203,6 +203,14 @@
     "directRoute": "Diretto, nessun punto in rotta",
     "routeSummary": "{{fixes}} punti su {{airways}} aerovie",
     "notUsed": "Non usati",
+    "adjusted": "Adattati",
+    "routeFromPilot": "Dal piano presentato da un pilota",
+    "adjustments": {
+      "speedLevel_one": "{{count}} nota di velocità e livello rimossa",
+      "speedLevel_other": "{{count}} note di velocità e livello rimosse",
+      "sid": "{{name}} spostato nella SID di partenza",
+      "star": "{{name}} spostato nella STAR di arrivo"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "Scambia partenza e arrivo",
     "newPlan": "Nuovo piano",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "Un'aerovia deve terminare su un punto, non su una coordinata",
       "trackPartial": "Il designatore di un track si presenta solo per il track intero; altrimenti indica i suoi punti",
       "airwayWrongWay": "Questa aerovia è a senso unico e la rotta la percorre nel senso sbagliato",
-      "airwayLevel": "Questa aerovia vale solo per {{levels}}, non per il livello di crociera"
+      "airwayLevel": "Questa aerovia vale solo per {{levels}}, non per il livello di crociera",
+      "procedureName": "Un nome di SID o STAR; il pianificatore li prende dai selettori"
     },
     "setStart": "Inizia alla partenza",
     "showOnMap": "Mostra sulla mappa",
@@ -2123,15 +2132,29 @@
     "distance": "Distanza",
     "noPlane": "Posizione aereo non disponibile"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "Altitudine",
     "filedAltitude": "Quota pianificata",
     "groundSpeed": "Velocità al suolo",
     "heading": "Prua",
-    "aircraft": "Aeromobile",
+    "alternate": "Alternato",
     "squawk": "Squawk",
     "route": "Rotta",
-    "noFlightPlan": "Nessun piano di volo presentato"
+    "noFlightPlan": "Nessun piano di volo presentato",
+    "flown": "{{distance}} percorse",
+    "remaining": "{{distance}} rimanenti",
+    "useAsPlan": "Usa come mio piano di volo",
+    "airportsUnknown": "Aeroporti assenti dal database di X-Plane",
+    "phase": {
+      "departing": "In partenza",
+      "departed": "Decollato",
+      "climbing": "In salita",
+      "cruising": "In crociera",
+      "descending": "In discesa",
+      "arriving": "In arrivo",
+      "arrived": "Arrivato",
+      "unknown": "Stato sconosciuto"
+    }
   },
   "mapContextMenu": {
     "startHere": "Avvia qui",

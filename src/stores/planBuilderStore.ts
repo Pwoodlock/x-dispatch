@@ -34,6 +34,7 @@ import type {
 import logger from '@/lib/utils/loggerRenderer';
 import type { EnrichedFlightPlan, FMSFlightPlan, RunwayEnd } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
+import type { NetworkId } from '@/types/networkTraffic';
 import { useAppStore } from './appStore';
 import { addStationData, useFlightPlanStore } from './flightPlanStore';
 
@@ -41,6 +42,12 @@ export type PlanBuilderStatus = 'idle' | 'resolving' | 'ready' | 'error';
 export type ProcedureKind = 'sid' | 'star' | 'approach';
 /** Tabs of the Explore flyout beside the planner. */
 export type ExploreTab = 'random' | 'routes' | 'weather';
+
+/** A token moved out of the route text into a picker, so the planner can say so. */
+export interface RouteNote {
+  text: string;
+  kind: 'sid' | 'star';
+}
 
 /** The persisted part of the planner: what an undo of "New plan" brings back. */
 type SavedDraft = PlanDraft & { aircraftClass: RangeRingCategory | null };
@@ -57,6 +64,12 @@ interface PlanBuilderState extends PlanDraft {
   autoRouting: boolean;
   /** The last route the router wrote, to tell the router's route from one the pilot edited. */
   autoRoutedText: string | null;
+  /** Procedures moved out of the route text since it was last typed. */
+  routeNotes: RouteNote[];
+  addRouteNote: (note: RouteNote) => void;
+  /** The network whose pilot filed the current route text, when it came from one. */
+  routeSource: NetworkId | null;
+  setRouteSource: (source: NetworkId | null) => void;
 
   open: () => void;
   close: () => void;
@@ -146,6 +159,10 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       savedPath: null,
       autoRouting: false,
       autoRoutedText: null,
+      routeNotes: [],
+      routeSource: null,
+      addRouteNote: (note) => set((state) => ({ routeNotes: [...state.routeNotes, note] })),
+      setRouteSource: (source) => set({ routeSource: source }),
 
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false, explore: null }),
@@ -159,7 +176,13 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           return {
             departure: endpoint,
             ...(endpoint?.icao !== state.departure?.icao
-              ? { routeText: '', cruiseAltitudeFt: null, result: null }
+              ? {
+                  routeText: '',
+                  cruiseAltitudeFt: null,
+                  result: null,
+                  routeNotes: [],
+                  routeSource: null,
+                }
               : {}),
             savedPath: null,
           };
@@ -170,7 +193,14 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           return {
             arrival: endpoint,
             ...(endpoint?.icao !== state.arrival?.icao
-              ? { routeText: '', cruiseAltitudeFt: null, result: null, alternate: null }
+              ? {
+                  routeText: '',
+                  cruiseAltitudeFt: null,
+                  result: null,
+                  alternate: null,
+                  routeNotes: [],
+                  routeSource: null,
+                }
               : {}),
             savedPath: null,
           };
@@ -224,9 +254,13 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             alternate: null,
             procedures: {},
             savedPath: null,
+            routeNotes: [],
+            routeSource: null,
           };
         }),
-      setRouteText: (text) => set({ routeText: text, savedPath: null }),
+      // Typed text starts over: notes about the previous text no longer apply.
+      setRouteText: (text) =>
+        set({ routeText: text, savedPath: null, routeNotes: [], routeSource: null }),
       removeRouteToken: (index) =>
         set((state) => {
           const tokens = tokenizeRoute(state.routeText);
@@ -400,13 +434,23 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           result: null,
           procedures: {},
           savedPath: null,
+          routeNotes: [],
+          routeSource: null,
         });
         return previous;
       },
 
       restoreDraft: (draft) => {
         resolvedDraft = null;
-        set({ ...draft, status: 'idle', result: null, procedures: {}, savedPath: null });
+        set({
+          ...draft,
+          status: 'idle',
+          result: null,
+          procedures: {},
+          savedPath: null,
+          routeNotes: [],
+          routeSource: null,
+        });
       },
     }),
     {

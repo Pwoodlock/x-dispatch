@@ -125,7 +125,27 @@ const OVERLAY_LAYER_PREFIXES = [
   'sim-traffic',
   'vatsim-',
   'ivao-',
+  'network-',
 ];
+
+/**
+ * Overlay layers that take clicks of their own. The airport hit-box is wide at low zoom and
+ * sits under most of them, so an airport click defers to anything here at the same point.
+ */
+export const OVERLAY_CLICK_LAYER_IDS = ['vatsim-pilots', 'ivao-pilots'] as const;
+
+/**
+ * True when a clickable overlay feature sits at `point`, so the click belongs to it. A pilot
+ * on the ground does not count: parked aircraft cover the airport dot, and that click is the
+ * airport's.
+ */
+export function overlayClaimsClick(map: maplibregl.Map, point: maplibregl.PointLike): boolean {
+  const layers = OVERLAY_CLICK_LAYER_IDS.filter((id) => map.getLayer(id));
+  if (layers.length === 0) return false;
+  return (
+    map.queryRenderedFeatures(point, { layers, filter: ['!', ['get', 'onGround']] }).length > 0
+  );
+}
 
 export function isOverlayLayerId(id: string): boolean {
   return OVERLAY_LAYER_PREFIXES.some((prefix) => id.startsWith(prefix));

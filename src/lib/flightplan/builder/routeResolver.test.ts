@@ -69,6 +69,27 @@ describe('resolveRoute', () => {
   });
 });
 
+describe('resolveRoute filed notation', () => {
+  it('drops a speed and level note from a fix and keeps what was typed', () => {
+    const res = resolveRoute(draft('AAAAA/N0450F350 L1 BBBBB'))!;
+    expect(res.tokens[0]).toMatchObject({
+      text: 'AAAAA',
+      status: 'ok',
+      original: 'AAAAA/N0450F350',
+    });
+    expect(res.tokens[2]?.original).toBeUndefined();
+    expect(res.plan.waypoints.map((w) => w.id)).toEqual(['EGXX', 'AAAAA', 'BBBBB', 'CYXX']);
+  });
+
+  it('names a SID or STAR filed at either end instead of calling it unknown', () => {
+    const res = resolveRoute(draft('DEPAR1A AAAAA L1 BBBBB ARRIV2'))!;
+    expect(res.tokens[0]).toMatchObject({ status: 'unknown', issue: 'procedureName' });
+    expect(res.tokens[4]).toMatchObject({ status: 'unknown', issue: 'procedureName' });
+    const mid = resolveRoute(draft('AAAAA ARRIV2 BBBBB'))!;
+    expect(mid.tokens[1]).toMatchObject({ status: 'unknown', issue: 'notFound' });
+  });
+});
+
 describe('resolveRoute airway checks', () => {
   it('flags an airway walked against its one-way direction, and still uses it', () => {
     const res = resolveRoute({

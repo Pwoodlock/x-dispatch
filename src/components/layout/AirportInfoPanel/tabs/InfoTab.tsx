@@ -2,25 +2,25 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  ATC_ROLE_BADGE_VARIANTS,
+  type AtcBadgeVariant,
+  stationLabel,
+} from '@/lib/networkTraffic/atcRoles';
+import { atisRunways } from '@/lib/networkTraffic/atis';
+import { trafficCountsForAirport } from '@/lib/networkTraffic/stations';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
-import { buildAirportAtcRows } from '@/lib/vatsimSectors/airportAtc';
 import { useNavDataQuery } from '@/queries';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
+import { useNetworkTraffic } from '@/queries/useNetworkTraffic';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
-import {
-  getATISForAirport,
-  getControllersForAirport,
-  getTrafficCountsForAirport,
-  parseATISRunways,
-  useVatsimQuery,
-} from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
 import type { Frequency, Runway, RunwayEnd } from '@/types/apt';
 import { FrequencyType } from '@/types/apt';
 import type { Navaid } from '@/types/navigation';
-import type { VatsimAirportAtcRow, VatsimFacilityRole } from '@/types/vatsimSectors';
+import type { AtcRole, NetworkStation } from '@/types/networkTraffic';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Vite handles this import
 import gatewayLogo from '../../../../../assets/gateway-logo.svg';
@@ -62,13 +62,14 @@ export default function InfoTab() {
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
   const isCustom = useAppStore((s) => s.selectedAirportIsCustom);
-  const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const { network, pilots } = useNetworkTraffic();
+  const networkOn = network !== null;
+  const staffing = useMapStore((s) => (icao ? s.atcStaffing[icao.toUpperCase()] : undefined));
 
   const [showAllFreqs, setShowAllFreqs] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
-  const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
   const { data: navData } = useNavDataQuery(
     airport?.runways[0]?.ends[0]?.latitude ?? null,
     airport?.runways[0]?.ends[0]?.longitude ?? null,
@@ -78,37 +79,16 @@ export default function InfoTab() {
 
   const metar = vatsimMetarData?.parsed ?? null;
   const rawMetar = vatsimMetarData?.raw ?? null;
-  const airportCallsignMatch = useMemo(
-    () => ({
-      icao: icao ?? '',
-      iata: airport?.metadata?.iata_code ?? null,
-    }),
-    [airport?.metadata?.iata_code, icao]
+  // Online network: the positions at this airport and the traffic filed to or from it.
+  const stations = staffing?.stations;
+  const atisLines = stations?.find((s) => s.atis)?.atis?.lines;
+  const atisRunwayEnds = useMemo(() => (atisLines ? atisRunways(atisLines) : []), [atisLines]);
+  const atisLetter = staffing?.atisCode ?? null;
+  const atcRows = useMemo(() => (stations ? buildAtcRows(stations) : []), [stations]);
+  const liveTraffic = useMemo(
+    () => (networkOn && icao ? trafficCountsForAirport(pilots, icao) : null),
+    [networkOn, pilots, icao]
   );
-
-  // VATSIM data
-  const atis = useMemo(
-    () => getATISForAirport(vatsimData, airportCallsignMatch),
-    [airportCallsignMatch, vatsimData]
-  );
-  const controllers = useMemo(
-    () => getControllersForAirport(vatsimData, airportCallsignMatch),
-    [airportCallsignMatch, vatsimData]
-  );
-  const traffic = useMemo(
-    () => getTrafficCountsForAirport(vatsimData, icao ?? ''),
-    [vatsimData, icao]
-  );
-  const primaryAtis = atis[0];
-  const atisRunways = useMemo(
-    () => (primaryAtis ? parseATISRunways(primaryAtis) : []),
-    [primaryAtis]
-  );
-  const atisLetter = vatsimEnabled && primaryAtis?.atis_code ? primaryAtis.atis_code : null;
-  const vatsimRows = useMemo(() => buildAirportAtcRows(controllers, atis), [controllers, atis]);
-  const liveTraffic = vatsimEnabled
-    ? { departures: traffic.departures, arrivals: traffic.arrivals }
-    : null;
 
   // Hoist optional-chained values so the useMemo deps are plain identifiers —
   // the React Compiler's static analysis can't preserve `[obj?.prop]` form.
@@ -150,8 +130,8 @@ export default function InfoTab() {
   // Active runway resolution: ATIS is authoritative when available, wind
   // alignment is a heuristic fallback used only when no ATIS is published.
   const activeRunway = useMemo<ActiveRunway | null>(() => {
-    if (vatsimEnabled && atisRunways.length > 0) {
-      return { source: 'atis', ends: atisRunways.map((r) => r.toUpperCase()) };
+    if (atisRunwayEnds.length > 0) {
+      return { source: 'atis', ends: atisRunwayEnds };
     }
     const wind = metar?.wind;
     if (wind && wind.degrees !== undefined && wind.speed > 0) {
@@ -167,12 +147,12 @@ export default function InfoTab() {
       }
     }
     return null;
-  }, [vatsimEnabled, atisRunways, metar?.wind, sortedRunways]);
+  }, [atisRunwayEnds, metar?.wind, sortedRunways]);
 
   // Frequencies sorted into flight-flow order. apt.dat sometimes lists the
   // same physical channel twice (legacy 25 kHz row + 8.33 kHz row), so we
   // dedupe by (type, frequency) to avoid rendering twin rows where one
-  // attaches a live VATSIM controller and the other appears offline.
+  // attaches a live controller and the other appears offline.
   const frequencies = useMemo(() => {
     if (!airportFrequencies) return [];
     const sorted = [...airportFrequencies].sort(
@@ -187,12 +167,12 @@ export default function InfoTab() {
     });
   }, [airportFrequencies]);
 
-  // Merge static apt.dat frequencies with live VATSIM rows. Each static row
-  // attaches the first matching VATSIM controller; unmatched VATSIM rows
+  // Merge static apt.dat frequencies with the live rows. Each static row
+  // attaches the first matching controller; unmatched live rows
   // (CTR, FSS, extra controllers on the same role) append at the end.
   const mergedFreqRows = useMemo<MergedFreqRow[]>(
-    () => mergeFreqRows(frequencies, vatsimEnabled ? vatsimRows : []),
-    [frequencies, vatsimEnabled, vatsimRows]
+    () => mergeFreqRows(frequencies, atcRows),
+    [frequencies, atcRows]
   );
 
   const visibleMergedRows = showAllFreqs
@@ -258,8 +238,8 @@ export default function InfoTab() {
           totalCount={mergedFreqRows.length}
           showAll={showAllFreqs}
           onToggle={() => setShowAllFreqs((v) => !v)}
-          vatsimEnabled={vatsimEnabled}
-          onlineCount={vatsimRows.length}
+          vatsimEnabled={networkOn}
+          onlineCount={atcRows.length}
         />
       )}
 
@@ -288,13 +268,38 @@ interface PreferredEnd {
   deltaDeg: number;
 }
 
+/** One live position as the frequency list shows it. */
+interface AtcRow {
+  id: string;
+  role: AtcRole;
+  badgeLabel: string;
+  badgeVariant: AtcBadgeVariant;
+  callsign: string;
+  frequency: string;
+  summary: string;
+  detail?: string;
+}
+
+function buildAtcRows(stations: NetworkStation[]): AtcRow[] {
+  return stations.map((s) => ({
+    id: `${s.callsign}-${s.frequency}`,
+    role: s.role,
+    badgeLabel: stationLabel(s),
+    badgeVariant: ATC_ROLE_BADGE_VARIANTS[s.role],
+    callsign: s.callsign,
+    frequency: s.frequency,
+    summary: s.name,
+    detail: s.atis?.lines.length ? s.atis.lines.join(' | ') : undefined,
+  }));
+}
+
 /**
- * Map a VATSIM facility role to the apt.dat frequency type it usually covers.
+ * Map a controller role to the apt.dat frequency type it usually covers.
  * Returns null for roles that don't have an apt.dat counterpart (CTR, FSS,
  * OTHER) — those become "extra" rows appended after the static frequency
  * list.
  */
-function facilityRoleToFreqType(role: VatsimFacilityRole): FrequencyType | null {
+function facilityRoleToFreqType(role: AtcRole): FrequencyType | null {
   switch (role) {
     case 'DEL':
       return FrequencyType.DELIVERY;
@@ -311,18 +316,15 @@ function facilityRoleToFreqType(role: VatsimFacilityRole): FrequencyType | null 
   }
 }
 
-function mergeFreqRows(
-  staticFreqs: Frequency[],
-  vatsimRows: VatsimAirportAtcRow[]
-): MergedFreqRow[] {
+function mergeFreqRows(staticFreqs: Frequency[], liveRows: AtcRow[]): MergedFreqRow[] {
   const usedVatsimIds = new Set<string>();
   const result: MergedFreqRow[] = [];
 
-  // Pass 1: each static row attaches the first VATSIM row whose role matches.
+  // Pass 1: each static row attaches the first live row whose role matches.
   for (let i = 0; i < staticFreqs.length; i++) {
     const f = staticFreqs[i];
     if (!f) continue;
-    const match = vatsimRows.find(
+    const match = liveRows.find(
       (r) => !usedVatsimIds.has(r.id) && facilityRoleToFreqType(r.role) === f.type
     );
     if (match) usedVatsimIds.add(match.id);
@@ -344,8 +346,8 @@ function mergeFreqRows(
     });
   }
 
-  // Pass 2: VATSIM rows that didn't match any static row (CTR, FSS, extras).
-  for (const r of vatsimRows) {
+  // Pass 2: live rows that didn't match any static row (CTR, FSS, extras).
+  for (const r of liveRows) {
     if (usedVatsimIds.has(r.id)) continue;
     result.push({
       id: r.id,

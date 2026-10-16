@@ -43,5 +43,9 @@ export function useVatsimSectorSync({
     };
 
     render();
+    // A render queued behind a style reload must not bring the sectors back after a switch-off.
+    return () => {
+      map.off('styledata', render);
+    };
   }, [mapRef, sectorResult, vatsimData, vatsimEnabled]);
 }

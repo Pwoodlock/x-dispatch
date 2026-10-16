@@ -203,6 +203,14 @@
     "directRoute": "直飞，无航路点",
     "routeSummary": "{{airways}} 条航路上共 {{fixes}} 个航路点",
     "notUsed": "未使用",
+    "adjusted": "已调整",
+    "routeFromPilot": "来自飞行员提交的计划",
+    "adjustments": {
+      "speedLevel_one": "已去除 {{count}} 处速度和高度标注",
+      "speedLevel_other": "已去除 {{count}} 处速度和高度标注",
+      "sid": "{{name}} 已移入离场 SID",
+      "star": "{{name}} 已移入进场 STAR"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "交换出发和到达",
     "newPlan": "新计划",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "航路必须以航路点结束，而不是坐标",
       "trackPartial": "航迹代号仅在飞行整条航迹时申报；部分飞行请填写各航路点",
       "airwayWrongWay": "此航路为单向，而航线反向飞行",
-      "airwayLevel": "此航路仅适用 {{levels}}，不适用于巡航高度"
+      "airwayLevel": "此航路仅适用 {{levels}}，不适用于巡航高度",
+      "procedureName": "这是 SID 或 STAR 名称，规划器从选择器中获取"
     },
     "setStart": "从出发机场开始",
     "showOnMap": "在地图上显示",
@@ -2123,15 +2132,29 @@
     "distance": "距离",
     "noPlane": "无飞机位置"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "高度",
     "filedAltitude": "申报高度",
     "groundSpeed": "地速",
     "heading": "航向",
-    "aircraft": "机型",
+    "alternate": "备降机场",
     "squawk": "应答机",
     "route": "航路",
-    "noFlightPlan": "未提交飞行计划"
+    "noFlightPlan": "未提交飞行计划",
+    "flown": "已飞 {{distance}}",
+    "remaining": "剩余 {{distance}}",
+    "useAsPlan": "设为我的飞行计划",
+    "airportsUnknown": "机场不在 X-Plane 数据库中",
+    "phase": {
+      "departing": "准备出发",
+      "departed": "已起飞",
+      "climbing": "爬升中",
+      "cruising": "巡航中",
+      "descending": "下降中",
+      "arriving": "即将到达",
+      "arrived": "已到达",
+      "unknown": "状态未知"
+    }
   },
   "mapContextMenu": {
     "startHere": "从此处开始",

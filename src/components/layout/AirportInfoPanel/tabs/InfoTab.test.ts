@@ -9,18 +9,19 @@ const selectedAirportData = {
 } as const;
 
 const mapState = {
-  vatsimEnabled: false,
-  ivaoEnabled: false,
+  atcStaffing: {} as Record<string, unknown>,
 };
 
-const vatsimQueryState = {
-  data: undefined,
+/** What the network hook hands the tab: switched off until a test turns it on. */
+const networkState = {
+  network: null as 'vatsim' | null,
+  pilots: [] as { flightPlan: { departure: string; arrival: string } }[],
+  stations: [],
 };
 
-const vatsimTrafficState = {
-  departures: 0,
-  arrivals: 0,
-};
+function pilot(departure: string, arrival: string) {
+  return { flightPlan: { departure, arrival } };
+}
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -60,9 +61,8 @@ vi.mock('@/queries/useGatewayQuery', () => ({
   useGatewayUpdateCheck: () => ({ data: undefined }),
 }));
 
-vi.mock('@/queries/useIvaoQuery', () => ({
-  useIvaoQuery: () => ({ data: undefined }),
-  getTrafficCountsForAirport: () => ({ departures: 0, arrivals: 0 }),
+vi.mock('@/queries/useNetworkTraffic', () => ({
+  useNetworkTraffic: () => networkState,
 }));
 
 vi.mock('@/queries/useVatsimMetarQuery', () => ({
@@ -84,19 +84,10 @@ vi.mock('@/queries/useVatsimMetarQuery', () => ({
   }),
 }));
 
-vi.mock('@/queries/useVatsimQuery', () => ({
-  useVatsimQuery: () => vatsimQueryState,
-  getATISForAirport: () => [],
-  getControllersForAirport: () => [],
-  getTrafficCountsForAirport: () => vatsimTrafficState,
-  parseATISRunways: () => [],
-}));
-
 describe('InfoTab', () => {
   it('does not claim there is no VATSIM activity when only pilot traffic exists', async () => {
-    mapState.vatsimEnabled = true;
-    vatsimTrafficState.departures = 2;
-    vatsimTrafficState.arrivals = 1;
+    networkState.network = 'vatsim';
+    networkState.pilots = [pilot('EGLL', 'LFPG'), pilot('EGLL', 'EHAM'), pilot('KJFK', 'EGLL')];
 
     const { default: InfoTab } = await import('./InfoTab');
 
@@ -106,8 +97,7 @@ describe('InfoTab', () => {
     expect(html).toContain('2');
     expect(html).toContain('1');
 
-    mapState.vatsimEnabled = false;
-    vatsimTrafficState.departures = 0;
-    vatsimTrafficState.arrivals = 0;
+    networkState.network = null;
+    networkState.pilots = [];
   });
 });

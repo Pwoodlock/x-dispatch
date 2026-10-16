@@ -203,6 +203,14 @@
     "directRoute": "Bezpośrednio, bez punktów trasy",
     "routeSummary": "{{fixes}} punktów na {{airways}} drogach lotniczych",
     "notUsed": "Nieużyte",
+    "adjusted": "Dostosowane",
+    "routeFromPilot": "Z planu złożonego przez pilota",
+    "adjustments": {
+      "speedLevel_one": "Usunięto {{count}} wpis prędkości i poziomu",
+      "speedLevel_other": "Usunięto {{count}} wpisów prędkości i poziomu",
+      "sid": "{{name}} przeniesiono do SID odlotu",
+      "star": "{{name}} przeniesiono do STAR dolotu"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "Zamień odlot i przylot",
     "newPlan": "Nowy plan",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "Droga lotnicza musi kończyć się punktem, nie współrzędną",
       "trackPartial": "Oznaczenie tracku zgłasza się tylko dla całego tracku; dla części podaj jego punkty",
       "airwayWrongWay": "Ta droga lotnicza jest jednokierunkowa, a trasa leci nią w złą stronę",
-      "airwayLevel": "Ta droga lotnicza obowiązuje tylko {{levels}}, nie na poziomie przelotu"
+      "airwayLevel": "Ta droga lotnicza obowiązuje tylko {{levels}}, nie na poziomie przelotu",
+      "procedureName": "Nazwa SID lub STAR; planer bierze je z list wyboru"
     },
     "setStart": "Start z lotniska odlotu",
     "showOnMap": "Pokaż na mapie",
@@ -2123,15 +2132,29 @@
     "distance": "Odległość",
     "noPlane": "Brak pozycji samolotu"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "Wysokość",
     "filedAltitude": "Planowana wysokość",
     "groundSpeed": "Prędkość względem ziemi",
     "heading": "Kurs",
-    "aircraft": "Statek powietrzny",
+    "alternate": "Lotnisko zapasowe",
     "squawk": "Squawk",
     "route": "Trasa",
-    "noFlightPlan": "Brak złożonego planu lotu"
+    "noFlightPlan": "Brak złożonego planu lotu",
+    "flown": "Przeleciano {{distance}}",
+    "remaining": "Pozostało {{distance}}",
+    "useAsPlan": "Użyj jako mój plan lotu",
+    "airportsUnknown": "Lotnisk nie ma w bazie danych X-Plane",
+    "phase": {
+      "departing": "Przed odlotem",
+      "departed": "Po starcie",
+      "climbing": "Wznoszenie",
+      "cruising": "Przelot",
+      "descending": "Zniżanie",
+      "arriving": "Przed lądowaniem",
+      "arrived": "Wylądował",
+      "unknown": "Stan nieznany"
+    }
   },
   "mapContextMenu": {
     "startHere": "Zacznij tutaj",

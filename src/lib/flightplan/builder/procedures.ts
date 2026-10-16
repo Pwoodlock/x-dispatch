@@ -39,6 +39,31 @@ export function choiceKey(choice: ProcedureChoice | undefined): string {
   return choice ? `${choice.name}|${choice.transition ?? ''}` : '';
 }
 
+/**
+ * The choice for a procedure filed by name in the route text ("ZQA VIICE2"): the variant whose
+ * transition is the fix beside it, else the plain one, else the first published. Null when the
+ * airport does not publish that name.
+ */
+export function filedProcedureChoice(
+  list: ResolvedProcedure[],
+  name: string,
+  neighbourFix: string | undefined
+): ProcedureChoice | null {
+  let candidates = list.filter((p) => p.name === name);
+  // X-Plane's data keeps procedure names to six characters: a filed NANJO4R is stored as
+  // NANJ4R, the fifth letter of the fix dropped.
+  if (candidates.length === 0) {
+    const short = name.replace(/^([A-Z]{4})[A-Z](\d[A-Z]?)$/, '$1$2');
+    if (short !== name) candidates = list.filter((p) => p.name === short);
+  }
+  if (candidates.length === 0) return null;
+  const pick =
+    (neighbourFix && candidates.find((p) => (p.transition ?? null) === neighbourFix)) ||
+    candidates.find((p) => !p.transition) ||
+    candidates[0]!;
+  return { name: pick.name, transition: pick.transition ?? null };
+}
+
 export function matchProcedure(
   list: ResolvedProcedure[],
   choice: ProcedureChoice | undefined,

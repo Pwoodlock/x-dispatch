@@ -203,6 +203,14 @@
     "directRoute": "直行、経路上のフィックスなし",
     "routeSummary": "{{airways}} 本の航空路上に {{fixes}} フィックス",
     "notUsed": "未使用",
+    "adjusted": "調整済み",
+    "routeFromPilot": "パイロットの提出済み計画から",
+    "adjustments": {
+      "speedLevel_one": "速度・高度の指定を {{count}} 件除去",
+      "speedLevel_other": "速度・高度の指定を {{count}} 件除去",
+      "sid": "{{name}} を出発 SID に移動",
+      "star": "{{name}} を到着 STAR に移動"
+    },
     "runwayPlaceholder": "RWY",
     "swap": "出発と到着を入れ替え",
     "newPlan": "新しいプラン",
@@ -234,7 +242,8 @@
       "airwayEndsAtCoordinate": "航空路は座標ではなくフィックスで終える必要があります",
       "trackPartial": "トラック識別子はトラック全体を飛行する場合のみ申請できます。一部の場合はポイントを記入してください",
       "airwayWrongWay": "この航空路は一方通行で、ルートは逆方向に飛んでいます",
-      "airwayLevel": "この航空路は {{levels}} 専用で、巡航高度では使えません"
+      "airwayLevel": "この航空路は {{levels}} 専用で、巡航高度では使えません",
+      "procedureName": "SID または STAR の名前です。プランナーは選択欄から取得します"
     },
     "setStart": "出発地からスタート",
     "showOnMap": "地図に表示",
@@ -2123,15 +2132,29 @@
     "distance": "距離",
     "noPlane": "機体位置なし"
   },
-  "vatsimPopup": {
+  "networkPopup": {
     "altitude": "高度",
     "filedAltitude": "申請高度",
     "groundSpeed": "対地速度",
     "heading": "機首方位",
-    "aircraft": "機種",
+    "alternate": "代替空港",
     "squawk": "スコーク",
     "route": "ルート",
-    "noFlightPlan": "飛行計画の提出なし"
+    "noFlightPlan": "飛行計画の提出なし",
+    "flown": "飛行済み {{distance}}",
+    "remaining": "残り {{distance}}",
+    "useAsPlan": "自分の飛行計画として使用",
+    "airportsUnknown": "X-Plane のデータベースにない空港です",
+    "phase": {
+      "departing": "出発準備中",
+      "departed": "離陸",
+      "climbing": "上昇中",
+      "cruising": "巡航中",
+      "descending": "降下中",
+      "arriving": "到着間近",
+      "arrived": "到着",
+      "unknown": "状態不明"
+    }
   },
   "mapContextMenu": {
     "startHere": "ここから開始",

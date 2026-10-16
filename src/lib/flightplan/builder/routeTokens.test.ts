@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { lexRoute, parseLatLon, stripEndpoints, tokenizeRoute } from './routeTokens';
+import {
+  isProcedureName,
+  lexRoute,
+  parseLatLon,
+  stripEndpoints,
+  tokenizeRoute,
+} from './routeTokens';
 
 describe('routeTokens', () => {
   it('splits on whitespace and separators and upper-cases', () => {
@@ -27,6 +33,27 @@ describe('routeTokens', () => {
     expect(parseLatLon('52N010E')).toEqual({ latitude: 52, longitude: 10 });
     expect(parseLatLon('-33.9/151.2')).toEqual({ latitude: -33.9, longitude: 151.2 });
     expect(parseLatLon('9999N')).toBeNull();
+  });
+
+  it('drops a speed and level note and keeps what was typed', () => {
+    const tokens = lexRoute('VALKU/N0475F350 DCT 43N040W/M082F380 SUGOL/N0120VFR 52.5/10.25');
+    expect(tokens.map((t) => [t.text, t.kind, t.original ?? null])).toEqual([
+      ['VALKU', 'ident', 'VALKU/N0475F350'],
+      ['DCT', 'direct', null],
+      ['43N040W', 'latlon', '43N040W/M082F380'],
+      ['SUGOL', 'ident', 'SUGOL/N0120VFR'],
+      ['52.5/10.25', 'latlon', null],
+    ]);
+  });
+
+  it('tells a procedure name from fixes and airways', () => {
+    expect(isProcedureName('VIICE2')).toBe(true);
+    expect(isProcedureName('MODRU2T')).toBe(true);
+    expect(isProcedureName('ROCKT3')).toBe(true);
+    expect(isProcedureName('M330')).toBe(false);
+    expect(isProcedureName('UN872')).toBe(false);
+    expect(isProcedureName('SUGOL')).toBe(false);
+    expect(isProcedureName('N268A')).toBe(false);
   });
 
   it('strips airports typed at either end', () => {

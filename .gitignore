@@ -91,3 +91,4 @@ design-system/
 
 # Local map benchmark results (npm run bench:map --json)
 bench-*.json
+.superpowers/

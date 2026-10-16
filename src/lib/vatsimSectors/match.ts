@@ -1,21 +1,11 @@
-import type { Airport } from '@/lib/xplaneServices/dataService';
-import type { VatsimATIS, VatsimController, VatsimData } from '@/types/vatsim';
+import type { VatsimATIS, VatsimController } from '@/types/vatsim';
 import type {
   VatsimActiveFirMatch,
   VatsimActiveTraconMatch,
-  VatsimAirportAtcBadge,
-  VatsimAirportAtcSummary,
   VatsimFacilityRole,
   VatsimSectorDataset,
   VatsimTraconFeature,
 } from '@/types/vatsimSectors';
-
-const AIRPORT_BADGE_ROLES = ['DEL', 'GND', 'TWR', 'ATIS'] as const;
-
-type AirportLookup = {
-  byIcao: Map<string, string>;
-  byIata: Map<string, string>;
-};
 
 type TraconMatch = {
   tracon: VatsimTraconFeature;
@@ -32,51 +22,6 @@ function getCallsignParts(callsign: string): string[] {
 function getCallsignPostfix(callsign: string): string {
   const parts = getCallsignParts(callsign);
   return parts.at(-1) ?? '';
-}
-
-// Rebuilt only when the airport list itself changes; the lookup is requested
-// on every VATSIM refresh over a list of tens of thousands of airports.
-const airportLookupCache = new WeakMap<Airport[], AirportLookup>();
-
-function buildAirportLookup(airports: Airport[]): AirportLookup {
-  const cached = airportLookupCache.get(airports);
-  if (cached) return cached;
-
-  const byIcao = new Map<string, string>();
-  const byIata = new Map<string, string>();
-
-  for (const airport of airports) {
-    const icao = airport.icao.toUpperCase();
-    byIcao.set(icao, icao);
-
-    const iata = airport.iataCode?.toUpperCase();
-    if (iata && !byIata.has(iata)) {
-      byIata.set(iata, icao);
-    }
-  }
-
-  const lookup = { byIcao, byIata };
-  airportLookupCache.set(airports, lookup);
-  return lookup;
-}
-
-function resolveAirportIcao(prefix: string, lookup?: AirportLookup): string | null {
-  const normalized = prefix.toUpperCase();
-
-  if (/^[A-Z]{4}$/.test(normalized)) {
-    return lookup?.byIcao.get(normalized) ?? normalized;
-  }
-
-  if (/^[A-Z]{3}$/.test(normalized)) {
-    return lookup?.byIata.get(normalized) ?? null;
-  }
-
-  return null;
-}
-
-function getAirportPrefix(callsign: string, lookup?: AirportLookup): string | null {
-  const prefix = getCallsignParts(callsign)[0] ?? '';
-  return resolveAirportIcao(prefix, lookup);
 }
 
 function sortTraconsForMatching(a: VatsimTraconFeature, b: VatsimTraconFeature): number {
@@ -227,99 +172,4 @@ export function buildActiveTraconMatches(
       },
     ];
   });
-}
-
-function controllerSortIndex(controller: VatsimController | VatsimATIS): number {
-  switch (getControllerRole(controller)) {
-    case 'DEL':
-      return 0;
-    case 'GND':
-      return 1;
-    case 'TWR':
-      return 2;
-    case 'APP':
-      return 3;
-    case 'ATIS':
-      return 4;
-    case 'CTR':
-      return 5;
-    case 'FSS':
-      return 6;
-    default:
-      return 7;
-  }
-}
-
-function roleToLetter(role: (typeof AIRPORT_BADGE_ROLES)[number]): VatsimAirportAtcBadge['letter'] {
-  switch (role) {
-    case 'DEL':
-      return 'D';
-    case 'GND':
-      return 'G';
-    case 'TWR':
-      return 'T';
-    case 'ATIS':
-      return 'A';
-  }
-}
-
-export function buildAirportAtcSummaries(
-  data: VatsimData | undefined,
-  airports: Airport[] = []
-): VatsimAirportAtcSummary[] {
-  if (!data) {
-    return [];
-  }
-
-  const lookup = buildAirportLookup(airports);
-  const grouped = new Map<string, Array<VatsimController | VatsimATIS>>();
-
-  for (const controller of data.controllers) {
-    const role = getControllerRole(controller);
-    if (role !== 'DEL' && role !== 'GND' && role !== 'TWR' && role !== 'APP') {
-      continue;
-    }
-
-    const icao = getAirportPrefix(controller.callsign, lookup);
-    if (!icao) {
-      continue;
-    }
-
-    grouped.set(icao, [...(grouped.get(icao) ?? []), controller]);
-  }
-
-  for (const atis of data.atis) {
-    const icao = getAirportPrefix(atis.callsign, lookup);
-    if (!icao) {
-      continue;
-    }
-
-    grouped.set(icao, [...(grouped.get(icao) ?? []), atis]);
-  }
-
-  return Array.from(grouped.entries())
-    .map(([icao, list]) => {
-      const controllers = list
-        .slice()
-        .sort((a, b) => controllerSortIndex(a) - controllerSortIndex(b));
-
-      const badges: VatsimAirportAtcBadge[] = AIRPORT_BADGE_ROLES.flatMap((role) => {
-        const matched = controllers.filter((controller) => getControllerRole(controller) === role);
-        if (!matched.length) {
-          return [];
-        }
-
-        return [
-          {
-            role,
-            letter: roleToLetter(role),
-            controllers: matched,
-          } satisfies VatsimAirportAtcBadge,
-        ];
-      });
-
-      return { icao, controllers, badges };
-    })
-    .filter((summary) => summary.controllers.length > 0)
-    .sort((a, b) => a.icao.localeCompare(b.icao));
 }
