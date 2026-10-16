@@ -2089,7 +2089,6 @@
       "date": "Дата и время",
       "departure": "Вылет",
       "arrival": "Прилёт",
-      "airportName": "Название аэропорта",
       "aircraftName": "Самолёт",
       "livery": "Ливрея",
       "blockMinutes": "Блок-время (мин)",

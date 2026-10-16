@@ -2089,7 +2089,6 @@
       "date": "Data i godzina",
       "departure": "Odlot",
       "arrival": "Przylot",
-      "airportName": "Nazwa lotniska",
       "aircraftName": "Samolot",
       "livery": "Malowanie",
       "blockMinutes": "Czas blokowy (min)",

@@ -27,6 +27,7 @@ import type {
 import {
   getAirportBreakdown,
   getAirportCount,
+  getAirportName,
   getAirportsInBounds,
   getAllAirports as getAllAirportsFromDb,
   getDistinctCountries as getDistinctCountriesFromDb,
@@ -504,6 +505,10 @@ export class XPlaneDataManager {
     maxLon: number
   ): Array<{ icao: string; name: string; lat: number; lon: number }> {
     return getAirportsInBounds(minLat, maxLat, minLon, maxLon);
+  }
+
+  getAirportName(icao: string): string | null {
+    return getAirportName(icao);
   }
 
   /**

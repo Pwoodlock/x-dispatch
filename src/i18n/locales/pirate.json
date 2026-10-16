@@ -2089,7 +2089,6 @@
       "date": "Date and time",
       "departure": "Departure",
       "arrival": "Arrival",
-      "airportName": "Port name",
       "aircraftName": "Vessel",
       "livery": "Livery",
       "blockMinutes": "Block time (min)",

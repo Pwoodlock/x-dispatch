@@ -2089,7 +2089,6 @@
       "date": "Fecha y hora",
       "departure": "Salida",
       "arrival": "Llegada",
-      "airportName": "Nombre del aeropuerto",
       "aircraftName": "Aeronave",
       "livery": "Librea",
       "blockMinutes": "Tiempo calzos (min)",

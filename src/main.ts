@@ -2567,6 +2567,7 @@ function registerIpcHandlers() {
   registerSharedPlanIpc({ handle, on, broadcast });
   registerFlightRecorderIPC({
     getMainWindow: () => mainWindow,
+    getAirportName: (icao) => dataManager.getAirportName(icao),
     getAirportsInBounds: (minLat, maxLat, minLon, maxLon) =>
       dataManager.getAirportsInBounds(minLat, maxLat, minLon, maxLon),
     getAirportData: (icao) => dataManager.getAirportData(icao),

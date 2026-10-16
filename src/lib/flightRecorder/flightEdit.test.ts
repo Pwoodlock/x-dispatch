@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { FlightSummary, LandingReport } from '@/types/flightRecorder';
-import { applyFlightEdit, flightEditInput, logbookTotals, newManualFlight } from './flightEdit';
+import {
+  applyFlightEdit,
+  fillAirportNames,
+  flightEditInput,
+  logbookTotals,
+  newManualFlight,
+} from './flightEdit';
 
 function summary(overrides: Partial<FlightSummary> = {}): FlightSummary {
   return {
@@ -80,6 +86,19 @@ describe('applyFlightEdit', () => {
     expect(edited.distanceNm).toBe(0);
     expect(edited.startedAt).toBe(summary().startedAt);
     expect(applyFlightEdit(summary(), null).id).toBe('f1');
+  });
+});
+
+describe('fillAirportNames', () => {
+  it('names known airports and leaves unknown ones alone', () => {
+    const lookup = (icao: string) => (icao === 'EDDF' ? 'Frankfurt am Main' : null);
+    const filled = fillAirportNames(
+      summary({ arrival: { icao: 'ZZZZ', name: 'typed by hand' } }),
+      lookup
+    );
+    expect(filled.departure).toEqual({ icao: 'EDDF', name: 'Frankfurt am Main' });
+    expect(filled.arrival).toEqual({ icao: 'ZZZZ', name: 'typed by hand' });
+    expect(fillAirportNames(summary({ departure: null }), lookup).departure).toBeNull();
   });
 });
 

@@ -2089,7 +2089,6 @@
       "date": "日時",
       "departure": "出発",
       "arrival": "到着",
-      "airportName": "空港名",
       "aircraftName": "機体",
       "livery": "塗装",
       "blockMinutes": "ブロックタイム (分)",

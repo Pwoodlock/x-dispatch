@@ -122,17 +122,17 @@ function FlightEditForm({
 
   const set = <K extends keyof FlightEditInput>(key: K, value: FlightEditInput[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
-  const text = (key: keyof FlightEditInput) => (e: Change) => set(key, e.target.value);
-  const icao = (key: keyof FlightEditInput) => (e: Change) =>
-    set(key, e.target.value.toUpperCase());
+  // The name is looked up from the airport database on save; a changed code drops the old one.
+  const airport =
+    (icaoKey: 'departureIcao' | 'arrivalIcao', nameKey: 'departureName' | 'arrivalName') =>
+    (e: Change) =>
+      setForm((f) => ({ ...f, [icaoKey]: e.target.value.toUpperCase(), [nameKey]: '' }));
   const minutes = (key: 'blockTimeSec' | 'airTimeSec') => (e: Change) =>
     set(key, Math.max(0, Math.round(Number(e.target.value) || 0)) * 60);
   const change = {
     startedAt: (e: Change) => set('startedAt', fromLocalInput(e.target.value, form.startedAt)),
-    departureIcao: icao('departureIcao'),
-    departureName: text('departureName'),
-    arrivalIcao: icao('arrivalIcao'),
-    arrivalName: text('arrivalName'),
+    departureIcao: airport('departureIcao', 'departureName'),
+    arrivalIcao: airport('arrivalIcao', 'arrivalName'),
     blockTimeSec: minutes('blockTimeSec'),
     airTimeSec: minutes('airTimeSec'),
     distanceNm: (e: Change) => set('distanceNm', Math.max(0, Number(e.target.value) || 0)),
@@ -193,7 +193,7 @@ function FlightEditForm({
           />
         </div>
 
-        <div className="grid grid-cols-[7rem_1fr] gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="fl-dep" className="xp-label">
               {t('logbook.edit.departure')}
@@ -207,15 +207,6 @@ function FlightEditForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="fl-dep-name" className="xp-label">
-              {t('logbook.edit.airportName')}
-            </Label>
-            <Input id="fl-dep-name" value={form.departureName} onChange={change.departureName} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-[7rem_1fr] gap-3">
-          <div className="space-y-1.5">
             <Label htmlFor="fl-arr" className="xp-label">
               {t('logbook.edit.arrival')}
             </Label>
@@ -226,12 +217,6 @@ function FlightEditForm({
               onChange={change.arrivalIcao}
               className={CODE}
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="fl-arr-name" className="xp-label">
-              {t('logbook.edit.airportName')}
-            </Label>
-            <Input id="fl-arr-name" value={form.arrivalName} onChange={change.arrivalName} />
           </div>
         </div>
 

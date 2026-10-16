@@ -410,6 +410,24 @@ export function getAirportsInBounds(
   return [...merged.values()];
 }
 
+/** The airport's name as the map shows it; custom scenery wins over the global set. */
+export function getAirportName(icao: string): string | null {
+  const db = getDb();
+  const code = icao.toUpperCase();
+  const custom = db
+    .select({ name: airportsCustom.name })
+    .from(airportsCustom)
+    .where(eq(airportsCustom.icao, code))
+    .get();
+  if (custom?.name) return custom.name;
+  const global = db
+    .select({ name: airports.name })
+    .from(airports)
+    .where(eq(airports.icao, code))
+    .get();
+  return global?.name || null;
+}
+
 /**
  * Get custom scenery airport count from database
  */

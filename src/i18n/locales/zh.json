@@ -2089,7 +2089,6 @@
       "date": "日期和时间",
       "departure": "出发",
       "arrival": "到达",
-      "airportName": "机场名称",
       "aircraftName": "飞机",
       "livery": "涂装",
       "blockMinutes": "轮挡时间 (分钟)",

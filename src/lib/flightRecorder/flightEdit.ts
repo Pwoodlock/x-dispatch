@@ -86,6 +86,22 @@ export function applyFlightEdit(flight: FlightSummary, input: unknown): FlightSu
   };
 }
 
+/**
+ * Airport names come from the database, not the pilot: an ICAO the database
+ * knows gets its name; one it does not keeps whatever name came with it.
+ */
+export function fillAirportNames(
+  flight: FlightSummary,
+  lookup: (icao: string) => string | null
+): FlightSummary {
+  const named = (airport: FlightSummary['departure']) => {
+    if (!airport) return null;
+    const name = lookup(airport.icao);
+    return name ? { ...airport, name } : airport;
+  };
+  return { ...flight, departure: named(flight.departure), arrival: named(flight.arrival) };
+}
+
 export function manualFlightId(now = Date.now()): string {
   return `manual-${now.toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }

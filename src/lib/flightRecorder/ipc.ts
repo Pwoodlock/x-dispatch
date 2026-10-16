@@ -5,7 +5,7 @@ import { broadcast, handle } from '@/lib/remote/handlerRegistry';
 import logger from '@/lib/utils/logger';
 import type { AircraftHint, FlightAirport, FlightRecorderEvent } from '@/types/flightRecorder';
 import { FlightRecorder } from './FlightRecorder';
-import { applyFlightEdit, newManualFlight } from './flightEdit';
+import { applyFlightEdit, fillAirportNames, newManualFlight } from './flightEdit';
 import { FlightStore } from './flightStore';
 import { flightsToCsv, parseFlightsCsv } from './logbookCsv';
 import type { AirportRunways } from './runwayMatch';
@@ -25,6 +25,7 @@ export interface LogbookImportResult {
 
 export interface FlightRecorderIpcDeps {
   getMainWindow: () => BrowserWindow | null;
+  getAirportName: (icao: string) => string | null;
   /** Airports inside a lat/lon box — a database query, not a full-table load. */
   getAirportsInBounds: (
     minLat: number,
@@ -188,13 +189,13 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
     const current = store.list().find((f) => f.id === id);
     // The recorder owns a flight until it ends; edits wait for that.
     if (!current || current.status === 'active') return null;
-    const edited = applyFlightEdit(current, input);
+    const edited = fillAirportNames(applyFlightEdit(current, input), deps.getAirportName);
     await store.replace(edited);
     broadcast('flights:event', { type: 'flightUpdated', flight: edited });
     return edited;
   });
   handle('flights:create', (_, input: unknown) => {
-    const flight = newManualFlight(input);
+    const flight = fillAirportNames(newManualFlight(input), deps.getAirportName);
     store.create(flight);
     broadcast('flights:event', { type: 'flightUpdated', flight });
     return flight;
@@ -248,7 +249,7 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
         skipped += 1;
         continue;
       }
-      store.create(flight);
+      store.create(fillAirportNames(flight, deps.getAirportName));
       known.add(flight.id);
       imported += 1;
     }
