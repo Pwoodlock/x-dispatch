@@ -37,6 +37,7 @@ import {
   applyFlightStripMouse,
   applyFlightStripWindowOptions,
   cursorOnGrip,
+  gripRectToScreen,
   parseFlightStripWindowOptions,
   parseGripRect,
 } from './lib/flightStrip/windowOptions';
@@ -1292,7 +1293,8 @@ function registerIpcHandlers() {
   });
   on('app:setFlightStripGrip', (event, grip: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
-    flightStripGrip = parseGripRect(grip);
+    const parsed = parseGripRect(grip);
+    flightStripGrip = parsed && gripRectToScreen(parsed, event.sender.getZoomFactor());
   });
   on('app:setFlightStripContentSize', (event, size: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;

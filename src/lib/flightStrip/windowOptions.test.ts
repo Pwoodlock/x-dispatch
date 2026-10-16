@@ -4,6 +4,7 @@ import {
   type FlightStripWindowLike,
   applyFlightStripWindowOptions,
   cursorOnGrip,
+  gripRectToScreen,
   ignoresMouse,
   parseFlightStripWindowOptions,
   parseGripRect,
@@ -117,6 +118,24 @@ describe('parseGripRect', () => {
     ]) {
       expect(parseGripRect(input)).toBeNull();
     }
+  });
+});
+
+describe('gripRectToScreen', () => {
+  it('scales CSS pixels by the zoom factor', () => {
+    expect(gripRectToScreen({ x: 1440, y: 57, width: 43, height: 43 }, 1.25)).toEqual({
+      x: 1800,
+      y: 71.25,
+      width: 53.75,
+      height: 53.75,
+    });
+  });
+
+  it('keeps the rect for a missing or invalid zoom factor', () => {
+    const grip = { x: 1440, y: 57, width: 43, height: 43 };
+    expect(gripRectToScreen(grip, 1)).toEqual(grip);
+    expect(gripRectToScreen(grip, 0)).toEqual(grip);
+    expect(gripRectToScreen(grip, Number.NaN)).toEqual(grip);
   });
 });
 
