@@ -186,6 +186,9 @@ export async function initDb(): Promise<DrizzleDatabase> {
     sqlite = openSqlite(dbPath);
     // No fsync: an OS crash can at worst corrupt a cache that recovery deletes and rebuilds.
     // The larger checkpoint and page cache bring a full rescan back to sql.js speed.
+    // TODO: SQLite documents WAL as unsupported on network filesystems, which userData sits on
+    // under Windows folder redirection or an NFS home. If that shows up, set
+    // `PRAGMA locking_mode = EXCLUSIVE` before WAL: the index then stays in memory, no -shm file.
     sqlite.exec(
       'PRAGMA journal_mode = WAL; PRAGMA synchronous = OFF; PRAGMA wal_autocheckpoint = 10000; PRAGMA cache_size = -32768;'
     );
