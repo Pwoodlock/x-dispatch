@@ -66,7 +66,6 @@ const config: ForgeConfig = {
   hooks: {
     async packageAfterCopy(_forgeConfig, buildPath) {
       const requiredPackages = [
-        'sql.js',
         'electron-squirrel-startup',
         'ws',
         'bufferutil',

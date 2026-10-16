@@ -5,12 +5,11 @@
  * rules a pilot would check. Opt in with `npm run test:sweep`; it skips itself without the
  * database, so CI is untouched.
  */
-import { drizzle } from 'drizzle-orm/sql-js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import initSqlJs from 'sql.js';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { drizzleNodeSqlite, openSqlite } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { autoRoute } from '@/lib/flightplan/builder/autoRouter';
 import { cruiseBand, cruiseProblem, isConflict } from '@/lib/flightplan/builder/cruiseAdjust';
@@ -191,9 +190,7 @@ function tracksValidNow(): NatMessage[] {
 
 describe.skipIf(!ENABLED)('route sweep on the real navigation database', () => {
   beforeAll(async () => {
-    const SQL = await initSqlJs();
-    const bytes = fs.readFileSync(DB_PATH);
-    live.db = drizzle(new SQL.Database(bytes), { schema });
+    live.db = drizzleNodeSqlite(openSqlite(DB_PATH), schema);
     resetOceanicTracksForTests();
     setNatMessages(tracksValidNow());
   }, 180_000);

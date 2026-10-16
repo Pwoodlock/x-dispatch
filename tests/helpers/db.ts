@@ -1,5 +1,5 @@
 /**
- * Test helper: in-memory sql.js database with Drizzle ORM and migrations.
+ * Test helper: in-memory node:sqlite database with Drizzle ORM and migrations.
  *
  * Usage:
  *   import { createTestDb, getTestDb, closeTestDb } from '../helpers/db';
@@ -10,25 +10,27 @@
  *   // In vi.mock('@/lib/db'):
  *   getDb: () => getTestDb()
  */
-import { type SQLJsDatabase, drizzle } from 'drizzle-orm/sql-js';
-import { migrate } from 'drizzle-orm/sql-js/migrator';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import path from 'path';
-import initSqlJs from 'sql.js';
+import {
+  type DatabaseSync,
+  type SqliteDatabase,
+  drizzleNodeSqlite,
+  openSqlite,
+} from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
-
-type SqlJsDatabase = import('sql.js').Database;
 
 const MIGRATIONS_FOLDER = path.resolve(__dirname, '../../drizzle');
 
-let db: SQLJsDatabase<typeof schema> | null = null;
-let sqlite: SqlJsDatabase | null = null;
+let db: SqliteDatabase<typeof schema> | null = null;
+let sqlite: DatabaseSync | null = null;
 
 /**
- * Creates a fresh in-memory sql.js database, wraps it with Drizzle, and
+ * Creates a fresh in-memory database, wraps it with Drizzle, and
  * runs all Drizzle migrations from the `drizzle/` folder.
  * Call this in `beforeEach` (or `beforeAll`) in test suites that need the DB.
  */
-export async function createTestDb(): Promise<SQLJsDatabase<typeof schema>> {
+export async function createTestDb(): Promise<SqliteDatabase<typeof schema>> {
   // Close any previously open instance to avoid leaks between tests
   if (sqlite) {
     sqlite.close();
@@ -36,10 +38,9 @@ export async function createTestDb(): Promise<SQLJsDatabase<typeof schema>> {
     db = null;
   }
 
-  const SQL = await initSqlJs();
-  sqlite = new SQL.Database(); // no-arg = in-memory DB
-  db = drizzle(sqlite, { schema });
-  migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
+  sqlite = openSqlite(':memory:');
+  db = drizzleNodeSqlite(sqlite, schema);
+  migrate(db as never, { migrationsFolder: MIGRATIONS_FOLDER });
 
   return db;
 }
@@ -48,7 +49,7 @@ export async function createTestDb(): Promise<SQLJsDatabase<typeof schema>> {
  * Returns the current test database instance.
  * Throws if `createTestDb()` has not been called yet.
  */
-export function getTestDb(): SQLJsDatabase<typeof schema> {
+export function getTestDb(): SqliteDatabase<typeof schema> {
   if (!db) {
     throw new Error('Test DB not initialized. Call createTestDb() first.');
   }
@@ -56,8 +57,8 @@ export function getTestDb(): SQLJsDatabase<typeof schema> {
 }
 
 /**
- * Closes the sql.js database and nulls all references.
- * Call this in `afterEach` (or `afterAll`) to release WASM memory.
+ * Closes the database and nulls all references.
+ * Call this in `afterEach` (or `afterAll`).
  */
 export function closeTestDb(): void {
   if (sqlite) {

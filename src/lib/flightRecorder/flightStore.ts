@@ -22,8 +22,8 @@ type FlightLine =
 
 /**
  * Flights live as one append-only JSON-lines file each plus a small index of
- * summaries. The app database is sql.js, which rewrites the whole file on
- * every save, so streaming samples into it was never an option.
+ * summaries, apart from the app database, which is a cache deleted whenever
+ * its schema changes.
  */
 export class FlightStore {
   private index: IndexFile | null = null;

@@ -114,13 +114,11 @@ describe('DB integrity & recovery', () => {
   });
 
   describe('first launch', () => {
-    it('creates a fresh db file (after closeDb) and a .version file (immediately) when none exists', async () => {
+    it('creates the db file and a .version file when none exists', async () => {
       const mod = await freshInit();
-      // The .version file is written synchronously inside initDb.
       expect(fs.existsSync(versionFilePath())).toBe(true);
-      // The db itself only hits disk when sqlite is exported via saveDb/closeDb.
-      mod.closeDb();
       expect(fs.existsSync(dbFilePath())).toBe(true);
+      mod.closeDb();
     });
 
     it('writes a non-empty schema fingerprint to the .version file', async () => {
@@ -223,7 +221,6 @@ describe('DB integrity & recovery', () => {
     it('does not crash when the userData directory is otherwise empty', async () => {
       // Brand-new temp dir, no files at all
       const mod = await freshInit();
-      // .version is written immediately; db is flushed by closeDb.
       expect(fs.existsSync(versionFilePath())).toBe(true);
       mod.closeDb();
       expect(fs.existsSync(dbFilePath())).toBe(true);
@@ -261,9 +258,9 @@ describe('DB integrity & recovery', () => {
       const mod = await freshInit();
       const fingerprint = fs.readFileSync(versionFilePath(), 'utf-8').trim();
       const sqlite = mod.getSqlite()!;
-      sqlite.run('CREATE TABLE filler (id INTEGER PRIMARY KEY, body TEXT)');
-      for (let i = 0; i < 2000; i++)
-        sqlite.run('INSERT INTO filler (body) VALUES (?)', ['x'.repeat(200)]);
+      sqlite.exec('CREATE TABLE filler (id INTEGER PRIMARY KEY, body TEXT)');
+      const insert = sqlite.prepare('INSERT INTO filler (body) VALUES (?)');
+      for (let i = 0; i < 2000; i++) insert.run('x'.repeat(200));
       mod.closeDb();
 
       // Scribble over the filler table's data pages (written last, at the end of the
@@ -314,7 +311,6 @@ describe('DB integrity & recovery', () => {
       expect(fs.existsSync(versionFilePath())).toBe(true);
 
       const mod2 = await freshInit();
-      // Version file is rewritten; db file lands on disk after closeDb.
       expect(fs.existsSync(versionFilePath())).toBe(true);
       mod2.closeDb();
       expect(fs.existsSync(dbFilePath())).toBe(true);
@@ -333,137 +329,34 @@ describe('DB integrity & recovery', () => {
     });
   });
 
-  describe('saving on quit', () => {
-    /** Backdate the file so a rewrite shows up as a newer mtime. */
-    function backdateDb(): number {
-      const old = new Date('2020-01-01T00:00:00Z');
-      fs.utimesSync(dbFilePath(), old, old);
-      return fs.statSync(dbFilePath()).mtimeMs;
-    }
-
-    it('does not rewrite an unchanged database on quit', async () => {
+  describe('persistence', () => {
+    it('keeps written rows across a restart without an explicit save', async () => {
       const mod = await freshInit();
+      mod.getSqlite()!.exec("CREATE TABLE kept (v TEXT); INSERT INTO kept VALUES ('row')");
       mod.closeDb();
-      const before = backdateDb();
 
       const mod2 = await freshInit();
+      expect(mod2.getSqlite()!.prepare('SELECT v FROM kept').get()).toEqual({ v: 'row' });
       mod2.closeDb();
-      expect(fs.statSync(dbFilePath()).mtimeMs).toBe(before);
     });
 
-    it('writes pending changes on quit without waiting for the debounce', async () => {
+    it('rebuilds the tables in place when the stale file cannot be deleted', async () => {
       const mod = await freshInit();
+      mod.getSqlite()!.exec('CREATE TABLE leftover (v TEXT)');
       mod.closeDb();
-      const before = backdateDb();
+      fs.writeFileSync(versionFilePath(), 'stale-fingerprint-from-old-app-version');
 
-      const mod2 = await freshInit();
-      mod2.saveDb();
-      mod2.closeDb();
-      expect(fs.statSync(dbFilePath()).mtimeMs).toBeGreaterThan(before);
-    });
-
-    /**
-     * Lets real fs promises settle while setTimeout stays faked. The budget is
-     * wall-clock time, not event-loop turns: a loaded CI runner burns through
-     * turns long before the write lands.
-     */
-    async function until(check: () => boolean) {
-      const deadline = Date.now() + 10_000;
-      while (!check() && Date.now() < deadline) {
-        await new Promise((resolve) => setImmediate(resolve));
-      }
-      expect(check()).toBe(true);
-    }
-
-    it('does not write again on quit once the background save has landed', async () => {
-      const mod = await freshInit();
-      mod.closeDb();
-      const before = backdateDb();
-
-      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      lockedPaths.add(dbFilePath());
       try {
         const mod2 = await freshInit();
-        mod2.saveDb();
-        vi.advanceTimersByTime(5000);
-        await until(() => fs.statSync(dbFilePath()).mtimeMs > before);
-
-        const afterBackground = backdateDb();
+        const leftover = mod2
+          .getSqlite()!
+          .prepare("SELECT name FROM sqlite_master WHERE name = 'leftover'")
+          .get();
+        expect(leftover).toBeUndefined();
         mod2.closeDb();
-        expect(fs.statSync(dbFilePath()).mtimeMs).toBe(afterBackground);
       } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('writes on quit when something changed after the background save', async () => {
-      const mod = await freshInit();
-      mod.closeDb();
-
-      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-      try {
-        const mod2 = await freshInit();
-        mod2.saveDb();
-        vi.advanceTimersByTime(5000);
-        const before = backdateDb();
-        await until(() => fs.statSync(dbFilePath()).mtimeMs > before);
-
-        mod2.saveDb(); // a later change, still inside the debounce window
-        const afterBackground = backdateDb();
-        mod2.closeDb();
-        expect(fs.statSync(dbFilePath()).mtimeMs).toBeGreaterThan(afterBackground);
-      } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('keeps a valid database when quit lands while a background save is writing', async () => {
-      const mod = await freshInit();
-      mod.closeDb();
-
-      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-      try {
-        const mod2 = await freshInit();
-        mod2.saveDb();
-        vi.advanceTimersByTime(5000); // background write starts
-        mod2.saveDb();
-        mod2.closeDb(); // quit before it finishes
-        await until(() => !fs.readdirSync(TEST_USER_DATA).some((f) => f.endsWith('.tmp')));
-      } finally {
-        vi.useRealTimers();
-      }
-
-      // Whichever write landed last, the next launch opens it without a recovery relaunch.
-      const mod3 = await freshInit();
-      expect(relaunchSpy).not.toHaveBeenCalled();
-      mod3.closeDb();
-    });
-
-    it('retries on quit after a failed background save', async () => {
-      if (process.platform === 'win32') return; // chmod does not block writes on Windows
-      const mod = await freshInit();
-      mod.closeDb();
-
-      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-      try {
-        const mod2 = await freshInit();
-        mod2.saveDb();
-        const before = backdateDb();
-        fs.chmodSync(TEST_USER_DATA, 0o500); // the temp file cannot be created
-        vi.advanceTimersByTime(5000);
-        // Wait for the failed write to settle, however loaded the machine is; nothing reaches disk.
-        const deadline = Date.now() + 10_000;
-        while (mod2.isSaveInFlight() && Date.now() < deadline) {
-          await new Promise((resolve) => setImmediate(resolve));
-        }
-        expect(mod2.isSaveInFlight()).toBe(false);
-        fs.chmodSync(TEST_USER_DATA, 0o700);
-        expect(fs.statSync(dbFilePath()).mtimeMs).toBe(before);
-
-        mod2.closeDb();
-        expect(fs.statSync(dbFilePath()).mtimeMs).toBeGreaterThan(before);
-      } finally {
-        fs.chmodSync(TEST_USER_DATA, 0o700);
-        vi.useRealTimers();
+        lockedPaths.clear();
       }
     });
 
@@ -476,7 +369,7 @@ describe('DB integrity & recovery', () => {
       expect(() => mod.closeDb()).not.toThrow();
     });
 
-    it('removes temp files left by a save cut short by a crash', async () => {
+    it('removes temp files left by the old whole-file save', async () => {
       const mod = await freshInit();
       mod.closeDb();
       fs.writeFileSync(dbFilePath() + '.tmp', 'partial');
@@ -486,12 +379,6 @@ describe('DB integrity & recovery', () => {
       expect(fs.existsSync(dbFilePath() + '.tmp')).toBe(false);
       expect(fs.existsSync(dbFilePath() + '.quit.tmp')).toBe(false);
       mod2.closeDb();
-    });
-
-    it('leaves no temp file behind after the quit write', async () => {
-      const mod = await freshInit();
-      mod.closeDb();
-      expect(fs.readdirSync(TEST_USER_DATA).filter((f) => f.endsWith('.tmp'))).toEqual([]);
     });
   });
 });

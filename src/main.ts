@@ -16,6 +16,7 @@ import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import { execFile } from 'node:child_process';
+import type { StatementSync } from 'node:sqlite';
 import path from 'path';
 import { HttpSource, type UpdateInfo, UpdateManager, VelopackApp } from 'velopack';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
@@ -26,7 +27,7 @@ import { ANALYTICS_SHORTCUTS, type AnalyticsConsentState } from './lib/analytics
 import { initMainAnalytics, setAnalyticsUpdateContext } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
-import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
+import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { type SimPresence, createSimPresence } from './lib/flightStrip/simPresence';
 import { type Size, fitWindowToContent, parseContentSize } from './lib/flightStrip/windowFit';
@@ -189,7 +190,7 @@ if (process.env.E2E_USER_DATA_DIR) {
   app.setPath('userData', process.env.E2E_USER_DATA_DIR);
 }
 
-// TODO: Memory optimization - consider lazy nav data loading, reduce sql.js footprint, limit MapLibre tile cache
+// TODO: Memory optimization - consider lazy nav data loading, limit MapLibre tile cache
 
 // This reads config.json directly since getSendCrashReports() uses app.getPath which works before ready
 const shouldInitSentry = (() => {
@@ -1519,49 +1520,52 @@ function registerIpcHandlers() {
   handle('debug:dbTables', () => {
     const db = getSqlite();
     if (!db) return [];
-    const result = db.exec(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%' ORDER BY name"
-    );
-    if (!result[0]) return [];
-    return result[0].values.map(([name]) => {
-      const countResult = db.exec(`SELECT COUNT(*) FROM "${name}"`);
-      const count = countResult[0]?.values[0]?.[0] ?? 0;
-      const colResult = db.exec(`PRAGMA table_info("${name}")`);
-      const columns =
-        colResult[0]?.values.map((r) => ({
-          name: r[1] as string,
-          type: r[2] as string,
-        })) ?? [];
-      return { name: name as string, rowCount: count as number, columns };
+    const tables = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%' ORDER BY name"
+      )
+      .all() as { name: string }[];
+    return tables.map(({ name }) => {
+      const { count } = db.prepare(`SELECT COUNT(*) AS count FROM "${name}"`).get() as {
+        count: number;
+      };
+      const columns = (
+        db.prepare(`PRAGMA table_info("${name}")`).all() as { name: string; type: string }[]
+      ).map((c) => ({ name: c.name, type: c.type }));
+      return { name, rowCount: count, columns };
     });
   });
+
+  /** Column names plus rows as arrays, the shape the debug panel renders. */
+  function debugRows(stmt: StatementSync) {
+    stmt.setReturnArrays(true);
+    const rows = stmt.all();
+    return { columns: stmt.columns().map((c) => c.name), rows };
+  }
 
   handle('debug:dbQuery', (_, table: string, limit: number, offset: number) => {
     const db = getSqlite();
     if (!db) return { columns: [], rows: [] };
     // Validate table name to prevent SQL injection
-    const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name = ?", [
-      table,
-    ]);
-    if (!tables[0]?.values.length) return { columns: [], rows: [] };
-    const result = db.exec(
-      `SELECT * FROM "${table}" LIMIT ${Number(limit)} OFFSET ${Number(offset)}`
+    const known = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = ?")
+      .get(table);
+    if (!known) return { columns: [], rows: [] };
+    return debugRows(
+      db.prepare(`SELECT * FROM "${table}" LIMIT ${Number(limit)} OFFSET ${Number(offset)}`)
     );
-    if (!result[0]) return { columns: [], rows: [] };
-    return {
-      columns: result[0].columns,
-      rows: result[0].values,
-    };
   });
 
   handle('debug:dbExec', (_, sql: string) => {
     const db = getSqlite();
     if (!db) return { columns: [], rows: [], error: 'No database' };
     try {
-      const result = db.exec(sql);
-      saveDb();
-      if (!result[0]) return { columns: [], rows: [] };
-      return { columns: result[0].columns, rows: result[0].values };
+      const stmt = db.prepare(sql);
+      if (stmt.columns().length === 0) {
+        stmt.run();
+        return { columns: [], rows: [] };
+      }
+      return debugRows(stmt);
     } catch (err) {
       return { columns: [], rows: [], error: String(err) };
     }
