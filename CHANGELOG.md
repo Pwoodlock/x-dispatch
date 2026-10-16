@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A taxi map in the Flight Strip.** Press the map button and a heading-up view of the airport opens under the strip, with your taxi route, taxiway and runway labels and your aircraft on it. It follows you as you taxi, and tells you when no route is planned yet. Without X-Plane it previews the route from its start. It works in the popped-out strip too.
+- **Load a VATSIM or IVAO pilot's flight plan.** Open a pilot's card and press the plan button to hand their filed route to the planner. Speed and level notes are dropped, a filed SID or STAR goes into the procedure picker, and one line tells you what was changed.
+- **The Flight Strip hides while X-Plane is away** and comes back when it reconnects, without taking focus. A strip you opened yourself before X-Plane was running stays up.
+
+### Changed
+
+- **A new symbol for your aircraft on the map.** One clear airplane, or helicopter, in the app's colours. It stays the same size whether you look at the whole globe or the terminal area, grows a little on the taxi map, and a line from the nose shows where you will be in one minute at your current speed. The blurry silhouette, the glow, the shadow and the blinking lights are gone.
+- **Online ATC shows on the airport itself.** A staffed airport gets a ring on its dot and a letter for each position next to its name. Hover for the summary, click for every position with its frequency and ATIS.
+- **VATSIM and IVAO share the same pilot and ATC cards.** The separate IVAO popup, trails and badges are gone.
+- **The Flight Strip window buttons sit inside the strip,** always visible and sized with it.
+
+### Fixed
+
+- **Starting on a runway with a one-digit name, such as 8L, works again.** X-Plane only accepts two-digit names, so the launcher now sends 08L. About 3,600 runway ends were affected.
+- **The taxi planner follows an imported flight plan's runways.** It used to look at the plan only when you picked a gate. A route you drew yourself is never replaced.
+- **The SimBrief Performance tab no longer crashes** on plans without runway analysis; it says the takeoff and landing report is not available.
+- **A locked Flight Strip takes the first click** on its buttons on Windows.
+- **The Windows installer has its icon back.**
+
 ## [2.6.0] - 2026-10-14
 
 ### Added

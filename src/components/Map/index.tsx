@@ -77,7 +77,6 @@ import {
   useTrackControl,
   useVatsimSectorSync,
 } from './hooks';
-import { useOwnAircraftLights } from './hooks/useOwnAircraftLights';
 import { useProfileControl } from './hooks/useProfileControl';
 import { useProfileHoverSync } from './hooks/useProfileHoverSync';
 import { useSatelliteClouds } from './hooks/useSatelliteClouds';
@@ -408,7 +407,6 @@ export default function Map({ airports }: MapProps) {
   useApproachLightAnimation(mapRef);
   useGroundWeather(mapRef);
   useSimTraffic(mapRef);
-  useOwnAircraftLights(mapRef);
   useAirfieldLights(mapRef);
   useAirfieldStrobes(mapRef);
 
