@@ -16,7 +16,7 @@ export type SqliteDatabase<TSchema extends Record<string, unknown>> = BaseSQLite
   TSchema
 >;
 
-/** Loaded at runtime: Vite's builtin list predates node:sqlite and would try to bundle it. */
+/** Loaded at runtime, so bundling never depends on whether the build Node lists node:sqlite as a builtin. */
 export function openSqlite(file: string): DatabaseSync {
   const { DatabaseSync: Database } = process.getBuiltinModule(
     'node:sqlite'

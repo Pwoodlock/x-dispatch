@@ -1561,11 +1561,9 @@ function registerIpcHandlers() {
     if (!db) return { columns: [], rows: [], error: 'No database' };
     try {
       const stmt = db.prepare(sql);
-      if (stmt.columns().length === 0) {
-        stmt.run();
-        return { columns: [], rows: [] };
-      }
-      return debugRows(stmt);
+      if (stmt.columns().length > 0) return debugRows(stmt);
+      db.exec(sql);
+      return { columns: [], rows: [] };
     } catch (err) {
       return { columns: [], rows: [], error: String(err) };
     }

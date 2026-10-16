@@ -184,7 +184,11 @@ export async function initDb(): Promise<DrizzleDatabase> {
   try {
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     sqlite = openSqlite(dbPath);
-    sqlite.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;');
+    // No fsync: an OS crash can at worst corrupt a cache that recovery deletes and rebuilds.
+    // The larger checkpoint and page cache bring a full rescan back to sql.js speed.
+    sqlite.exec(
+      'PRAGMA journal_mode = WAL; PRAGMA synchronous = OFF; PRAGMA wal_autocheckpoint = 10000; PRAGMA cache_size = -32768;'
+    );
     if (!staleRemoved) dropAllTables(sqlite);
     db = drizzleNodeSqlite(sqlite, schema);
     migrate(db as never, { migrationsFolder });
