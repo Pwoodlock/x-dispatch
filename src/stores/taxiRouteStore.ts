@@ -3,12 +3,12 @@
  * Manages taxi route state for airport ground navigation.
  *
  * Two modes:
- * - network: clicks snap to taxi network nodes, A* pathfinds between them
+ * - network: clicks snap to taxi network nodes, the router fills in the path between them
  * - freehand: arbitrary clicks on the map (legacy behavior)
  */
 import { create } from 'zustand';
-import type { PathResult, TaxiGraph } from '@/lib/taxiGraph';
-import { findNearestNode, findPath } from '@/lib/taxiGraph';
+import type { PathResult, StandLink, TaxiGraph } from '@/lib/taxiGraph';
+import { findPath, summarizePath } from '@/lib/taxiGraph';
 import type { GuidanceSource } from '@/lib/taxiGuidance';
 
 // ============================================================================
@@ -27,9 +27,8 @@ export type TaxiRouteMode = 'network' | 'freehand';
  *   - departure: gate → runway end (taxi out for takeoff)
  *   - arrival:   runway end → gate (taxi in after landing)
  *
- * The pathfinder is direction-agnostic (A* on the undirected taxi graph
- * is symmetric), so this only changes which endpoint the UI presents as
- * source vs destination.
+ * Departures end at a hold-short point and arrivals start at a runway exit,
+ * so the planner picks different endpoints for each.
  */
 export type TaxiRouteDirection = 'departure' | 'arrival';
 
@@ -43,16 +42,22 @@ interface TaxiRouteState {
   // --- Network mode state ---
   /** The user-clicked node IDs (anchors for re-routing) */
   clickedNodeIds: number[];
-  /** The full resolved path as node IDs (includes intermediate A* nodes) */
+  /** The full resolved path as node IDs (includes the router's intermediate nodes) */
   networkNodeIds: number[];
   /** Prebuilt graph for the active airport */
   graph: TaxiGraph | null;
-  /** Last A* result for route summary (taxiway names, distance) */
+  /** Last planned route, for the route summary (taxiway names, distance) */
   autoRouteResult: PathResult | null;
   /** Currently selected runway end name (e.g. "25R") */
   selectedRunway: string | null;
   /** Suggested by X-Dispatch until the pilot picks or edits anything. */
   source: GuidanceSource;
+  /** ICAO size code of the stand the route starts or ends at; routes keep to taxiways that wide. */
+  sizeCode: string | null;
+  /** Where the route joins the network from its stand, and leaves it for its stand. */
+  standLink: StandLinks;
+  /** Earlier states of the network route, most recent last, for undo. */
+  history: RouteSnapshot[];
 
   // --- Shared state ---
   activeTaxiIcao: string | null;
@@ -62,29 +67,22 @@ interface TaxiRouteState {
   setMode: (mode: TaxiRouteMode) => void;
   setDirection: (direction: TaxiRouteDirection) => void;
   setGraph: (graph: TaxiGraph | null) => void;
+  setSizeCode: (sizeCode: string | null) => void;
   setActiveAirport: (icao: string) => void;
   addWaypoint: (lon: number, lat: number) => void;
   addNetworkNode: (nodeId: number) => void;
-  /**
-   * Auto-route between two positions on the taxi graph. Endpoints are
-   * positional ("from"/"to") rather than gate/runway because the same
-   * call serves both departure and arrival flows — the UI decides which
-   * is which.
-   */
-  computeAutoRoute: (
-    fromLon: number,
-    fromLat: number,
-    toLon: number,
-    toLat: number,
-    runwayName: string,
-    source: GuidanceSource
-  ) => void;
+  /** Take a route X-Dispatch planned from the stand to a runway, or the other way. */
+  setAutoRoute: (result: PathResult, runwayName: string, source: GuidanceSource) => void;
   /** Replace a clicked anchor node at the given index with a new node, re-route */
   replaceNetworkNode: (anchorIndex: number, newNodeId: number) => void;
   /** Find which anchor segment a network node index falls in */
   findAnchorSegment: (networkIndex: number) => number;
   /** Insert a via-point by splitting a segment */
   insertViaNode: (afterAnchorIndex: number, nodeId: number) => void;
+  /** Drop a via-point; the route's two ends stay. */
+  removeViaNode: (anchorIndex: number) => void;
+  /** Go back to the route before the last change, or drop the last point when there is no history. */
+  undo: () => void;
   /** Reopen a route planned earlier (kept for guidance after the planner closed). */
   restoreRoute: (route: {
     direction: TaxiRouteDirection;
@@ -92,6 +90,7 @@ interface TaxiRouteState {
     nodeIds: number[];
     runway: string | null;
     source: GuidanceSource;
+    standLink?: StandLinks;
   }) => void;
   removeLastWaypoint: () => void;
   removeLastNetworkNode: () => void;
@@ -104,19 +103,70 @@ interface TaxiRouteState {
 // Helpers
 // ============================================================================
 
+export interface StandLinks {
+  from: StandLink | null;
+  to: StandLink | null;
+}
+
+const NO_LINKS: StandLinks = { from: null, to: null };
+
+/** A network route as undo restores it. */
+export type RouteSnapshot = Pick<
+  TaxiRouteState,
+  | 'clickedNodeIds'
+  | 'networkNodeIds'
+  | 'autoRouteResult'
+  | 'selectedRunway'
+  | 'source'
+  | 'standLink'
+>;
+
+const HISTORY_LIMIT = 30;
+
+function snapshot(s: TaxiRouteState): RouteSnapshot {
+  return {
+    clickedNodeIds: s.clickedNodeIds,
+    networkNodeIds: s.networkNodeIds,
+    autoRouteResult: s.autoRouteResult,
+    selectedRunway: s.selectedRunway,
+    source: s.source,
+    standLink: s.standLink,
+  };
+}
+
+/** The history with the current route pushed on, for an action about to change it. */
+function pushHistory(s: TaxiRouteState): RouteSnapshot[] {
+  if (s.networkNodeIds.length === 0) return s.history;
+  return [...s.history, snapshot(s)].slice(-HISTORY_LIMIT);
+}
+
 /**
- * Rebuild the full networkNodeIds from clickedNodeIds by running A*
- * between each consecutive pair. Exported for preview computation.
+ * The full route through the picked nodes, routing between each consecutive
+ * pair, each leg carrying on from the way the last one arrived. `complete`
+ * is false when some pair has no route between them; that leg is then a
+ * straight line.
  */
-export function resolveFullPath(clickedIds: number[], graph: TaxiGraph | null): number[] {
-  if (!graph || clickedIds.length === 0) return [];
-  if (clickedIds.length === 1) return [clickedIds[0]!];
+export function resolvePath(
+  clickedIds: number[],
+  graph: TaxiGraph | null,
+  sizeCode: string | null = null
+): { nodeIds: number[]; complete: boolean } {
+  if (!graph || clickedIds.length === 0) return { nodeIds: [], complete: true };
+  if (clickedIds.length === 1) return { nodeIds: [clickedIds[0]!], complete: true };
+
+  let complete = true;
 
   const full: number[] = [];
   for (let i = 0; i < clickedIds.length - 1; i++) {
-    const result = findPath(graph, clickedIds[i]!, clickedIds[i + 1]!);
+    const result = findPath(
+      graph,
+      clickedIds[i]!,
+      clickedIds[i + 1]!,
+      full.length >= 2 ? full[full.length - 2] : undefined,
+      sizeCode
+    );
     if (!result) {
-      // No path between these nodes — just connect directly
+      complete = false;
       if (full.length === 0) full.push(clickedIds[i]!);
       full.push(clickedIds[i + 1]!);
     } else {
@@ -126,39 +176,16 @@ export function resolveFullPath(clickedIds: number[], graph: TaxiGraph | null): 
     }
   }
 
-  // Remove backtracking loops — if any node appears twice, the path
-  // doubled back on itself. Cut everything between the two occurrences.
-  // Example: [A, B, C, D, C, B, E] → [A, B, E]
-  // Walk backward from the end to find the LAST occurrence of each node,
-  // which gives us the shortest non-looping path.
-  const cleaned: number[] = [];
-  let i = 0;
-  while (i < full.length) {
-    const nodeId = full[i]!;
-    // Look ahead: does this node appear again later?
-    let lastIdx = i;
-    for (let j = i + 1; j < full.length; j++) {
-      if (full[j] === nodeId) lastIdx = j;
-    }
-    cleaned.push(nodeId);
-    i = lastIdx + 1; // skip to after the last occurrence
-  }
-
-  return cleaned;
+  return { nodeIds: full, complete };
 }
 
-/** Distance and taxiway names of a path already resolved, for the route summary. */
-function summarizePath(graph: TaxiGraph | null, nodeIds: number[]): PathResult | null {
-  if (!graph || nodeIds.length < 2) return null;
-  let totalDistance = 0;
-  const taxiwayNames: string[] = [];
-  for (let i = 0; i < nodeIds.length - 1; i++) {
-    const edge = graph.adjacency.get(nodeIds[i]!)?.find((e) => e.toNodeId === nodeIds[i + 1]!);
-    if (!edge) continue;
-    totalDistance += edge.distance;
-    taxiwayNames.push(edge.edge.name);
-  }
-  return { nodeIds, totalDistance, taxiwayNames };
+/** `resolvePath`'s node IDs. */
+export function resolveFullPath(
+  clickedIds: number[],
+  graph: TaxiGraph | null,
+  sizeCode: string | null = null
+): number[] {
+  return resolvePath(clickedIds, graph, sizeCode).nodeIds;
 }
 
 // ============================================================================
@@ -175,11 +202,22 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
   autoRouteResult: null,
   selectedRunway: null,
   source: 'planned',
+  sizeCode: null,
+  standLink: NO_LINKS,
+  history: [],
   activeTaxiIcao: null,
   clickModeEnabled: false,
 
   setMode: (mode) =>
-    set({ mode, waypoints: [], clickedNodeIds: [], networkNodeIds: [], autoRouteResult: null }),
+    set({
+      mode,
+      waypoints: [],
+      clickedNodeIds: [],
+      networkNodeIds: [],
+      autoRouteResult: null,
+      standLink: NO_LINKS,
+      history: [],
+    }),
 
   setDirection: (direction) =>
     set({
@@ -190,9 +228,13 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: [],
       autoRouteResult: null,
       selectedRunway: null,
+      standLink: NO_LINKS,
+      history: [],
     }),
 
   setGraph: (graph) => set({ graph }),
+
+  setSizeCode: (sizeCode) => set({ sizeCode }),
 
   setActiveAirport: (icao) =>
     set({
@@ -200,6 +242,8 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       waypoints: [],
       clickedNodeIds: [],
       networkNodeIds: [],
+      standLink: NO_LINKS,
+      history: [],
       clickModeEnabled: true,
     }),
 
@@ -209,46 +253,45 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
     })),
 
   addNetworkNode: (nodeId) => {
-    const { clickedNodeIds, graph } = get();
+    const { clickedNodeIds, graph, sizeCode, standLink } = get();
     const newClicked = [...clickedNodeIds, nodeId];
     set({
+      history: pushHistory(get()),
       clickedNodeIds: newClicked,
-      networkNodeIds: resolveFullPath(newClicked, graph),
+      networkNodeIds: resolveFullPath(newClicked, graph, sizeCode),
       source: 'planned',
+      standLink: { ...standLink, to: null },
     });
   },
 
-  computeAutoRoute: (fromLon, fromLat, toLon, toLat, runwayName, source) => {
-    const { graph } = get();
-    if (!graph) return;
-
-    const fromNode = findNearestNode(graph, fromLon, fromLat, true);
-    const toNode = findNearestNode(graph, toLon, toLat, true);
-    if (!fromNode || !toNode) return;
-
-    const result = findPath(graph, fromNode.id, toNode.id);
-    if (result) {
-      set({
-        mode: 'network',
-        clickedNodeIds: [fromNode.id, toNode.id],
-        networkNodeIds: result.nodeIds,
-        autoRouteResult: result,
-        selectedRunway: runwayName,
-        source,
-      });
-    }
-  },
+  setAutoRoute: (result, runwayName, source) =>
+    set((state) => ({
+      history: pushHistory(state),
+      mode: 'network',
+      clickedNodeIds: [result.nodeIds[0]!, result.nodeIds[result.nodeIds.length - 1]!],
+      networkNodeIds: result.nodeIds,
+      autoRouteResult: result,
+      selectedRunway: runwayName,
+      source,
+      standLink: { from: result.from ?? null, to: result.to ?? null },
+    })),
 
   replaceNetworkNode: (anchorIndex, newNodeId) => {
-    const { clickedNodeIds, graph } = get();
+    const { clickedNodeIds, graph, sizeCode, standLink } = get();
     if (anchorIndex < 0 || anchorIndex >= clickedNodeIds.length) return;
     const newClicked = [...clickedNodeIds];
     newClicked[anchorIndex] = newNodeId;
     set({
+      history: pushHistory(get()),
       clickedNodeIds: newClicked,
-      networkNodeIds: resolveFullPath(newClicked, graph),
+      networkNodeIds: resolveFullPath(newClicked, graph, sizeCode),
       autoRouteResult: null, // summary invalidated
       source: 'planned',
+      // A moved end no longer meets its stand.
+      standLink: {
+        from: anchorIndex === 0 ? null : standLink.from,
+        to: anchorIndex === clickedNodeIds.length - 1 ? null : standLink.to,
+      },
     });
   },
 
@@ -268,7 +311,7 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
   },
 
   insertViaNode: (afterAnchorIndex, nodeId) => {
-    const { clickedNodeIds, graph } = get();
+    const { clickedNodeIds, graph, sizeCode } = get();
     if (afterAnchorIndex < 0 || afterAnchorIndex >= clickedNodeIds.length) return;
     const newClicked = [
       ...clickedNodeIds.slice(0, afterAnchorIndex + 1),
@@ -276,22 +319,51 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       ...clickedNodeIds.slice(afterAnchorIndex + 1),
     ];
     set({
+      history: pushHistory(get()),
       clickedNodeIds: newClicked,
-      networkNodeIds: resolveFullPath(newClicked, graph),
+      networkNodeIds: resolveFullPath(newClicked, graph, sizeCode),
       autoRouteResult: null,
       source: 'planned',
     });
   },
 
-  restoreRoute: ({ direction, anchorNodeIds, nodeIds, runway, source }) =>
+  removeViaNode: (anchorIndex) => {
+    const { clickedNodeIds, graph, sizeCode } = get();
+    if (anchorIndex <= 0 || anchorIndex >= clickedNodeIds.length - 1) return;
+    const newClicked = clickedNodeIds.filter((_, i) => i !== anchorIndex);
+    set({
+      history: pushHistory(get()),
+      clickedNodeIds: newClicked,
+      networkNodeIds: resolveFullPath(newClicked, graph, sizeCode),
+      autoRouteResult: null,
+      source: 'planned',
+    });
+  },
+
+  undo: () => {
+    const { history } = get();
+    const previous = history[history.length - 1];
+    if (!previous) {
+      // Nothing recorded (a restored route): step back one point, with no way to redo it.
+      get().removeLastNetworkNode();
+      set({ history: [] });
+      return;
+    }
+    set({ ...previous, history: history.slice(0, -1) });
+  },
+
+  restoreRoute: ({ direction, anchorNodeIds, nodeIds, runway, source, standLink }) =>
     set((state) => ({
       mode: 'network',
       direction,
       clickedNodeIds: anchorNodeIds,
       networkNodeIds: nodeIds,
-      autoRouteResult: summarizePath(state.graph, nodeIds),
+      autoRouteResult:
+        state.graph && nodeIds.length >= 2 ? summarizePath(state.graph, nodeIds) : null,
       selectedRunway: runway,
       source,
+      standLink: standLink ?? NO_LINKS,
+      history: [],
     })),
 
   removeLastWaypoint: () =>
@@ -300,13 +372,15 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
     })),
 
   removeLastNetworkNode: () => {
-    const { clickedNodeIds, graph } = get();
+    const { clickedNodeIds, graph, sizeCode, standLink } = get();
     if (clickedNodeIds.length === 0) return;
     const newClicked = clickedNodeIds.slice(0, -1);
     set({
+      history: pushHistory(get()),
       clickedNodeIds: newClicked,
-      networkNodeIds: resolveFullPath(newClicked, graph),
+      networkNodeIds: resolveFullPath(newClicked, graph, sizeCode),
       source: 'planned',
+      standLink: { from: newClicked.length > 0 ? standLink.from : null, to: null },
     });
   },
 
@@ -317,6 +391,8 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: [],
       autoRouteResult: null,
       selectedRunway: null,
+      standLink: NO_LINKS,
+      history: [],
     }),
 
   deactivate: () =>
@@ -327,6 +403,8 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: [],
       autoRouteResult: null,
       selectedRunway: null,
+      standLink: NO_LINKS,
+      history: [],
       clickModeEnabled: false,
     }),
 

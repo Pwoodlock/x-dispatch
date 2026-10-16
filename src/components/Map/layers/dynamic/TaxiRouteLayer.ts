@@ -20,6 +20,7 @@
  * we'll need a `CustomLayerInterface` WebGL layer.
  */
 import type * as maplibregl from 'maplibre-gl';
+import { labelFont } from '@/lib/map/labelFonts';
 import { safeAddGeoJSONSource } from '../types';
 
 const SOURCE_ID = 'taxi-route-source';
@@ -35,12 +36,16 @@ const HOLD_LAYER_ID = 'taxi-route-hold-bars';
 const PREVIEW_LAYER_ID = 'taxi-route-preview';
 const ENDPOINTS_LAYER_ID = 'taxi-route-endpoints';
 const HANDLE_LAYER_ID = 'taxi-route-handle';
+const HANDLE_LABEL_LAYER_ID = 'taxi-route-handle-label';
 
 const CHEVRON_IMAGE_ID = 'taxi-chevron';
 
 const ROUTE_GREEN = '#22c55e';
 const ROUTE_CASING = 'rgba(0, 0, 0, 0.7)';
-const PREVIEW_COLOR = 'rgba(34, 197, 94, 0.55)';
+/** A dragged route with no way through, drawn instead of a route that would not hold. */
+const PREVIEW_BLOCKED = '#ef4444';
+/** The route being replaced while a drag shows its new shape. */
+const DIMMED_OPACITY = 0.25;
 /** Hold-short bars: stop-bar red, on both basemaps. */
 const HOLD_RED = '#ef4444';
 
@@ -52,6 +57,7 @@ export const TAXI_ROUTE_LAYER_IDS = [
   PREVIEW_LAYER_ID,
   ENDPOINTS_LAYER_ID,
   HANDLE_LAYER_ID,
+  HANDLE_LABEL_LAYER_ID,
 ];
 
 export interface RoutePoint {
@@ -152,9 +158,15 @@ function buildEndpointsFC(endpoints: EndpointDef[]): GeoJSON.FeatureCollection {
   };
 }
 
-function buildHandleFC(
-  handle: { longitude: number; latitude: number; grabbed: boolean } | null
-): GeoJSON.FeatureCollection {
+export interface RouteHandle {
+  longitude: number;
+  latitude: number;
+  grabbed: boolean;
+  /** Taxiway the handle sits on, shown beside it while dragging. */
+  name?: string;
+}
+
+function buildHandleFC(handle: RouteHandle | null): GeoJSON.FeatureCollection {
   if (!handle) return EMPTY_FC;
   return {
     type: 'FeatureCollection',
@@ -162,7 +174,7 @@ function buildHandleFC(
       {
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [handle.longitude, handle.latitude] },
-        properties: { grabbed: handle.grabbed ? 1 : 0 },
+        properties: { grabbed: handle.grabbed ? 1 : 0, name: handle.name ?? '' },
       },
     ],
   };
@@ -263,9 +275,8 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
     source: PREVIEW_SOURCE_ID,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
-      'line-color': PREVIEW_COLOR,
-      'line-width': ['interpolate', ['linear'], ['zoom'], 13, 3, 18, 6, 22, 9],
-      'line-dasharray': [2, 2],
+      'line-color': ['case', ['==', ['get', 'blocked'], 1], PREVIEW_BLOCKED, ROUTE_GREEN],
+      'line-width': ['interpolate', ['linear'], ['zoom'], 13, 5, 18, 10, 22, 18],
     },
   });
 
@@ -303,6 +314,26 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
       'circle-stroke-width': 2,
     },
   });
+
+  map.addLayer({
+    id: HANDLE_LABEL_LAYER_ID,
+    type: 'symbol',
+    source: HANDLE_SOURCE_ID,
+    filter: ['all', ['==', ['get', 'grabbed'], 1], ['!=', ['get', 'name'], '']],
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-font': labelFont(map, 'bold'),
+      'text-size': 13,
+      'text-offset': [0, -1.6],
+      'text-allow-overlap': true,
+      'text-ignore-placement': true,
+    },
+    paint: {
+      'text-color': '#ffffff',
+      'text-halo-color': ROUTE_CASING,
+      'text-halo-width': 2,
+    },
+  });
 }
 
 /**
@@ -322,8 +353,7 @@ export function bringTaxiRouteToFront(map: maplibregl.Map): void {
 }
 
 export function setTaxiRoute(map: maplibregl.Map, points: RoutePoint[]): void {
-  const src = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-  src?.setData(buildLineFC(points));
+  setTaxiRouteLines(map, [points]);
 }
 
 /** Several routes at once: the planned departure and arrival while no route is being edited. */
@@ -332,15 +362,32 @@ export function setTaxiRouteLines(map: maplibregl.Map, lines: RoutePoint[][]): v
   src?.setData(buildLinesFC(lines));
 }
 
+/** Fade the route while a drag previews its new shape, so only one route reads at a time. */
+export function setTaxiRouteDimmed(map: maplibregl.Map, dimmed: boolean): void {
+  const opacity = dimmed ? DIMMED_OPACITY : 1;
+  if (map.getLayer(CASING_LAYER_ID)) map.setPaintProperty(CASING_LAYER_ID, 'line-opacity', opacity);
+  if (map.getLayer(LINE_LAYER_ID)) map.setPaintProperty(LINE_LAYER_ID, 'line-opacity', opacity);
+  if (map.getLayer(CHEVRON_LAYER_ID)) {
+    map.setPaintProperty(CHEVRON_LAYER_ID, 'icon-opacity', dimmed ? 0 : 1);
+  }
+}
+
 /** Hold-short bars across the route, each a two-point line. */
 export function setTaxiRouteHoldBars(map: maplibregl.Map, bars: RoutePoint[][]): void {
   const src = map.getSource(HOLD_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
   src?.setData(buildLinesFC(bars));
 }
 
-export function setTaxiRoutePreview(map: maplibregl.Map, points: RoutePoint[] | null): void {
+/** The route a drag would make, red when part of it has no way through. */
+export function setTaxiRoutePreview(
+  map: maplibregl.Map,
+  points: RoutePoint[] | null,
+  blocked = false
+): void {
   const src = map.getSource(PREVIEW_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-  src?.setData(buildLineFC(points ?? []));
+  const fc = buildLineFC(points ?? []);
+  for (const f of fc.features) f.properties = { blocked: blocked ? 1 : 0 };
+  src?.setData(fc);
 }
 
 export function setTaxiRouteEndpoints(map: maplibregl.Map, endpoints: EndpointDef[]): void {
@@ -348,10 +395,7 @@ export function setTaxiRouteEndpoints(map: maplibregl.Map, endpoints: EndpointDe
   src?.setData(buildEndpointsFC(endpoints));
 }
 
-export function setTaxiRouteHandle(
-  map: maplibregl.Map,
-  handle: { longitude: number; latitude: number; grabbed: boolean } | null
-): void {
+export function setTaxiRouteHandle(map: maplibregl.Map, handle: RouteHandle | null): void {
   const src = map.getSource(HANDLE_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
   src?.setData(buildHandleFC(handle));
 }

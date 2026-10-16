@@ -11,7 +11,7 @@
  *   - the click / hover / drag-to-reroute mouse handlers on the map
  *
  * Two route modes:
- *   - network: clicks snap to taxi network nodes; the path is filled in by A*
+ *   - network: clicks snap to taxi network nodes; the router fills in the path
  *   - freehand: clicks place arbitrary waypoints connected directly
  */
 import { useEffect, useMemo, useRef } from 'react';
@@ -23,19 +23,20 @@ import {
   bringTaxiRouteToFront,
   removeTaxiRouteLayer,
   setTaxiRoute,
+  setTaxiRouteDimmed,
   setTaxiRouteEndpoints,
   setTaxiRouteHandle,
   setTaxiRouteHoldBars,
   setTaxiRouteLines,
   setTaxiRoutePreview,
 } from '@/components/Map/layers/dynamic/TaxiRouteLayer';
-import { buildTaxiGraph, findNearestNode } from '@/lib/taxiGraph';
+import { buildTaxiGraph, findNearestEdge, findNearestNode } from '@/lib/taxiGraph';
 import type { TaxiGraph } from '@/lib/taxiGraph';
 import { type GuidancePoint, createGuidanceTracker, prepareRoute } from '@/lib/taxiGuidance';
 import { useAppStore } from '@/stores/appStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import { guidanceRoutes, useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
-import { resolveFullPath, useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
+import { resolvePath, useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import type { MapRef } from './useMapSetup';
 
 /** Pixel radius for detecting hover near route line. */
@@ -131,6 +132,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
   const mode = useTaxiRouteStore((s) => s.mode);
   const waypoints = useTaxiRouteStore((s) => s.waypoints);
   const networkNodeIds = useTaxiRouteStore((s) => s.networkNodeIds);
+  const standLink = useTaxiRouteStore((s) => s.standLink);
   const graph = useTaxiRouteStore((s) => s.graph);
   const taxiModeActive = useTaxiModeActive();
   const clickModeEnabled = useTaxiRouteStore((s) => s.clickModeEnabled);
@@ -148,12 +150,15 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     /** Segment index in the line for insertion */
     dragSegIndex: number;
     previewNodeId: number | null;
+    /** Whether the previewed route has a way through every leg; a drop is kept only then. */
+    previewComplete: boolean;
   }>({
     isDragging: false,
     dragType: 'line',
     dragAnchorIndex: -1,
     dragSegIndex: -1,
     previewNodeId: null,
+    previewComplete: false,
   });
 
   // Build the taxi graph when the active airport's network changes.
@@ -168,10 +173,17 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
 
   // Resolve the active route's geographic points based on the current mode.
   // useMemo so the reference is stable across renders that don't change inputs.
-  const drawPoints = useMemo<RoutePoint[]>(
-    () => (mode === 'network' ? resolveNetworkPoints(networkNodeIds, graph) : waypoints),
-    [mode, networkNodeIds, graph, waypoints]
-  );
+  const drawPoints = useMemo<RoutePoint[]>(() => {
+    if (mode !== 'network') return waypoints;
+    const points = resolveNetworkPoints(networkNodeIds, graph);
+    if (points.length === 0) return points;
+    const { from, to } = standLink;
+    return [
+      ...(from ? [{ longitude: from.lon, latitude: from.lat }] : []),
+      ...points,
+      ...(to ? [{ longitude: to.lon, latitude: to.lat }] : []),
+    ];
+  }, [mode, networkNodeIds, graph, waypoints, standLink]);
 
   // ──────────────────────────────────────────────────────────────────────
   // Layer lifecycle + sync
@@ -243,7 +255,8 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     let lastStep: string | null = null;
 
     const draw = (force: boolean) => {
-      if (taxiModeActive) return;
+      // Nothing to show behind X-Plane; `visibilitychange` redraws on the way back.
+      if (taxiModeActive || document.hidden) return;
       const plane = usePlaneStore.getState().state;
       const tracked = tracker.update(
         routes,
@@ -274,9 +287,12 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     map.on('load', apply);
     map.on('style.load', apply);
     const unsubscribe = usePlaneStore.subscribe(() => draw(false));
+    const onVisible = () => draw(true);
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       map.off('load', apply);
       map.off('style.load', apply);
+      document.removeEventListener('visibilitychange', onVisible);
       unsubscribe();
     };
   }, [mapRef, departureRoute, arrivalRoute, taxiModeActive]);
@@ -299,11 +315,14 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
 
     const handleMapClick = (e: maplibregl.MapMouseEvent) => {
       // Suppress click that immediately follows a drag.
-      if (interactionRef.current.isDragging) return;
+      const inter = interactionRef.current;
+      if (inter.isDragging) return;
+      // A click on a picked point is the start of a double-click to remove it, not a new point.
+      if (inter.dragType === 'anchor' && inter.dragAnchorIndex >= 0) return;
 
       const { mode: currentMode, graph: currentGraph } = useTaxiRouteStore.getState();
       if (currentMode === 'network' && currentGraph) {
-        const nearest = findNearestNode(currentGraph, e.lngLat.lng, e.lngLat.lat);
+        const nearest = findNearestNode(currentGraph, e.lngLat.lng, e.lngLat.lat, true);
         if (nearest) addNetworkNode(nearest.id);
       } else {
         addWaypoint(e.lngLat.lng, e.lngLat.lat);
@@ -340,7 +359,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       inter: typeof interactionRef.current,
       g: TaxiGraph,
       clicked: number[]
-    ): RoutePoint[] | null => {
+    ): { points: RoutePoint[]; complete: boolean } | null => {
       if (inter.previewNodeId == null) return null;
 
       let hypothetical: number[];
@@ -355,13 +374,23 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
         ];
       }
 
-      const nodeIds = resolveFullPath(hypothetical, g);
+      const { sizeCode, standLink } = useTaxiRouteStore.getState();
+      const { nodeIds, complete } = resolvePath(hypothetical, g, sizeCode);
       const pts: RoutePoint[] = [];
+      // The stand ends stay unless the drag moves that end.
+      const keepFrom = !(inter.dragType === 'anchor' && inter.dragAnchorIndex === 0);
+      const keepTo = !(inter.dragType === 'anchor' && inter.dragAnchorIndex === clicked.length - 1);
+      if (keepFrom && standLink.from) {
+        pts.push({ longitude: standLink.from.lon, latitude: standLink.from.lat });
+      }
       for (const id of nodeIds) {
         const node = g.nodes.get(id);
         if (node) pts.push({ longitude: node.lon, latitude: node.lat });
       }
-      return pts.length >= 2 ? pts : null;
+      if (keepTo && standLink.to) {
+        pts.push({ longitude: standLink.to.lon, latitude: standLink.to.lat });
+      }
+      return pts.length >= 2 ? { points: pts, complete } : null;
     };
 
     const handleMouseMove = (e: maplibregl.MapMouseEvent) => {
@@ -375,6 +404,9 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
 
       if (m !== 'network' || !g || ids.length < 2) {
         setTaxiRouteHandle(map, null);
+        inter.dragType = 'line';
+        inter.dragAnchorIndex = -1;
+        inter.dragSegIndex = -1;
         mapCanvas.style.cursor = '';
         return;
       }
@@ -382,18 +414,21 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       const cursor = map.project(e.lngLat.toArray() as [number, number]);
 
       if (inter.isDragging) {
-        const nearest = findNearestNode(g, e.lngLat.lng, e.lngLat.lat, true);
-        if (nearest) {
-          inter.previewNodeId = nearest.id;
-          const node = g.nodes.get(nearest.id);
-          if (node) {
-            setTaxiRouteHandle(map, {
-              longitude: node.lon,
-              latitude: node.lat,
-              grabbed: true,
-            });
+        // Slide along the taxiway centreline under the cursor; the drop takes the nearer node.
+        const snap = findNearestEdge(g, e.lngLat.lng, e.lngLat.lat);
+        if (snap) {
+          setTaxiRouteHandle(map, {
+            longitude: snap.lon,
+            latitude: snap.lat,
+            grabbed: true,
+            name: snap.name,
+          });
+          if (snap.nodeId !== inter.previewNodeId) {
+            inter.previewNodeId = snap.nodeId;
+            const preview = buildPreview(inter, g, clicked);
+            inter.previewComplete = preview?.complete ?? false;
+            setTaxiRoutePreview(map, preview?.points ?? null, !inter.previewComplete);
           }
-          setTaxiRoutePreview(map, buildPreview(inter, g, clicked));
         }
         return;
       }
@@ -457,7 +492,9 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       e.preventDefault();
       inter.isDragging = true;
       inter.previewNodeId = null;
+      inter.previewComplete = false;
       setTaxiRoutePreview(map, null);
+      setTaxiRouteDimmed(map, true);
       map.dragPan.disable();
       mapCanvas.style.cursor = 'grabbing';
     };
@@ -467,18 +504,22 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       if (!inter.isDragging) return;
 
       const nodeId = inter.previewNodeId;
+      const complete = inter.previewComplete;
       const dragType = inter.dragType;
       const anchorIdx = inter.dragAnchorIndex;
       const segIdx = inter.dragSegIndex;
 
       inter.isDragging = false;
       inter.previewNodeId = null;
+      inter.previewComplete = false;
       setTaxiRoutePreview(map, null);
       setTaxiRouteHandle(map, null);
+      setTaxiRouteDimmed(map, false);
       map.dragPan.enable();
       mapCanvas.style.cursor = '';
 
-      if (nodeId == null) return;
+      // A drop with no way through leaves the route as it was.
+      if (nodeId == null || !complete) return;
 
       const store = useTaxiRouteStore.getState();
       if (dragType === 'anchor' && anchorIdx >= 0) {
@@ -488,17 +529,35 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       }
     };
 
+    // Double-click a via-point to drop it. Captured ahead of MapLibre so the map does not zoom.
+    const container = map.getContainer();
+    const handleDblClick = (e: MouseEvent) => {
+      const inter = interactionRef.current;
+      const { clickedNodeIds: clicked, removeViaNode } = useTaxiRouteStore.getState();
+      const idx = inter.dragType === 'anchor' ? inter.dragAnchorIndex : -1;
+      if (idx <= 0 || idx >= clicked.length - 1) return;
+      e.preventDefault();
+      e.stopPropagation();
+      removeViaNode(idx);
+      inter.dragAnchorIndex = -1;
+      setTaxiRouteHandle(map, null);
+      mapCanvas.style.cursor = '';
+    };
+
     map.on('mousemove', handleMouseMove);
     map.on('mousedown', handleMouseDown);
     map.on('mouseup', handleMouseUp);
+    container.addEventListener('dblclick', handleDblClick, true);
 
     const interSnap = interactionRef.current;
     return () => {
       map.off('mousemove', handleMouseMove);
       map.off('mousedown', handleMouseDown);
       map.off('mouseup', handleMouseUp);
+      container.removeEventListener('dblclick', handleDblClick, true);
       if (interSnap.isDragging) {
         interSnap.isDragging = false;
+        setTaxiRouteDimmed(map, false);
         map.dragPan.enable();
         mapCanvas.style.cursor = '';
       }
