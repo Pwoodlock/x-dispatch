@@ -329,16 +329,25 @@ export default function Map({ airports }: MapProps) {
       return;
     }
 
+    // Behind X-Plane the window is hidden: every snapshot would still have the
+    // map's workers rebuild the aircraft's data for a map nobody sees.
     const apply = (state: PlaneState | null) => {
+      if (document.hidden) return;
       const position = planePositionFrom(state);
       if (!position) return;
       updatePlaneLayer(map, position);
       bringPlaneLayerToTop(map);
     };
+    const onVisible = () => apply(usePlaneStore.getState().state);
     apply(usePlaneStore.getState().state);
-    return usePlaneStore.subscribe((s, prev) => {
+    document.addEventListener('visibilitychange', onVisible);
+    const unsubscribe = usePlaneStore.subscribe((s, prev) => {
       if (s.state !== prev.state) apply(s.state);
     });
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      unsubscribe();
+    };
   }, [mapRef, showPlaneTracker, isXPlaneConnected]);
 
   // Cleanup plane layer on unmount
@@ -843,6 +852,8 @@ export default function Map({ airports }: MapProps) {
 
     let last: { lng: number; lat: number; heading: number } | null = null;
     const follow = (state: PlaneState | null) => {
+      // Hidden behind X-Plane, each move would still load tiles for a map nobody sees.
+      if (document.hidden) return;
       const position = planePositionFrom(state);
       if (!position) return;
       const target = { lng: position.lng, lat: position.lat, heading: position.heading ?? 0 };
@@ -866,9 +877,15 @@ export default function Map({ airports }: MapProps) {
       isProgrammaticMoveRef.current = false;
     };
     follow(usePlaneStore.getState().state);
-    return usePlaneStore.subscribe((s, prev) => {
+    const onVisible = () => follow(usePlaneStore.getState().state);
+    document.addEventListener('visibilitychange', onVisible);
+    const unsubscribe = usePlaneStore.subscribe((s, prev) => {
       if (s.state !== prev.state) follow(s.state);
     });
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      unsubscribe();
+    };
   }, [mapRef, followPlane]);
 
   // Disable follow mode when user interacts with the map (not programmatic)

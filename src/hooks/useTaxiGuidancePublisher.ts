@@ -18,6 +18,12 @@ export type GuidanceSyncAction =
  * the planner changes the session (`activeTaxiIcao`) and keeps the route, so
  * guidance survives the panel being closed.
  */
+/** Points the planner's route is drawn through: its nodes and where it meets its stands. */
+function drawnPoints(s: PlannerState): number {
+  if (s.networkNodeIds.length === 0) return 0;
+  return s.networkNodeIds.length + (s.standLink.from ? 1 : 0) + (s.standLink.to ? 1 : 0);
+}
+
 export function guidanceSyncAction(prev: PlannerState, next: PlannerState): GuidanceSyncAction {
   const changed =
     prev.networkNodeIds !== next.networkNodeIds ||
@@ -26,17 +32,15 @@ export function guidanceSyncAction(prev: PlannerState, next: PlannerState): Guid
     prev.selectedRunway !== next.selectedRunway ||
     prev.mode !== next.mode ||
     prev.source !== next.source ||
+    prev.standLink !== next.standLink ||
     prev.activeTaxiIcao !== next.activeTaxiIcao;
   if (!changed) return null;
 
   const hasRoute =
-    next.mode === 'network' &&
-    next.networkNodeIds.length >= 2 &&
-    !!next.graph &&
-    !!next.activeTaxiIcao;
+    next.mode === 'network' && drawnPoints(next) >= 2 && !!next.graph && !!next.activeTaxiIcao;
   if (hasRoute) return { type: 'publish' };
 
-  const hadRoute = prev.mode === 'network' && prev.networkNodeIds.length >= 2;
+  const hadRoute = prev.mode === 'network' && drawnPoints(prev) >= 2;
   const sameSession =
     prev.activeTaxiIcao !== null &&
     prev.activeTaxiIcao === next.activeTaxiIcao &&
@@ -67,6 +71,7 @@ export function useTaxiGuidancePublisher(): void {
         gateName: useAppStore.getState().startPosition?.name ?? null,
         source: next.source,
         anchorNodeIds: next.clickedNodeIds,
+        standLink: next.standLink,
       });
       if (route) guidance.setRoute(route);
     });

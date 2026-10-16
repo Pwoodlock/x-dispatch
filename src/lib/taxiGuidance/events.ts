@@ -107,14 +107,15 @@ export function computeEvents(route: GuidanceRoute, g: RouteGeometry): GuidanceE
   }
 
   if (route.direction === 'departure') {
-    // Without zone data the route still ends at the runway: hold short at its end.
+    // A route planned to stop at the hold line, or one in a scenery without
+    // zones, never enters the runway's area: hold short at its end.
     if (!events.some((e) => e.kind === 'holdShort')) {
       const lastRunway = [...legs].reverse().find((l) => l.isRunway)?.name;
       events.push({
         kind: 'holdShort',
         runway: route.runway ?? lastRunway ?? '',
         at: g.total,
-        pointIndex: null,
+        pointIndex: g.xy.length > 1 ? g.xy.length - 1 : null,
       });
     }
   } else {
@@ -142,10 +143,13 @@ export function holdBarLines(g: RouteGeometry, events: GuidanceEvent[]): Guidanc
   for (const e of events) {
     if ((e.kind !== 'holdShort' && e.kind !== 'cross') || e.pointIndex === null) continue;
     const p = g.xy[e.pointIndex]!;
-    const ahead = pointAtDistance(g, g.cum[e.pointIndex]! + 10).point;
-    const len = Math.hypot(ahead.x - p.x, ahead.y - p.y);
+    // Square across the way in at the route's end, else across the way on.
+    const atEnd = e.pointIndex === g.xy.length - 1;
+    const from = atEnd ? pointAtDistance(g, g.cum[e.pointIndex]! - 10).point : p;
+    const to = atEnd ? p : pointAtDistance(g, g.cum[e.pointIndex]! + 10).point;
+    const len = Math.hypot(to.x - from.x, to.y - from.y);
     if (len === 0) continue;
-    const u = { x: (ahead.x - p.x) / len, y: (ahead.y - p.y) / len };
+    const u = { x: (to.x - from.x) / len, y: (to.y - from.y) / len };
     const n = { x: u.y, y: -u.x };
     for (const back of [0, HOLD_BAR_GAP_M]) {
       const c: Vec = { x: p.x - u.x * back, y: p.y - u.y * back };

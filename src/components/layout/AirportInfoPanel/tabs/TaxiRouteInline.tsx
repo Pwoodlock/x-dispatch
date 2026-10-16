@@ -20,9 +20,10 @@ import {
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useUnits } from '@/hooks/useUnits';
+import { normalizeWidthCode } from '@/lib/airports/standIdentity';
+import { planArrival, planDeparture } from '@/lib/taxiGraph';
 import { flightPlanTaxiTarget, replansAutoRoute } from '@/lib/taxiGraph/autoPlan';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
-import { getRolloutEnd } from '@/lib/taxiGraph/rolloutEnd';
 import type { GuidanceSource } from '@/lib/taxiGuidance';
 import { metersToNauticalMiles } from '@/lib/utils/geomath';
 import { toastError } from '@/lib/utils/toastError';
@@ -49,14 +50,15 @@ export default function TaxiRouteInline() {
   const waypoints = useTaxiRouteStore((s) => s.waypoints);
 
   const setActiveAirport = useTaxiRouteStore((s) => s.setActiveAirport);
-  const computeAutoRoute = useTaxiRouteStore((s) => s.computeAutoRoute);
+  const setAutoRoute = useTaxiRouteStore((s) => s.setAutoRoute);
+  const setSizeCode = useTaxiRouteStore((s) => s.setSizeCode);
   const clearRoute = useTaxiRouteStore((s) => s.clearRoute);
   const deactivate = useTaxiRouteStore((s) => s.deactivate);
   const setMode = useTaxiRouteStore((s) => s.setMode);
   const setDirection = useTaxiRouteStore((s) => s.setDirection);
   const restoreRoute = useTaxiRouteStore((s) => s.restoreRoute);
   const removeLastWaypoint = useTaxiRouteStore((s) => s.removeLastWaypoint);
-  const removeLastNetworkNode = useTaxiRouteStore((s) => s.removeLastNetworkNode);
+  const undo = useTaxiRouteStore((s) => s.undo);
 
   useEffect(() => {
     if (icao) setActiveAirport(icao);
@@ -80,6 +82,20 @@ export default function TaxiRouteInline() {
     return ends.sort((a, b) => a.name.localeCompare(b.name));
   }, [runways]);
 
+  // The chosen stand's ICAO size stands in for the aircraft's: routes keep to
+  // taxiways at least that wide.
+  const startupLocations = airport?.startupLocations;
+  const sizeCode = useMemo(() => {
+    if (startPosition?.type !== 'ramp' || !startupLocations) return null;
+    const byIndex = startupLocations[startPosition.index];
+    const stand =
+      byIndex?.name === startPosition.name
+        ? byIndex
+        : startupLocations.find((s) => s.name === startPosition.name);
+    return normalizeWidthCode(stand?.icaoWidthCode) ?? null;
+  }, [startPosition, startupLocations]);
+  useEffect(() => setSizeCode(sizeCode), [sizeCode, setSizeCode]);
+
   // Both directions use `startPosition` (the gate selected in the launcher)
   // as the gate endpoint. Departure routes gate → runway, arrival routes
   // runway → gate. Only the runway is a user pick.
@@ -88,40 +104,14 @@ export default function TaxiRouteInline() {
     routeDirection: TaxiRouteDirection = direction,
     source: GuidanceSource = 'planned'
   ) => {
-    if (!graph || !startPosition) return;
-    const rwyEnd = runwayEnds.find((r) => r.name === runwayName);
-    if (!rwyEnd) return;
-    // A found route replaces autoRouteResult; an unchanged one means no path to this runway.
-    const previousResult = useTaxiRouteStore.getState().autoRouteResult;
-
-    if (routeDirection === 'departure') {
-      computeAutoRoute(
-        startPosition.longitude,
-        startPosition.latitude,
-        rwyEnd.lon,
-        rwyEnd.lat,
-        runwayName,
-        source
-      );
-    } else {
-      // Arrival: the aircraft rolls out to the OPPOSITE end of the landing
-      // runway before exiting onto a taxiway. Starting the route at the
-      // touchdown threshold would force a backtrack down the entire runway.
-      const rollout = getRolloutEnd(airport?.runways, runwayName);
-      const startLon = rollout?.longitude ?? rwyEnd.lon;
-      const startLat = rollout?.latitude ?? rwyEnd.lat;
-      computeAutoRoute(
-        startLon,
-        startLat,
-        startPosition.longitude,
-        startPosition.latitude,
-        runwayName,
-        source
-      );
-    }
-    if (useTaxiRouteStore.getState().autoRouteResult === previousResult) {
-      trackEvent('taxi_route_auto_failed', {});
-    }
+    if (!graph || !startPosition || !runways) return;
+    const gate = { lat: startPosition.latitude, lon: startPosition.longitude };
+    const result =
+      routeDirection === 'departure'
+        ? planDeparture(graph, runways, gate, runwayName, sizeCode)
+        : planArrival(graph, runways, runwayName, gate, sizeCode);
+    if (result) setAutoRoute(result, runwayName, source);
+    else trackEvent('taxi_route_auto_failed', {});
   };
 
   // The flight plan's airports and runways (SimBrief or our planner), as plain values so a
@@ -295,7 +285,7 @@ export default function TaxiRouteInline() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => (isNetwork ? removeLastNetworkNode() : removeLastWaypoint())}
+          onClick={() => (isNetwork ? undo() : removeLastWaypoint())}
           disabled={!hasRoute}
           tooltip={t('airportInfo.taxiRoute.undo')}
           className="h-8 w-8 shrink-0"

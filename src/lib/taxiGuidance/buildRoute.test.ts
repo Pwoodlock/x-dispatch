@@ -54,6 +54,19 @@ describe('buildGuidanceRoute', () => {
     ]);
   });
 
+  it('starts and ends at the stands, on the taxiway each one meets', () => {
+    const from = { ...at(0, -40), name: 'W' };
+    const to = { ...at(50, 200), name: 'K' };
+    const route = buildGuidanceRoute(buildTaxiGraph(network()), [1, 2, 3, 4], {
+      ...meta,
+      standLink: { from, to },
+    })!;
+    expect(route.points[0]).toEqual(at(0, -40));
+    expect(route.points.at(-1)).toEqual(at(50, 200));
+    expect(route.legs.map((l) => l.name)).toEqual(['W', 'A', 'M4', 'K']);
+    expect(route.legs).toHaveLength(route.points.length - 1);
+  });
+
   it('files zones that name single runway ends under their runway', () => {
     const graph = buildTaxiGraph({
       ...network(),

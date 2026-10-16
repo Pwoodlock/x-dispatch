@@ -1,4 +1,5 @@
 export { buildTaxiGraph } from './buildGraph';
-export { findNearestNode } from './nearestNode';
-export { findPath } from './astar';
-export type { TaxiGraph, PathResult, IndexedNode } from './types';
+export { type EdgeSnap, findNearestEdge, findNearestNode } from './nearestNode';
+export { findPath, planArrival, planDeparture } from './plan';
+export { summarizePath } from './search';
+export type { TaxiGraph, PathResult, IndexedNode, StandLink } from './types';

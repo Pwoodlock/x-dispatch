@@ -38,6 +38,16 @@ export interface GuidanceRoute {
   /** Editor state, so the planner can reopen the route: the picked nodes and the full path. */
   anchorNodeIds: number[];
   nodeIds: number[];
+  /** Editor state: where the route meets its stands, already part of `points`. */
+  standLink?: {
+    from: StandPoint | null;
+    to: StandPoint | null;
+  };
+}
+
+/** A route's point abeam its stand, on the taxiway named. */
+export interface StandPoint extends GuidancePoint {
+  name: string;
 }
 
 export type TurnKind =
