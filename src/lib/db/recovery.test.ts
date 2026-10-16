@@ -362,9 +362,14 @@ describe('DB integrity & recovery', () => {
       expect(fs.statSync(dbFilePath()).mtimeMs).toBeGreaterThan(before);
     });
 
-    /** Lets real fs promises settle while setTimeout stays faked. */
+    /**
+     * Lets real fs promises settle while setTimeout stays faked. The budget is
+     * wall-clock time, not event-loop turns: a loaded CI runner burns through
+     * turns long before the write lands.
+     */
     async function until(check: () => boolean) {
-      for (let i = 0; i < 5000 && !check(); i++) {
+      const deadline = Date.now() + 10_000;
+      while (!check() && Date.now() < deadline) {
         await new Promise((resolve) => setImmediate(resolve));
       }
       expect(check()).toBe(true);
