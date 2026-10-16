@@ -2070,7 +2070,37 @@
     "copyImage": "Kopiuj jako obraz",
     "imageCopied": "Karta lądowania skopiowana do schowka",
     "imageCopyFailed": "Nie udało się skopiować karty lądowania",
-    "earlierLandings": "Wcześniejsze przyziemienia w tym locie: {{rates}} fpm"
+    "earlierLandings": "Wcześniejsze przyziemienia w tym locie: {{rates}} fpm",
+    "addFlight": "Dodaj lot",
+    "editFlight": "Edytuj lot",
+    "importCsv": "Importuj CSV",
+    "exportCsv": "Eksportuj CSV",
+    "exported": "Dziennik wyeksportowany: {{count}} lotów",
+    "exportFailed": "Nie udało się wyeksportować dziennika",
+    "imported": "Zaimportowano {{imported}} lotów, {{skipped}} już w dzienniku, {{rejected}} nieczytelnych",
+    "importFailed": "Nie udało się zaimportować dziennika",
+    "saveFailed": "Nie udało się zapisać lotu",
+    "totals": {
+      "flights": "Loty",
+      "avgTouchdown": "Śr. przyziemienie",
+      "bestTouchdown": "Najlepsze przyziemienie"
+    },
+    "edit": {
+      "date": "Data i godzina",
+      "departure": "Odlot",
+      "arrival": "Przylot",
+      "icao": "ICAO",
+      "airportName": "Nazwa lotniska",
+      "aircraftIcao": "Typ (ICAO)",
+      "aircraftName": "Samolot",
+      "livery": "Malowanie",
+      "blockMinutes": "Czas blokowy (min)",
+      "airMinutes": "Czas w powietrzu (min)",
+      "distanceNm": "Dystans (NM)",
+      "landings": "Lądowania",
+      "manualHint": "Lot dodany ręcznie nie ma śladu ani raportu lądowania.",
+      "editHint": "Ślad i raport lądowania pozostają takie, jak zapisano."
+    }
   },
   "landing": {
     "title": "Lądowanie",

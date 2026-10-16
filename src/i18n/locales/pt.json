@@ -2070,7 +2070,37 @@
     "copyImage": "Copiar como imagem",
     "imageCopied": "Cartão de pouso copiado para a área de transferência",
     "imageCopyFailed": "Não foi possível copiar o cartão de pouso",
-    "earlierLandings": "Toques anteriores neste voo: {{rates}} fpm"
+    "earlierLandings": "Toques anteriores neste voo: {{rates}} fpm",
+    "addFlight": "Adicionar voo",
+    "editFlight": "Editar voo",
+    "importCsv": "Importar CSV",
+    "exportCsv": "Exportar CSV",
+    "exported": "Diário exportado: {{count}} voos",
+    "exportFailed": "Não foi possível exportar o diário",
+    "imported": "{{imported}} voos importados, {{skipped}} já no diário, {{rejected}} ilegíveis",
+    "importFailed": "Não foi possível importar o diário",
+    "saveFailed": "Não foi possível salvar o voo",
+    "totals": {
+      "flights": "Voos",
+      "avgTouchdown": "Toque médio",
+      "bestTouchdown": "Melhor toque"
+    },
+    "edit": {
+      "date": "Data e hora",
+      "departure": "Partida",
+      "arrival": "Chegada",
+      "icao": "ICAO",
+      "airportName": "Nome do aeroporto",
+      "aircraftIcao": "Tipo (ICAO)",
+      "aircraftName": "Aeronave",
+      "livery": "Pintura",
+      "blockMinutes": "Tempo de calço (min)",
+      "airMinutes": "Tempo de voo (min)",
+      "distanceNm": "Distância (NM)",
+      "landings": "Pousos",
+      "manualHint": "Um voo adicionado à mão não tem trilha nem relatório de pouso.",
+      "editHint": "A trilha e o relatório de pouso ficam como foram gravados."
+    }
   },
   "landing": {
     "title": "Pouso",

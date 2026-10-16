@@ -1,13 +1,30 @@
-import { app, shell } from 'electron';
+import { type BrowserWindow, app, dialog, shell } from 'electron';
+import * as fs from 'fs';
 import * as path from 'path';
 import { broadcast, handle } from '@/lib/remote/handlerRegistry';
 import logger from '@/lib/utils/logger';
 import type { AircraftHint, FlightAirport, FlightRecorderEvent } from '@/types/flightRecorder';
 import { FlightRecorder } from './FlightRecorder';
+import { applyFlightEdit, newManualFlight } from './flightEdit';
 import { FlightStore } from './flightStore';
+import { flightsToCsv, parseFlightsCsv } from './logbookCsv';
 import type { AirportRunways } from './runwayMatch';
 
+export interface LogbookExportResult {
+  path: string;
+  count: number;
+}
+
+export interface LogbookImportResult {
+  imported: number;
+  /** Rows whose id is already in the logbook. */
+  skipped: number;
+  /** Rows that could not be read. */
+  rejected: number;
+}
+
 export interface FlightRecorderIpcDeps {
+  getMainWindow: () => BrowserWindow | null;
   /** Airports inside a lat/lon box — a database query, not a full-table load. */
   getAirportsInBounds: (
     minLat: number,
@@ -166,6 +183,82 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
     recorder.setEnabled(enabled);
   });
   handle('flights:openFolder', () => shell.openPath(store.directory));
+
+  handle('flights:update', async (_, id: string, input: unknown) => {
+    const current = store.list().find((f) => f.id === id);
+    // The recorder owns a flight until it ends; edits wait for that.
+    if (!current || current.status === 'active') return null;
+    const edited = applyFlightEdit(current, input);
+    await store.replace(edited);
+    broadcast('flights:event', { type: 'flightUpdated', flight: edited });
+    return edited;
+  });
+  handle('flights:create', (_, input: unknown) => {
+    const flight = newManualFlight(input);
+    store.create(flight);
+    broadcast('flights:event', { type: 'flightUpdated', flight });
+    return flight;
+  });
+
+  const dialogWindow = () => {
+    const win = deps.getMainWindow();
+    if (win && !win.isDestroyed()) {
+      if (!win.isFocused()) win.focus();
+      return win;
+    }
+    return null;
+  };
+  const csvFilters = [{ name: 'CSV', extensions: ['csv'] }];
+
+  handle('flights:exportCsv', async (): Promise<LogbookExportResult | null> => {
+    const flights = store.list().filter((f) => f.status !== 'active');
+    const options: Electron.SaveDialogOptions = {
+      title: 'Export logbook',
+      defaultPath: `x-dispatch-logbook-${new Date().toISOString().slice(0, 10)}.csv`,
+      filters: csvFilters,
+    };
+    const win = dialogWindow();
+    const result = win
+      ? await dialog.showSaveDialog(win, options)
+      : await dialog.showSaveDialog(options);
+    if (result.canceled || !result.filePath) return null;
+    await fs.promises.writeFile(result.filePath, flightsToCsv(flights), 'utf-8');
+    logger.tracker.info(`Exported ${flights.length} flight(s) to CSV`);
+    return { path: result.filePath, count: flights.length };
+  });
+
+  handle('flights:importCsv', async (): Promise<LogbookImportResult | null> => {
+    const options: Electron.OpenDialogOptions = {
+      title: 'Import logbook',
+      properties: ['openFile'],
+      filters: csvFilters,
+    };
+    const win = dialogWindow();
+    const result = win
+      ? await dialog.showOpenDialog(win, options)
+      : await dialog.showOpenDialog(options);
+    const file = result.filePaths[0];
+    if (result.canceled || !file) return null;
+    const parsed = parseFlightsCsv(await fs.promises.readFile(file, 'utf-8'));
+    const known = new Set(store.list().map((f) => f.id));
+    let imported = 0;
+    let skipped = 0;
+    for (const flight of parsed.flights) {
+      if (known.has(flight.id)) {
+        skipped += 1;
+        continue;
+      }
+      store.create(flight);
+      known.add(flight.id);
+      imported += 1;
+    }
+    if (imported > 0)
+      broadcast('flights:event', { type: 'flightUpdated', flight: parsed.flights[0]! });
+    logger.tracker.info(
+      `Imported ${imported} flight(s) from CSV, ${skipped} already present, ${parsed.rejectedLines.length} unreadable`
+    );
+    return { imported, skipped, rejected: parsed.rejectedLines.length };
+  });
 
   return recorder;
 }

@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { BookOpen, History, PlaneLanding, Trash2, X } from 'lucide-react';
+import { BookOpen, Download, History, PlaneLanding, Plus, Trash2, Upload, X } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   FULL_SCREEN_DIALOG,
   FULL_SCREEN_DIALOG_HEADER,
@@ -22,13 +23,25 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { FlightEditInput } from '@/lib/flightRecorder/flightEdit';
 import { cn } from '@/lib/utils/helpers';
+import { toastError } from '@/lib/utils/toastError';
 import { useTrackFeatureOpened } from '@/queries';
-import { useClearFlights, useFlightsQuery } from '@/queries/useFlightsQuery';
+import {
+  useClearFlights,
+  useCreateFlight,
+  useExportFlightsCsv,
+  useFlightsQuery,
+  useImportFlightsCsv,
+  useUpdateFlight,
+} from '@/queries/useFlightsQuery';
 import { type LogbookTab, useAppStore } from '@/stores/appStore';
+import type { FlightSummary } from '@/types/flightRecorder';
 import { FlightDetailPanel } from './FlightDetailPanel';
+import { FlightEditDialog } from './FlightEditDialog';
 import { FlightList } from './FlightList';
 import { LaunchHistory } from './LaunchHistory';
+import { LogbookTotals } from './LogbookTotals';
 
 export default function LogbookDialog() {
   const { t } = useTranslation();
@@ -42,6 +55,58 @@ export default function LogbookDialog() {
 
   const { data: flights = [] } = useFlightsQuery(open);
   const clearFlights = useClearFlights();
+  const createFlight = useCreateFlight();
+  const updateFlight = useUpdateFlight();
+  const exportCsv = useExportFlightsCsv();
+  const importCsv = useImportFlightsCsv();
+  // null: closed; a flight: editing it; 'new': adding one by hand.
+  const [editing, setEditing] = useState<FlightSummary | 'new' | null>(null);
+
+  const submitEdit = (input: FlightEditInput) => {
+    if (editing === 'new') {
+      createFlight.mutate(input, {
+        onSuccess: (flight) => {
+          setEditing(null);
+          setLogbookFlight(flight.id);
+        },
+        onError: () => toastError('logbook', t('logbook.saveFailed')),
+      });
+    } else if (editing) {
+      updateFlight.mutate(
+        { id: editing.id, input },
+        {
+          onSuccess: () => setEditing(null),
+          onError: () => toastError('logbook', t('logbook.saveFailed')),
+        }
+      );
+    }
+  };
+
+  const runExport = () => {
+    exportCsv.mutate(undefined, {
+      onSuccess: (result) => {
+        if (result) toast.success(t('logbook.exported', { count: result.count }));
+      },
+      onError: () => toastError('logbook', t('logbook.exportFailed')),
+    });
+  };
+
+  const runImport = () => {
+    importCsv.mutate(undefined, {
+      onSuccess: (result) => {
+        if (result) {
+          toast.success(
+            t('logbook.imported', {
+              imported: result.imported,
+              skipped: result.skipped,
+              rejected: result.rejected,
+            })
+          );
+        }
+      },
+      onError: () => toastError('logbook', t('logbook.importFailed')),
+    });
+  };
 
   useEffect(() => {
     if (!open || tab !== 'flights') return;
@@ -77,6 +142,38 @@ export default function LogbookDialog() {
             </Tabs>
           </div>
           <div className="flex items-center gap-2">
+            {tab === 'flights' && (
+              <>
+                <DesktopOnly>
+                  <Button variant="ghost" size="xs" onClick={() => setEditing('new')}>
+                    <Plus className="h-3.5 w-3.5" />
+                    {t('logbook.addFlight')}
+                  </Button>
+                </DesktopOnly>
+                <DesktopOnly>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    disabled={importCsv.isPending}
+                    onClick={runImport}
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    {t('logbook.importCsv')}
+                  </Button>
+                </DesktopOnly>
+                <DesktopOnly>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    disabled={flights.length === 0 || exportCsv.isPending}
+                    onClick={runExport}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    {t('logbook.exportCsv')}
+                  </Button>
+                </DesktopOnly>
+              </>
+            )}
             {tab === 'flights' && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -131,21 +228,36 @@ export default function LogbookDialog() {
             <p className="text-muted-foreground/60 max-w-md text-xs">{t('logbook.emptyHint')}</p>
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1">
-            <ScrollArea className="border-border/50 w-[380px] flex-shrink-0 border-r">
-              <FlightList flights={flights} selectedId={flightId} onSelect={setLogbookFlight} />
-            </ScrollArea>
-            <div className="min-w-0 flex-1">
-              {flightId ? (
-                <FlightDetailPanel flightId={flightId} onDeleted={() => setLogbookFlight(null)} />
-              ) : (
-                <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-                  {t('logbook.selectFlight')}
-                </div>
-              )}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <LogbookTotals flights={flights} />
+            <div className="flex min-h-0 flex-1">
+              <ScrollArea className="border-border/50 w-[380px] flex-shrink-0 border-r">
+                <FlightList flights={flights} selectedId={flightId} onSelect={setLogbookFlight} />
+              </ScrollArea>
+              <div className="min-w-0 flex-1">
+                {flightId ? (
+                  <FlightDetailPanel
+                    flightId={flightId}
+                    onDeleted={() => setLogbookFlight(null)}
+                    onEdit={setEditing}
+                  />
+                ) : (
+                  <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+                    {t('logbook.selectFlight')}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
+
+        <FlightEditDialog
+          open={editing !== null}
+          flight={editing === 'new' ? null : editing}
+          saving={createFlight.isPending || updateFlight.isPending}
+          onClose={() => setEditing(null)}
+          onSubmit={submitEdit}
+        />
       </DialogPanel>
     </Dialog>
   );

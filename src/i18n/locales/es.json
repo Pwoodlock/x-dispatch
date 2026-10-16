@@ -2070,7 +2070,37 @@
     "copyImage": "Copiar como imagen",
     "imageCopied": "Tarjeta de aterrizaje copiada al portapapeles",
     "imageCopyFailed": "No se pudo copiar la tarjeta de aterrizaje",
-    "earlierLandings": "Tomas anteriores en este vuelo: {{rates}} fpm"
+    "earlierLandings": "Tomas anteriores en este vuelo: {{rates}} fpm",
+    "addFlight": "Añadir vuelo",
+    "editFlight": "Editar vuelo",
+    "importCsv": "Importar CSV",
+    "exportCsv": "Exportar CSV",
+    "exported": "Diario exportado: {{count}} vuelos",
+    "exportFailed": "No se pudo exportar el diario",
+    "imported": "{{imported}} vuelos importados, {{skipped}} ya estaban en el diario, {{rejected}} ilegibles",
+    "importFailed": "No se pudo importar el diario",
+    "saveFailed": "No se pudo guardar el vuelo",
+    "totals": {
+      "flights": "Vuelos",
+      "avgTouchdown": "Toma media",
+      "bestTouchdown": "Mejor toma"
+    },
+    "edit": {
+      "date": "Fecha y hora",
+      "departure": "Salida",
+      "arrival": "Llegada",
+      "icao": "ICAO",
+      "airportName": "Nombre del aeropuerto",
+      "aircraftIcao": "Tipo (ICAO)",
+      "aircraftName": "Aeronave",
+      "livery": "Librea",
+      "blockMinutes": "Tiempo calzos (min)",
+      "airMinutes": "Tiempo de vuelo (min)",
+      "distanceNm": "Distancia (NM)",
+      "landings": "Aterrizajes",
+      "manualHint": "Un vuelo añadido a mano no tiene traza ni informe de aterrizaje.",
+      "editHint": "La traza y el informe de aterrizaje se mantienen tal como se grabaron."
+    }
   },
   "landing": {
     "title": "Aterrizaje",

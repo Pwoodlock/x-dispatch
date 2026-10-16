@@ -177,7 +177,8 @@ export const TERRAIN_SHADING_LAYER_IDS = [
   CONTOUR_LABEL_LAYER_ID,
 ];
 
-export function setup3DTerrain(map: maplibregl.Map): void {
+/** `shadingAllowed`: whether the current basemap permits hillshade and contours at all. */
+export function setup3DTerrain(map: maplibregl.Map, shadingAllowed: boolean): void {
   if (map.getSource(TERRAIN_SOURCE_ID)) return;
 
   // Terrain, hillshade and contours all consume the same DEM tiles. The
@@ -283,9 +284,10 @@ export function setup3DTerrain(map: maplibregl.Map): void {
     },
   });
 
-  // Apply persisted visibility (layers default to visible, hide if user toggled off)
+  // Layers default to visible: hide them if the user toggled shading off, or if the
+  // basemap does not allow it (the Settings switch shows the same combined state).
   const { terrainShadingEnabled } = useMapStore.getState();
-  if (!terrainShadingEnabled) {
+  if (!terrainShadingEnabled || !shadingAllowed) {
     setTerrainShadingVisibility(map, false);
   }
 }

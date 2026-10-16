@@ -2070,7 +2070,37 @@
     "copyImage": "Копировать как изображение",
     "imageCopied": "Карточка посадки скопирована в буфер обмена",
     "imageCopyFailed": "Не удалось скопировать карточку посадки",
-    "earlierLandings": "Предыдущие касания в этом полёте: {{rates}} фут/мин"
+    "earlierLandings": "Предыдущие касания в этом полёте: {{rates}} фут/мин",
+    "addFlight": "Добавить полёт",
+    "editFlight": "Изменить полёт",
+    "importCsv": "Импорт CSV",
+    "exportCsv": "Экспорт CSV",
+    "exported": "Журнал экспортирован: {{count}} полётов",
+    "exportFailed": "Не удалось экспортировать журнал",
+    "imported": "Импортировано {{imported}} полётов, {{skipped}} уже в журнале, {{rejected}} не прочитано",
+    "importFailed": "Не удалось импортировать журнал",
+    "saveFailed": "Не удалось сохранить полёт",
+    "totals": {
+      "flights": "Полёты",
+      "avgTouchdown": "Среднее касание",
+      "bestTouchdown": "Лучшее касание"
+    },
+    "edit": {
+      "date": "Дата и время",
+      "departure": "Вылет",
+      "arrival": "Прилёт",
+      "icao": "ICAO",
+      "airportName": "Название аэропорта",
+      "aircraftIcao": "Тип (ICAO)",
+      "aircraftName": "Самолёт",
+      "livery": "Ливрея",
+      "blockMinutes": "Блок-время (мин)",
+      "airMinutes": "Время в воздухе (мин)",
+      "distanceNm": "Расстояние (NM)",
+      "landings": "Посадки",
+      "manualHint": "У полёта, добавленного вручную, нет трека и отчёта о посадке.",
+      "editHint": "Трек и отчёт о посадке остаются как записаны."
+    }
   },
   "landing": {
     "title": "Посадка",

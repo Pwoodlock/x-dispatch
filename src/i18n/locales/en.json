@@ -2070,7 +2070,37 @@
     "copyImage": "Copy as image",
     "imageCopied": "Landing card copied to the clipboard",
     "imageCopyFailed": "Could not copy the landing card",
-    "earlierLandings": "Earlier touchdowns this flight: {{rates}} fpm"
+    "earlierLandings": "Earlier touchdowns this flight: {{rates}} fpm",
+    "addFlight": "Add flight",
+    "editFlight": "Edit flight",
+    "importCsv": "Import CSV",
+    "exportCsv": "Export CSV",
+    "exported": "Logbook exported: {{count}} flights",
+    "exportFailed": "Could not export the logbook",
+    "imported": "Imported {{imported}} flights, {{skipped}} already in the logbook, {{rejected}} unreadable",
+    "importFailed": "Could not import the logbook",
+    "saveFailed": "Could not save the flight",
+    "totals": {
+      "flights": "Flights",
+      "avgTouchdown": "Avg touchdown",
+      "bestTouchdown": "Best touchdown"
+    },
+    "edit": {
+      "date": "Date and time",
+      "departure": "Departure",
+      "arrival": "Arrival",
+      "icao": "ICAO",
+      "airportName": "Airport name",
+      "aircraftIcao": "Type (ICAO)",
+      "aircraftName": "Aircraft",
+      "livery": "Livery",
+      "blockMinutes": "Block time (min)",
+      "airMinutes": "Air time (min)",
+      "distanceNm": "Distance (NM)",
+      "landings": "Landings",
+      "manualHint": "A flight added by hand has no track or landing report.",
+      "editHint": "The track and landing report stay as recorded."
+    }
   },
   "landing": {
     "title": "Landing",

@@ -2070,7 +2070,37 @@
     "copyImage": "Copy as a picture",
     "imageCopied": "Landin' card copied to yer clipboard",
     "imageCopyFailed": "Couldn't copy the landin' card",
-    "earlierLandings": "Earlier touchdowns this voyage: {{rates}} fpm"
+    "earlierLandings": "Earlier touchdowns this voyage: {{rates}} fpm",
+    "addFlight": "Add a voyage",
+    "editFlight": "Edit the voyage",
+    "importCsv": "Import CSV",
+    "exportCsv": "Export CSV",
+    "exported": "Log exported: {{count}} voyages",
+    "exportFailed": "Couldn't export the log, arr",
+    "imported": "Hauled in {{imported}} voyages, {{skipped}} already in the log, {{rejected}} unreadable",
+    "importFailed": "Couldn't import the log, arr",
+    "saveFailed": "Couldn't save the voyage",
+    "totals": {
+      "flights": "Voyages",
+      "avgTouchdown": "Avg touchdown",
+      "bestTouchdown": "Best touchdown"
+    },
+    "edit": {
+      "date": "Date and time",
+      "departure": "Departure",
+      "arrival": "Arrival",
+      "icao": "ICAO",
+      "airportName": "Port name",
+      "aircraftIcao": "Type (ICAO)",
+      "aircraftName": "Vessel",
+      "livery": "Livery",
+      "blockMinutes": "Block time (min)",
+      "airMinutes": "Air time (min)",
+      "distanceNm": "Distance (NM)",
+      "landings": "Landings",
+      "manualHint": "A voyage added by hand has no track nor landing report.",
+      "editHint": "The track and landing report stay as recorded."
+    }
   },
   "landing": {
     "title": "Landin'",

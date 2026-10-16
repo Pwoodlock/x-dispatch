@@ -588,6 +588,15 @@ declare global {
       setAircraftHint: (hint: AircraftHint | null) => Promise<void>;
       setEnabled: (enabled: boolean) => Promise<void>;
       openFolder: () => Promise<string>;
+      update: (
+        id: string,
+        input: import('@/lib/flightRecorder/flightEdit').FlightEditInput
+      ) => Promise<FlightSummary | null>;
+      create: (
+        input: import('@/lib/flightRecorder/flightEdit').FlightEditInput
+      ) => Promise<FlightSummary>;
+      exportCsv: () => Promise<import('@/lib/flightRecorder/ipc').LogbookExportResult | null>;
+      importCsv: () => Promise<import('@/lib/flightRecorder/ipc').LogbookImportResult | null>;
       onEvent: (callback: (event: FlightRecorderEvent) => void) => () => void;
     };
   }

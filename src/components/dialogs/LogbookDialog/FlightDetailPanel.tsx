@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Copy, Map as MapIcon, Play, Trash2 } from 'lucide-react';
+import { ArrowRight, Copy, Map as MapIcon, Pencil, Play, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import {
@@ -34,9 +34,10 @@ import { TrailThumbnail } from './TrailThumbnail';
 interface FlightDetailPanelProps {
   flightId: string;
   onDeleted: () => void;
+  onEdit: (flight: FlightDetail) => void;
 }
 
-export function FlightDetailPanel({ flightId, onDeleted }: FlightDetailPanelProps) {
+export function FlightDetailPanel({ flightId, onDeleted, onEdit }: FlightDetailPanelProps) {
   const { t } = useTranslation();
   const { data: flight, isLoading } = useFlightDetailQuery(flightId);
 
@@ -52,10 +53,18 @@ export function FlightDetailPanel({ flightId, onDeleted }: FlightDetailPanelProp
     );
   }
 
-  return <FlightDetailBody flight={flight} onDeleted={onDeleted} />;
+  return <FlightDetailBody flight={flight} onDeleted={onDeleted} onEdit={onEdit} />;
 }
 
-function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDeleted: () => void }) {
+function FlightDetailBody({
+  flight,
+  onDeleted,
+  onEdit,
+}: {
+  flight: FlightDetail;
+  onDeleted: () => void;
+  onEdit: (flight: FlightDetail) => void;
+}) {
   const { t, i18n } = useTranslation();
   const units = useUnits();
   const deleteFlight = useDeleteFlight();
@@ -144,6 +153,14 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
             </Button>
           )}
           <div className="flex-1" />
+          {flight.status !== 'active' && (
+            <DesktopOnly>
+              <Button size="sm" variant="ghost" onClick={() => onEdit(flight)}>
+                <Pencil className="h-4 w-4" />
+                {t('common.edit')}
+              </Button>
+            </DesktopOnly>
+          )}
           <DesktopOnly>
             <Button
               size="sm"
