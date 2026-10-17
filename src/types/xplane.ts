@@ -81,6 +81,8 @@ export interface PlanePosition {
   icaoType: string;
   tailNumber: string;
   wingspanM: number | null;
+  /** Feet per minute, positive climbing. */
+  verticalSpeed: number;
 }
 
 export interface XPlaneAPIResult {

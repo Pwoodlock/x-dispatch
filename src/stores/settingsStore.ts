@@ -1,5 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  DEFAULT_OWNSHIP_STYLE,
+  type OwnshipColorScheme,
+  type OwnshipSize,
+  isOwnshipColorScheme,
+} from '@/components/Map/layers/dynamic/ownshipIcon';
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import {
   DEFAULT_FLIGHT_STRIP_FIELDS,
@@ -148,6 +154,12 @@ export interface GraphicsSettings {
   groundWeather: boolean;
   /** Airfield fixtures: follow the sun, always lit, or hidden. */
   airfieldLights: AirfieldLightsMode;
+  /** On-screen size of the own-aircraft symbol, the same at every zoom. */
+  ownshipSize: OwnshipSize;
+  /** Colours of the own-aircraft symbol, picked to stand out on the pilot's basemap. */
+  ownshipColor: OwnshipColorScheme;
+  /** Ground shadow and drop line under the own-aircraft symbol, growing with height above ground. */
+  ownshipAltitudeCues: boolean;
 }
 
 export interface FlightsSettings {
@@ -273,6 +285,9 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   followSimTime: true,
   groundWeather: true,
   airfieldLights: 'on',
+  ownshipSize: DEFAULT_OWNSHIP_STYLE.size,
+  ownshipColor: DEFAULT_OWNSHIP_STYLE.color,
+  ownshipAltitudeCues: DEFAULT_OWNSHIP_STYLE.altitudeCues,
 };
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
@@ -524,7 +539,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 37,
+      version: 39,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -779,6 +794,20 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
         opacity: typeof opacity === 'number' ? clampFlightStripOpacity(opacity) : 1,
       },
     };
+  }
+
+  if (version < 38) {
+    // Own-aircraft symbol size and colours.
+    state = { ...state, graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics } };
+  }
+
+  if (version < 39) {
+    // The dark-with-cyan-edge scheme is gone; anything unknown takes the default.
+    const graphics = { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics };
+    if (!isOwnshipColorScheme(graphics.ownshipColor)) {
+      graphics.ownshipColor = DEFAULT_GRAPHICS_SETTINGS.ownshipColor;
+    }
+    state = { ...state, graphics };
   }
 
   return state as SettingsState;

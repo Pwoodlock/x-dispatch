@@ -320,6 +320,9 @@ export default function Map({ airports }: MapProps) {
   }, [isXPlaneConnected, showPlaneTracker, setShowPlaneTracker]);
 
   // Plane layer sync - push each snapshot straight to the map layer
+  const ownshipSize = useSettingsStore((s) => s.graphics.ownshipSize);
+  const ownshipColor = useSettingsStore((s) => s.graphics.ownshipColor);
+  const ownshipAltitudeCues = useSettingsStore((s) => s.graphics.ownshipAltitudeCues);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -329,13 +332,14 @@ export default function Map({ airports }: MapProps) {
       return;
     }
 
+    const style = { size: ownshipSize, color: ownshipColor, altitudeCues: ownshipAltitudeCues };
     // Behind X-Plane the window is hidden: every snapshot would still have the
     // map's workers rebuild the aircraft's data for a map nobody sees.
     const apply = (state: PlaneState | null) => {
       if (document.hidden) return;
       const position = planePositionFrom(state);
       if (!position) return;
-      updatePlaneLayer(map, position);
+      updatePlaneLayer(map, position, style);
       bringPlaneLayerToTop(map);
     };
     const onVisible = () => apply(usePlaneStore.getState().state);
@@ -348,7 +352,7 @@ export default function Map({ airports }: MapProps) {
       document.removeEventListener('visibilitychange', onVisible);
       unsubscribe();
     };
-  }, [mapRef, showPlaneTracker, isXPlaneConnected]);
+  }, [mapRef, showPlaneTracker, isXPlaneConnected, ownshipSize, ownshipColor, ownshipAltitudeCues]);
 
   // Cleanup plane layer on unmount
   useEffect(() => {

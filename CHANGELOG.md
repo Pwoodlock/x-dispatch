@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Your aircraft symbol has a size and colour of your choosing.** In Settings, Appearance, pick small, medium or large, and white, magenta or orange. It keeps the same size at every zoom level instead of growing as you zoom in.
+- **In flight, your aircraft casts a shadow on the ground** that drifts further from the symbol as you climb, and the label shows an arrow while you climb or descend. The shadow can be switched off in the same place.
+- **The line ahead of your aircraft showing where you will be in a minute is gone.** The symbol and its shadow carry the picture on their own.
+
 ### Fixed
 
 - **A taxi route can no longer be sent out and back along the same taxiway.** Dragging a point to where the route would have to taxi there and back shows it in red and leaves the route as it was, and clicking a point behind the route shortens the route to that point.

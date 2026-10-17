@@ -16,6 +16,7 @@ import type { FontSize } from '@/stores/settingsStore';
 import { ZOOM_LEVEL_RANGE, useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
+import { OwnshipSymbolSettings } from './OwnshipSymbolSettings';
 
 const FONT_SIZES = ['small', 'medium', 'large'] as const;
 
@@ -146,6 +147,8 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           resetLabel={t('settings.appearance.zoomReset')}
         />
       </SettingsSectionBlock>
+
+      <OwnshipSymbolSettings />
 
       {/* Desktop window behaviour; main applies these */}
       <SettingsSectionBlock
