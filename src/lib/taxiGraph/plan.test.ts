@@ -3,7 +3,14 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { AirportParser } from '@/lib/parsers/apt';
 import type { TaxiEdge, TaxiNetwork } from '@/types/apt';
-import { buildTaxiGraph, findNearestEdge, findPath, planArrival, planDeparture } from '.';
+import {
+  buildTaxiGraph,
+  findNearestEdge,
+  findPath,
+  planArrival,
+  planDeparture,
+  pointOnEdgeAt,
+} from '.';
 import { turnDeg } from './geo';
 import { edgeBetween } from './search';
 import type { TaxiGraph } from './types';
@@ -232,5 +239,37 @@ describe('findNearestEdge', () => {
     expect(snap.name).toBe('C7');
     expect(snap.nodeId).toBe(2);
     expect(snap.distance).toBeCloseTo(12, 0);
+  });
+
+  it('keeps to the edges whose both ends pass the filter', () => {
+    const deg = 1 / 111_320;
+    // Taxiway 1-2 with a parallel 3-4 closer to the cursor.
+    const g = buildTaxiGraph(
+      network({ 1: [0, 0], 2: [100, 0], 3: [0, 30], 4: [100, 30] }, [
+        [1, 2],
+        [3, 4],
+      ])
+    );
+    expect(findNearestEdge(g, 50 * deg, 20 * deg)!.nodeId).toBe(4);
+    const onRoute = new Set([1, 2]);
+    const snap = findNearestEdge(g, 50 * deg, 20 * deg, (id) => onRoute.has(id))!;
+    expect(snap.nodeId).toBe(2);
+    expect(snap.distance).toBeCloseTo(20, 0);
+  });
+});
+
+describe('pointOnEdgeAt', () => {
+  it('tells whether a point sits on a taxiway ending at the node', () => {
+    const deg = 1 / 111_320;
+    const g = buildTaxiGraph(
+      network({ 1: [0, 0], 2: [100, 0], 3: [200, 0] }, [
+        [1, 2],
+        [2, 3],
+      ])
+    );
+    expect(pointOnEdgeAt(g, 50 * deg, 0, 1)).toBe(true);
+    expect(pointOnEdgeAt(g, 50 * deg, 0, 2)).toBe(true);
+    expect(pointOnEdgeAt(g, 50 * deg, 0, 3)).toBe(false);
+    expect(pointOnEdgeAt(g, 50 * deg, 5 * deg, 1)).toBe(false);
   });
 });

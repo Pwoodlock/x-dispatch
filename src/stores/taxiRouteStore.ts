@@ -8,7 +8,7 @@
  */
 import { create } from 'zustand';
 import type { PathResult, StandLink, TaxiGraph } from '@/lib/taxiGraph';
-import { findPath, summarizePath } from '@/lib/taxiGraph';
+import { findPath, pointOnEdgeAt, summarizePath } from '@/lib/taxiGraph';
 import type { GuidanceSource } from '@/lib/taxiGuidance';
 
 // ============================================================================
@@ -144,15 +144,19 @@ function pushHistory(s: TaxiRouteState): RouteSnapshot[] {
  * The full route through the picked nodes, routing between each consecutive
  * pair, each leg carrying on from the way the last one arrived. `complete`
  * is false when some pair has no route between them; that leg is then a
- * straight line.
+ * straight line. `doublesBack` is true when the route comes through a node
+ * twice: a picked point behind the route, or past its end, that it has to
+ * taxi out to and back from.
  */
 export function resolvePath(
   clickedIds: number[],
   graph: TaxiGraph | null,
   sizeCode: string | null = null
-): { nodeIds: number[]; complete: boolean } {
-  if (!graph || clickedIds.length === 0) return { nodeIds: [], complete: true };
-  if (clickedIds.length === 1) return { nodeIds: [clickedIds[0]!], complete: true };
+): { nodeIds: number[]; complete: boolean; doublesBack: boolean } {
+  if (!graph || clickedIds.length === 0) return { nodeIds: [], complete: true, doublesBack: false };
+  if (clickedIds.length === 1) {
+    return { nodeIds: [clickedIds[0]!], complete: true, doublesBack: false };
+  }
 
   let complete = true;
 
@@ -176,7 +180,36 @@ export function resolvePath(
     }
   }
 
-  return { nodeIds: full, complete };
+  return { nodeIds: full, complete, doublesBack: new Set(full).size !== full.length };
+}
+
+/**
+ * Anchors for a route on to `nodeId`: the picked ones, less any the route
+ * would have to taxi out to and back from. Picking a point behind the route
+ * rewinds it to there instead of sending it there and back.
+ */
+export function anchorsOnTo(
+  clicked: number[],
+  nodeId: number,
+  graph: TaxiGraph | null,
+  sizeCode: string | null = null
+): number[] {
+  for (let keep = clicked.length; keep > 0; keep--) {
+    const head = clicked.slice(0, keep);
+    if (head[keep - 1] === nodeId) return head;
+    const anchors = [...head, nodeId];
+    if (!resolvePath(anchors, graph, sizeCode).doublesBack) return anchors;
+  }
+  return [nodeId];
+}
+
+/** Whether a route starting or ending at `nodeId` still meets the stand through its link point. */
+export function linkMeets(
+  graph: TaxiGraph | null,
+  link: StandLink | null,
+  nodeId: number
+): boolean {
+  return !!graph && !!link && pointOnEdgeAt(graph, link.lon, link.lat, nodeId);
 }
 
 /** `resolvePath`'s node IDs. */
@@ -254,7 +287,7 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
 
   addNetworkNode: (nodeId) => {
     const { clickedNodeIds, graph, sizeCode, standLink } = get();
-    const newClicked = [...clickedNodeIds, nodeId];
+    const newClicked = anchorsOnTo(clickedNodeIds, nodeId, graph, sizeCode);
     set({
       history: pushHistory(get()),
       clickedNodeIds: newClicked,
@@ -287,10 +320,14 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: resolveFullPath(newClicked, graph, sizeCode),
       autoRouteResult: null, // summary invalidated
       source: 'planned',
-      // A moved end no longer meets its stand.
+      // A moved end keeps its stand only while it is still on the stand's taxiway.
       standLink: {
-        from: anchorIndex === 0 ? null : standLink.from,
-        to: anchorIndex === clickedNodeIds.length - 1 ? null : standLink.to,
+        from:
+          anchorIndex === 0 && !linkMeets(graph, standLink.from, newNodeId) ? null : standLink.from,
+        to:
+          anchorIndex === clickedNodeIds.length - 1 && !linkMeets(graph, standLink.to, newNodeId)
+            ? null
+            : standLink.to,
       },
     });
   },

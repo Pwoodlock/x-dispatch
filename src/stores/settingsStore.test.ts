@@ -138,6 +138,9 @@ describe('migrateSettings', () => {
       followSimTime: true,
       groundWeather: true,
       airfieldLights: 'on',
+      ownshipSize: 'medium',
+      ownshipColor: 'magenta',
+      ownshipAltitudeCues: true,
     });
   });
 
@@ -168,8 +171,39 @@ describe('migrateSettings', () => {
       followSimTime: true,
       groundWeather: true,
       airfieldLights: 'on',
+      ownshipSize: 'medium',
+      ownshipColor: 'magenta',
+      ownshipAltitudeCues: true,
     });
     expect('surfaceDetail' in result.graphics).toBe(false);
+  });
+
+  it('adds the own-aircraft symbol size and colours at v38 and keeps the other graphics settings', () => {
+    const v37Blob = {
+      map: { userMapStyles: [], units: { weight: 'lbs' as const } },
+      simbrief: { pilotId: '', fmsExportTargets: [] },
+      appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
+      graphics: {
+        approachLightAnimation: false,
+        dynamicSky: true,
+        cityLights: false,
+        followSimTime: true,
+        groundWeather: false,
+        airfieldLights: 'off' as const,
+      },
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      support: { promptDismissed: false },
+      airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
+      desktop: {},
+      flightStrip: { scale: 1, opacity: 1 },
+    };
+    const result = migrateSettings(v37Blob, 37);
+    expect(result.graphics).toEqual({
+      ...v37Blob.graphics,
+      ownshipSize: 'medium',
+      ownshipColor: 'magenta',
+      ownshipAltitudeCues: true,
+    });
   });
 
   it('adds the image basemap label settings at v36 and keeps the other map choices', () => {
@@ -630,5 +664,37 @@ describe('flight strip settings', () => {
     setFlightStripScale(5);
     setFlightStripOpacity(0);
     expect(useSettingsStore.getState().flightStrip).toMatchObject({ scale: 2, opacity: 0.3 });
+  });
+});
+
+describe('own-aircraft colour at v39', () => {
+  it('replaces a scheme that no longer exists with the default and keeps a known one', () => {
+    const blob = (ownshipColor: string) => ({
+      map: { userMapStyles: [], units: { weight: 'lbs' as const } },
+      simbrief: { pilotId: '', fmsExportTargets: [] },
+      appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
+      graphics: {
+        approachLightAnimation: true,
+        dynamicSky: true,
+        cityLights: true,
+        followSimTime: true,
+        groundWeather: true,
+        airfieldLights: 'on' as const,
+        ownshipSize: 'large' as const,
+        ownshipColor,
+        ownshipAltitudeCues: false,
+      },
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      support: { promptDismissed: false },
+      airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
+      desktop: {},
+      flightStrip: { scale: 1, opacity: 1 },
+    });
+    expect(migrateSettings(blob('cyanOutline'), 38).graphics).toMatchObject({
+      ownshipColor: 'magenta',
+      ownshipSize: 'large',
+      ownshipAltitudeCues: false,
+    });
+    expect(migrateSettings(blob('orange'), 38).graphics.ownshipColor).toBe('orange');
   });
 });

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Your aircraft symbol has a size and colour of your choosing.** In Settings, Appearance, pick small, medium or large, and white, magenta or orange. It keeps the same size at every zoom level instead of growing as you zoom in.
+- **In flight, your aircraft casts a shadow on the ground** that drifts further from the symbol as you climb, and the label shows an arrow while you climb or descend. The shadow can be switched off in the same place.
+- **The line ahead of your aircraft showing where you will be in a minute is gone.** The symbol and its shadow carry the picture on their own.
+
+### Fixed
+
+- **A taxi route can no longer be sent out and back along the same taxiway.** Dragging a point to where the route would have to taxi there and back shows it in red and leaves the route as it was, and clicking a point behind the route shortens the route to that point.
+- **The ends of a taxi route are easier to move.** The dots at your stand now drag the route's start or end, and the route keeps meeting your stand while that end stays on the stand's taxiway. Grabbing near an end no longer adds a point instead, and stepping an end back along the route no longer jumps to a taxiway beside it.
+- **A SimBrief route no longer skips the last fix of the SID.** The line used to cut from the fix before it straight to the first airway fix; it now flies through the SID's exit fix, as the navlog does.
+
 ## [2.8.0] - 2026-10-16
 
 ### Added

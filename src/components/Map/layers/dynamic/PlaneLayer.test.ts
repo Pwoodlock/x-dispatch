@@ -1,20 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PlanePosition } from '@/types/xplane';
-import {
-  TREND_VECTOR_SECONDS,
-  addPlaneLayer,
-  createGeoJSON,
-  removePlaneLayer,
-  updatePlaneLayer,
-} from './PlaneLayer';
-import { OWNSHIP_ICON_ID, airplaneOutline, createOwnshipIcon } from './ownshipIcon';
+import { addPlaneLayer, createGeoJSON, removePlaneLayer, updatePlaneLayer } from './PlaneLayer';
+import { airplaneOutline, createOwnshipIcon, ownshipIconId } from './ownshipIcon';
 
 vi.mock('@/lib/map/labelFonts', () => ({ labelFont: () => ['Noto Sans Regular'] }));
 
 type MlMap = import('maplibre-gl').Map;
 
 function makeMapMock() {
-  const layers = new Map<string, { id: string; layout?: Record<string, unknown> }>();
+  const layers = new Map<
+    string,
+    { id: string; layout?: Record<string, unknown>; paint?: Record<string, unknown> }
+  >();
   const sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
   const images = new Set<string>();
   return {
@@ -24,7 +21,11 @@ function makeMapMock() {
     getStyle: () => ({ layers: [], sources: {} }),
     getLayer: (id: string) => layers.get(id),
     getSource: (id: string) => sources.get(id),
-    addLayer: (spec: { id: string; layout?: Record<string, unknown> }) => layers.set(spec.id, spec),
+    addLayer: (spec: {
+      id: string;
+      layout?: Record<string, unknown>;
+      paint?: Record<string, unknown>;
+    }) => layers.set(spec.id, spec),
     addSource: (id: string) => sources.set(id, { setData: vi.fn() }),
     removeLayer: (id: string) => layers.delete(id),
     removeSource: (id: string) => sources.delete(id),
@@ -33,6 +34,13 @@ function makeMapMock() {
     removeImage: (id: string) => images.delete(id),
     moveLayer: vi.fn(),
   };
+}
+
+/** The icon-size a fresh layer gets for a style. */
+function makeStyled(size: 'small' | 'medium' | 'large', color: 'magenta'): number {
+  const map = makeMapMock();
+  addPlaneLayer(map as unknown as MlMap, position(), { size, color, altitudeCues: true });
+  return map.layers.get('player-plane')?.layout?.['icon-size'] as number;
 }
 
 function position(over: Partial<PlanePosition> = {}): PlanePosition {
@@ -47,6 +55,7 @@ function position(over: Partial<PlanePosition> = {}): PlanePosition {
     icaoType: 'C172',
     tailNumber: 'HB-ABC',
     wingspanM: 11,
+    verticalSpeed: 0,
     ...over,
   };
 }
@@ -71,51 +80,68 @@ describe('ownship icon geometry', () => {
   });
 });
 
-describe('trend vector', () => {
-  it('points along the heading, one minute ahead at the current groundspeed', () => {
-    const fc = createGeoJSON(position({ heading: 90, groundspeed: 120 }));
-    expect(fc.features).toHaveLength(2);
-    const line = fc.features[1]!.geometry as GeoJSON.LineString;
-    const [lng0, lat0] = line.coordinates[0]!;
-    const [lng1, lat1] = line.coordinates[1]!;
-    // Due east: latitude unchanged, longitude grows.
-    expect(lat1!).toBeCloseTo(lat0!, 3);
-    expect(lng1!).toBeGreaterThan(lng0!);
-    // 120 kt for 60 s = 2 NM ≈ 0.049° of longitude at 47.4° N.
-    const nm = (120 / 3600) * TREND_VECTOR_SECONDS;
-    expect((lng1! - lng0!) * 60 * Math.cos((lat0! * Math.PI) / 180)).toBeCloseTo(nm, 2);
-  });
-
-  it('is omitted while parked', () => {
-    expect(createGeoJSON(position({ groundspeed: 0 })).features).toHaveLength(1);
-  });
-});
-
 describe('PlaneLayer', () => {
-  it('adds vector, symbol and label layers, no glow or shadow, with the airplane icon', () => {
+  it('adds shadow, symbol and label layers with the airplane icon', () => {
     const map = makeMapMock();
     addPlaneLayer(map as unknown as MlMap, position());
 
     expect([...map.layers.keys()]).toEqual([
-      'player-plane-vector',
+      'player-plane-shadow',
       'player-plane',
       'player-plane-label',
     ]);
+    const airplane = ownshipIconId('airplane', 'magenta');
     expect(map.addImage).toHaveBeenCalledWith(
-      OWNSHIP_ICON_ID.airplane,
+      airplane,
       expect.objectContaining({ pixelRatio: 2 }),
       { pixelRatio: 2 }
     );
-    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(OWNSHIP_ICON_ID.airplane);
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(airplane);
   });
 
-  it('keeps the same on-screen size regardless of wingspan', () => {
+  it('keeps the same on-screen size regardless of wingspan and zoom', () => {
     const small = makeMapMock();
     addPlaneLayer(small as unknown as MlMap, position({ wingspanM: 11 }));
     const heavy = makeMapMock();
     addPlaneLayer(heavy as unknown as MlMap, position({ wingspanM: 80 }));
-    expect(small.layers.get('player-plane')?.layout?.['icon-size']).toEqual(
-      heavy.layers.get('player-plane')?.layout?.['icon-size']
+    const size = small.layers.get('player-plane')?.layout?.['icon-size'];
+    expect(size).toEqual(heavy.layers.get('player-plane')?.layout?.['icon-size']);
+    // A plain number: no zoom expression, so the symbol never grows or shrinks with the map.
+    expect(typeof size).toBe('number');
+  });
+
+  it('sizes and colours the symbol from the pilot style, and rebuilds when it changes', () => {
+    const map = makeMapMock();
+    addPlaneLayer(map as unknown as MlMap, position(), {
+      size: 'large',
+      color: 'magenta',
+      altitudeCues: true,
+    });
+    const yellow = ownshipIconId('airplane', 'magenta');
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(yellow);
+    expect(map.layers.get('player-plane')?.layout?.['icon-size']).toBeGreaterThan(
+      makeStyled('medium', 'magenta')
+    );
+    expect(map.layers.get('player-plane-label')?.paint?.['text-color']).toBe('#E040FB');
+
+    updatePlaneLayer(map as unknown as MlMap, position(), {
+      size: 'small',
+      color: 'magenta',
+      altitudeCues: true,
+    });
+    expect(map.addImage).toHaveBeenCalledTimes(2);
+    expect(map.layers.get('player-plane')?.layout?.['icon-size']).toBeLessThan(
+      makeStyled('medium', 'magenta')
+    );
+
+    updatePlaneLayer(map as unknown as MlMap, position(), {
+      size: 'small',
+      color: 'orange',
+      altitudeCues: true,
+    });
+    expect(map.addImage).toHaveBeenCalledTimes(3);
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(
+      ownshipIconId('airplane', 'orange')
     );
   });
 
@@ -126,12 +152,13 @@ describe('PlaneLayer', () => {
 
     updatePlaneLayer(map as unknown as MlMap, position({ heading: 180 }));
     expect(source.setData).toHaveBeenCalledTimes(1);
-    expect(map.addImage).toHaveBeenCalledTimes(1);
+    expect(map.addImage).toHaveBeenCalledTimes(2);
 
     updatePlaneLayer(map as unknown as MlMap, position({ aircraftCategory: 'helicopter' }));
-    expect(map.addImage).toHaveBeenCalledTimes(2);
-    expect(map.images.has(OWNSHIP_ICON_ID.helicopter)).toBe(true);
-    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(OWNSHIP_ICON_ID.helicopter);
+    expect(map.addImage).toHaveBeenCalledTimes(4);
+    const helicopter = ownshipIconId('helicopter', 'magenta');
+    expect(map.images.has(helicopter)).toBe(true);
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(helicopter);
   });
 
   it('removes layers and source cleanly', () => {
@@ -140,5 +167,53 @@ describe('PlaneLayer', () => {
     removePlaneLayer(map as unknown as MlMap);
     expect(map.layers.size).toBe(0);
     expect(map.sources.size).toBe(0);
+  });
+});
+
+describe('altitude cues', () => {
+  const kinds = (fc: GeoJSON.FeatureCollection) => fc.features.map((f) => f.properties?.kind);
+
+  it('puts a shadow on the ground south-west of the aircraft, farther the higher it flies', () => {
+    const low = createGeoJSON(position({ altitudeAGL: 1000 }));
+    const high = createGeoJSON(position({ altitudeAGL: 5000 }));
+    expect(kinds(low)).toEqual(['aircraft', 'shadow']);
+    const at = (fc: GeoJSON.FeatureCollection) =>
+      fc.features.find((f) => f.properties?.kind === 'shadow')!.geometry as GeoJSON.Point;
+    const [lng0, lat0] = [8.5, 47.4];
+    const lowPt = at(low).coordinates;
+    const highPt = at(high).coordinates;
+    expect(lowPt[0]!).toBeLessThan(lng0);
+    expect(lowPt[1]!).toBeLessThan(lat0);
+    expect(Math.hypot(highPt[0]! - lng0, highPt[1]! - lat0)).toBeGreaterThan(
+      Math.hypot(lowPt[0]! - lng0, lowPt[1]! - lat0)
+    );
+  });
+
+  it('shows nothing on the ground, when switched off, and caps the shadow offset', () => {
+    expect(kinds(createGeoJSON(position({ altitudeAGL: 10 })))).toEqual(['aircraft']);
+    expect(kinds(createGeoJSON(position({ altitudeAGL: 5000 }), false))).toEqual(['aircraft']);
+    const at = (agl: number) =>
+      createGeoJSON(position({ altitudeAGL: agl })).features.find(
+        (f) => f.properties?.kind === 'shadow'
+      )!.geometry as GeoJSON.Point;
+    expect(at(30000).coordinates).toEqual(at(60000).coordinates);
+  });
+
+  it('marks a climb or descent in the label past 300 fpm', () => {
+    const trend = (verticalSpeed: number) =>
+      createGeoJSON(position({ verticalSpeed })).features[0]!.properties?.trend;
+    expect(trend(100)).toBe('');
+    expect(trend(800)).toBe(' ▲');
+    expect(trend(-800)).toBe(' ▼');
+  });
+
+  it('builds without the shadow layer when the cue is off', () => {
+    const map = makeMapMock();
+    addPlaneLayer(map as unknown as MlMap, position(), {
+      size: 'medium',
+      color: 'magenta',
+      altitudeCues: false,
+    });
+    expect([...map.layers.keys()]).toEqual(['player-plane', 'player-plane-label']);
   });
 });

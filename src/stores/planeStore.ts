@@ -34,5 +34,6 @@ export function planePositionFrom(state: PlaneState | null): PlanePosition | nul
     icaoType: state.icaoType ?? '',
     tailNumber: state.tailNumber ?? '',
     wingspanM: state.wingspanM ?? null,
+    verticalSpeed: state.verticalSpeed ?? 0,
   };
 }
