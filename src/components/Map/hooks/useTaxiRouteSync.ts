@@ -31,18 +31,25 @@ import {
   setTaxiRoutePreview,
 } from '@/components/Map/layers/dynamic/TaxiRouteLayer';
 import { buildTaxiGraph, findNearestEdge, findNearestNode } from '@/lib/taxiGraph';
-import type { TaxiGraph } from '@/lib/taxiGraph';
+import type { EdgeSnap, TaxiGraph } from '@/lib/taxiGraph';
 import { type GuidancePoint, createGuidanceTracker, prepareRoute } from '@/lib/taxiGuidance';
 import { useAppStore } from '@/stores/appStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import { guidanceRoutes, useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
-import { resolvePath, useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
+import {
+  linkMeets,
+  resolvePath,
+  useTaxiModeActive,
+  useTaxiRouteStore,
+} from '@/stores/taxiRouteStore';
 import type { MapRef } from './useMapSetup';
 
 /** Pixel radius for detecting hover near route line. */
 const HIT_TOLERANCE = 18;
-/** Pixel radius for detecting hover on an existing anchor. */
-const ANCHOR_HIT = 12;
+/** Pixel radius for detecting hover on an existing anchor; at least the line's, so an end is never taken for a line grab. */
+const ANCHOR_HIT = 18;
+/** Metres a taxiway touching the route may be farther from the cursor than another and still take a dragged end. */
+const ROUTE_SNAP_BIAS_M = 15;
 
 interface Pt {
   x: number;
@@ -95,6 +102,28 @@ function findClosestOnLine(
     dist: bestDist,
     point: { x: a.x + bestT * (b.x - a.x), y: a.y + bestT * (b.y - a.y) },
   };
+}
+
+/**
+ * Where a drag snaps. A dragged end prefers the taxiways its route is on and
+ * the ones leading off them, so stepping it back a node does not land on a
+ * parallel taxiway nearby; a via point goes anywhere.
+ */
+function snapForDrag(
+  graph: TaxiGraph,
+  routeIds: number[],
+  endDrag: boolean,
+  lng: number,
+  lat: number
+): EdgeSnap | null {
+  const any = findNearestEdge(graph, lng, lat);
+  if (!endDrag || !any) return any;
+  const near = new Set(routeIds);
+  for (const id of routeIds) {
+    for (const e of graph.adjacency.get(id) ?? []) near.add(e.toNodeId);
+  }
+  const onRoute = findNearestEdge(graph, lng, lat, (id) => near.has(id));
+  return onRoute && onRoute.distance <= any.distance + ROUTE_SNAP_BIAS_M ? onRoute : any;
 }
 
 function resolveNetworkPoints(nodeIds: number[], graph: TaxiGraph | null): RoutePoint[] {
@@ -346,12 +375,19 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     const map = mapInstance;
     const mapCanvas = map.getCanvas();
 
-    const projectAnchors = (g: TaxiGraph, clicked: number[]): { pt: Pt; anchorIdx: number }[] => {
-      const result: { pt: Pt; anchorIdx: number }[] = [];
-      for (let i = 0; i < clicked.length; i++) {
-        const node = g.nodes.get(clicked[i]!);
-        if (node) result.push({ pt: map.project([node.lon, node.lat]), anchorIdx: i });
-      }
+    /** Grabbable spots: the picked nodes, and the stand points, which move the end they hang off. */
+    const projectAnchors = (
+      g: TaxiGraph,
+      clicked: number[]
+    ): { pt: Pt; anchorIdx: number; lon: number; lat: number }[] => {
+      const result: { pt: Pt; anchorIdx: number; lon: number; lat: number }[] = [];
+      const add = (p: { lon: number; lat: number } | null | undefined, anchorIdx: number) => {
+        if (p) result.push({ pt: map.project([p.lon, p.lat]), anchorIdx, lon: p.lon, lat: p.lat });
+      };
+      const { standLink } = useTaxiRouteStore.getState();
+      add(standLink.from, 0);
+      add(standLink.to, clicked.length - 1);
+      for (let i = 0; i < clicked.length; i++) add(g.nodes.get(clicked[i]!), i);
       return result;
     };
 
@@ -375,11 +411,14 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       }
 
       const { sizeCode, standLink } = useTaxiRouteStore.getState();
-      const { nodeIds, complete } = resolvePath(hypothetical, g, sizeCode);
+      const { nodeIds, complete, doublesBack } = resolvePath(hypothetical, g, sizeCode);
+      // A route that already taxis a stretch both ways stays editable, or it could never be fixed.
+      const blocked = doublesBack && !resolvePath(clicked, g, sizeCode).doublesBack;
       const pts: RoutePoint[] = [];
-      // The stand ends stay unless the drag moves that end.
-      const keepFrom = !(inter.dragType === 'anchor' && inter.dragAnchorIndex === 0);
-      const keepTo = !(inter.dragType === 'anchor' && inter.dragAnchorIndex === clicked.length - 1);
+      // The stand ends stay unless the drag moves that end off the stand's taxiway.
+      const moved = (idx: number) => inter.dragType === 'anchor' && inter.dragAnchorIndex === idx;
+      const keepFrom = !moved(0) || linkMeets(g, standLink.from, inter.previewNodeId);
+      const keepTo = !moved(clicked.length - 1) || linkMeets(g, standLink.to, inter.previewNodeId);
       if (keepFrom && standLink.from) {
         pts.push({ longitude: standLink.from.lon, latitude: standLink.from.lat });
       }
@@ -390,7 +429,8 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       if (keepTo && standLink.to) {
         pts.push({ longitude: standLink.to.lon, latitude: standLink.to.lat });
       }
-      return pts.length >= 2 ? { points: pts, complete } : null;
+      // A drag that would send the route out and back is shown but never kept.
+      return pts.length >= 2 ? { points: pts, complete: complete && !blocked } : null;
     };
 
     const handleMouseMove = (e: maplibregl.MapMouseEvent) => {
@@ -415,7 +455,10 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
 
       if (inter.isDragging) {
         // Slide along the taxiway centreline under the cursor; the drop takes the nearer node.
-        const snap = findNearestEdge(g, e.lngLat.lng, e.lngLat.lat);
+        const endDrag =
+          inter.dragType === 'anchor' &&
+          (inter.dragAnchorIndex === 0 || inter.dragAnchorIndex === clicked.length - 1);
+        const snap = snapForDrag(g, ids, endDrag, e.lngLat.lng, e.lngLat.lat);
         if (snap) {
           setTaxiRouteHandle(map, {
             longitude: snap.lon,
@@ -435,17 +478,10 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
 
       // Not dragging — pick the closest target (anchor first, then line).
       const anchors = projectAnchors(g, clicked);
-      for (const { pt, anchorIdx } of anchors) {
+      for (const { pt, anchorIdx, lon, lat } of anchors) {
         const d = Math.hypot(pt.x - cursor.x, pt.y - cursor.y);
         if (d < ANCHOR_HIT) {
-          const node = g.nodes.get(clicked[anchorIdx]!);
-          if (node) {
-            setTaxiRouteHandle(map, {
-              longitude: node.lon,
-              latitude: node.lat,
-              grabbed: false,
-            });
-          }
+          setTaxiRouteHandle(map, { longitude: lon, latitude: lat, grabbed: false });
           inter.dragType = 'anchor';
           inter.dragAnchorIndex = anchorIdx;
           inter.dragSegIndex = -1;
