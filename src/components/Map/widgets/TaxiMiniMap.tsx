@@ -13,14 +13,14 @@ import {
 import {
   addTaxiRouteLayer,
   bringTaxiRouteToFront,
-  setTaxiRoute,
+  setTaxiRouteLines,
 } from '@/components/Map/layers/dynamic/TaxiRouteLayer';
 import { bearingDeg } from '@/lib/flightplan/builder/geometry';
 import '@/lib/map/maplibreWorker';
 import { AirportParser } from '@/lib/parsers/apt';
-import type { GuidanceRoute } from '@/lib/taxiGuidance';
+import { type GuidanceRoute, createGuidanceTracker } from '@/lib/taxiGuidance';
 import { usePlaneStore } from '@/stores/planeStore';
-import { useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
+import { guidanceRoutes, useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 
 // EXPERIMENT (exp/taxi-mini-map): a heading-up taxi map under the detached strip,
 // Apple Maps navigation style. Throwaway until the look is settled.
@@ -73,11 +73,23 @@ function aircraftElement(): HTMLElement {
   return el;
 }
 
-/** The route the strip follows: departure first, as the guidance row does. */
-function activeRoute(): GuidanceRoute | null {
-  const { departure, arrival } = useTaxiGuidanceStore.getState();
-  return departure ?? arrival;
+type Tracker = ReturnType<typeof createGuidanceTracker>;
+
+/**
+ * The route the strip follows, as the guidance row picks it: the one the aircraft
+ * is on or nearest to, else the departure. Both planned routes stay drawn; this one
+ * carries the labels and the destination marker.
+ */
+function activeRoute(tracker: Tracker, routes: GuidanceRoute[]): GuidanceRoute | null {
+  const state = usePlaneStore.getState().state;
+  const tracked = state
+    ? tracker.update(routes, { lat: state.latitude, lon: state.longitude })
+    : null;
+  return tracked?.route ?? routes[0] ?? null;
 }
+
+const sameRoutes = (a: GuidanceRoute[], b: GuidanceRoute[]) =>
+  a.length === b.length && a.every((route, i) => route === b[i]);
 
 /** Live aircraft when X-Plane is running, else a ghost at the start of the route. */
 function currentPose(route: GuidanceRoute | null): Pose | null {
@@ -129,8 +141,11 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
       .addTo(map);
 
     let ready = false;
+    const tracker = createGuidanceTracker();
     let drawnIcao: string | null = null;
-    let drawnRoute: GuidanceRoute | null = null;
+    let loadingIcao: string | null = null;
+    let drawnRoutes: GuidanceRoute[] = [];
+    let drawnActive: GuidanceRoute | null = null;
     let target: Pose | null = null;
     let shown: Pose | null = null;
     let glideFrom: Pose | null = null;
@@ -175,7 +190,10 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
 
     const follow = (jump = false) => {
       if (!ready) return;
-      const pose = currentPose(activeRoute());
+      const active = activeRoute(tracker, guidanceRoutes(useTaxiGuidanceStore.getState()));
+      // Taxiing from one planned route onto the other moves the labels with it.
+      if (active !== drawnActive) void syncRoute();
+      const pose = currentPose(active);
       if (!pose) return;
       if (
         !jump &&
@@ -195,30 +213,42 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
       if (!frame) frame = requestAnimationFrame(glide);
     };
 
-    // The route's airport once per airport (pavement, runways, hold lines), then the route.
+    // The followed route's airport once per airport: pavement, runways, hold lines.
+    const loadAirport = async (route: GuidanceRoute) => {
+      const result = await window.airportAPI.getAirportData(route.icao);
+      if (!result) return;
+      const { data: airport } = new AirportParser(result.data).parse();
+      airport.longitude = route.points[0]?.lon ?? 0;
+      airport.latitude = route.points[0]?.lat ?? 0;
+      for (const layer of [new PavementLayer(), new RunwayLayer(), new LinearFeatureLayer()]) {
+        if (layer.hasData(airport)) await layer.render(map, airport);
+      }
+      setTaxiMapAirportLabels(map, airport);
+    };
+
+    // Every planned route, with the followed one labelled; cleared when the plan goes.
     const syncRoute = async () => {
       if (!ready) return;
-      const route = activeRoute();
-      if (route === drawnRoute) return;
-      drawnRoute = route;
-      if (!route) return;
-      if (drawnIcao !== route.icao) {
-        drawnIcao = route.icao;
-        const result = await window.airportAPI.getAirportData(route.icao);
-        if (!result || drawnRoute !== route) return;
-        const { data: airport } = new AirportParser(result.data).parse();
-        airport.longitude = route.points[0]?.lon ?? 0;
-        airport.latitude = route.points[0]?.lat ?? 0;
-        for (const layer of [new PavementLayer(), new RunwayLayer(), new LinearFeatureLayer()]) {
-          if (layer.hasData(airport)) await layer.render(map, airport);
-        }
-        setTaxiMapAirportLabels(map, airport);
+      const routes = guidanceRoutes(useTaxiGuidanceStore.getState());
+      const active = activeRoute(tracker, routes);
+      if (sameRoutes(routes, drawnRoutes) && active === drawnActive) return;
+      if (active && active.icao !== drawnIcao) {
+        // One load at a time; it draws whatever is planned once the airport is in.
+        if (loadingIcao === active.icao) return;
+        loadingIcao = active.icao;
+        await loadAirport(active);
+        loadingIcao = null;
+        drawnIcao = active.icao;
+        void syncRoute();
+        return;
       }
-      setTaxiRoute(
+      drawnRoutes = routes;
+      drawnActive = active;
+      setTaxiRouteLines(
         map,
-        route.points.map((p) => ({ longitude: p.lon, latitude: p.lat }))
+        routes.map((route) => route.points.map((p) => ({ longitude: p.lon, latitude: p.lat })))
       );
-      setTaxiMapRouteLabels(map, route);
+      setTaxiMapRouteLabels(map, active);
       // The airport layers land above the route; keep the green path and the labels on top.
       bringTaxiRouteToFront(map);
       bringTaxiMapLabelsToFront(map);
