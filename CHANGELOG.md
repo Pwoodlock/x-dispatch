@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.2] - 2026-10-17
+
 ### Changed
 
 - **The Flight Strip reads like a cockpit display.** Live values are white, the selected autopilot values sit in magenta right above the digits they belong to, Mach reads as M .78, and the track over the ground replaces the NAV1 frequency under the heading.
@@ -313,7 +315,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.1...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.2...HEAD
+[2.8.2]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.1...v2.8.2
 [2.8.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.6.0...v2.7.0
