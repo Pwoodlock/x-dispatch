@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-10-17
+
 ### Changed
 
 - **Your aircraft symbol has a size and colour of your choosing.** In Settings, Appearance, pick small, medium or large, and white, magenta or orange. It keeps the same size at every zoom level instead of growing as you zoom in.
@@ -298,7 +300,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.1...HEAD
+[2.8.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.5.0...v2.6.0
