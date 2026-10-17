@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The Flight Strip reads like a cockpit display.** Live values are white, the selected autopilot values sit in magenta right above the digits they belong to, Mach reads as M .78, and the track over the ground replaces the NAV1 frequency under the heading.
+- **Put the Flight Strip's readouts in your own order.** In Settings, Flight Strip, drag a readout to move it along the strip.
+- **COM1 and QNH can join the Flight Strip.** Switch them on in Settings, Flight Strip: the active frequency with the standby under it, and the altimeter setting in hPa with inches of mercury under it. Both are off until you want them.
+
+### Fixed
+
+- **The Flight Strip no longer changes size as the numbers change.** Every value keeps room for its widest reading, so a vertical speed swinging from 0 to -1,200 or a wind picking up leaves the strip, and the popped-out window, exactly where they were.
+- **The Flight Strip's taxi map follows the route you are on.** With a departure and an arrival both planned it showed only the departure, so a route planned after landing never appeared, and a route you cleared stayed drawn.
+- **Taxi instructions stay readable on a narrow Flight Strip.** With only a readout or two shown, the next instruction wraps onto a second line instead of being cut off.
+- **The Flight Strip's heading is magnetic**, like the heading bug above it and the track under it. It showed true heading, so where variation is large the value and the bug disagreed even with the aircraft on the selected heading.
+
 ## [2.8.1] - 2026-10-17
 
 ### Changed
