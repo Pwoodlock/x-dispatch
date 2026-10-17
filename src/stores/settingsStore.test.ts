@@ -384,9 +384,12 @@ describe('migrateSettings', () => {
         verticalSpeed: true,
         heading: true,
         wind: true,
+        com1: false,
+        qnh: false,
         targets: true,
         details: true,
       },
+      order: ['attitude', 'speed', 'altitude', 'verticalSpeed', 'heading', 'wind', 'com1', 'qnh'],
     });
     expect(result.appearance).toEqual({
       fontSize: 'medium',
@@ -657,6 +660,15 @@ describe('flight strip settings', () => {
     expect(useSettingsStore.getState().flightStrip.locked).toBe(true);
     useSettingsStore.getState().toggleFlightStripLock();
     expect(useSettingsStore.getState().flightStrip.locked).toBe(false);
+  });
+
+  it('reorders the readouts and repairs a broken order', () => {
+    useSettingsStore.getState().setFlightStripOrder(['wind', 'speed', 'wind'] as never);
+    expect(useSettingsStore.getState().flightStrip.order.slice(0, 3)).toEqual([
+      'wind',
+      'speed',
+      'attitude',
+    ]);
   });
 
   it('clamps size and opacity', () => {

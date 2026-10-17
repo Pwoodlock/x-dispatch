@@ -52,8 +52,15 @@ export interface PlaneState extends Coordinates {
   apVerticalSpeed?: number;
   /** NAV1 OBS course, degrees magnetic. */
   nav1Course?: number;
-  /** NAV1 active frequency in tens of kHz, so 11030 is 110.30 MHz. */
-  nav1Frequency?: number;
+  /** Ground track, degrees magnetic. */
+  groundTrack?: number;
+  /** Heading in degrees magnetic, as the autopilot dial and the strip read it; `heading` stays true for the map. */
+  magneticHeading?: number;
+  /** COM1 active and standby frequencies in kHz, so 118805 is 118.805 MHz. */
+  com1Frequency?: number;
+  com1StandbyFrequency?: number;
+  /** Pilot-side altimeter setting, inches of mercury. */
+  baroSettingInHg?: number;
   aircraftCategory: AircraftCategory | null;
   /** Simulator clock: seconds since midnight UTC. Absent until the first sample arrives. */
   simZuluTimeSec?: number;
