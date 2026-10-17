@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_FLIGHT_STRIP_FIELDS, parseFlightStripFields, withFieldVisible } from './fields';
+import {
+  DEFAULT_FLIGHT_STRIP_FIELDS,
+  DEFAULT_FLIGHT_STRIP_ORDER,
+  parseFlightStripFields,
+  parseFlightStripOrder,
+  withFieldVisible,
+} from './fields';
 
 describe('withFieldVisible', () => {
   it('hides and shows a field', () => {
@@ -26,6 +32,32 @@ describe('withFieldVisible', () => {
     fields = withFieldVisible(fields, 'targets', false);
     fields = withFieldVisible(fields, 'details', false);
     expect(fields).toMatchObject({ aircraft: false, targets: false, details: false, wind: true });
+  });
+});
+
+describe('parseFlightStripOrder', () => {
+  it('keeps a stored order and appends the readouts it lacks', () => {
+    expect(parseFlightStripOrder(['wind', 'speed'])).toEqual([
+      'wind',
+      'speed',
+      'attitude',
+      'altitude',
+      'verticalSpeed',
+      'heading',
+      'com1',
+      'qnh',
+    ]);
+  });
+
+  it('drops strangers and duplicates', () => {
+    expect(parseFlightStripOrder(['qnh', 'bogus', 'qnh', 7])).toEqual([
+      'qnh',
+      ...DEFAULT_FLIGHT_STRIP_ORDER.filter((readout) => readout !== 'qnh'),
+    ]);
+  });
+
+  it('falls back to the default order when nothing is readable', () => {
+    expect(parseFlightStripOrder(undefined)).toEqual([...DEFAULT_FLIGHT_STRIP_ORDER]);
   });
 });
 

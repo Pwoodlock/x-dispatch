@@ -64,7 +64,11 @@ const STATE_DATAREF_NAMES = [
   'sim/cockpit2/autopilot/airspeed_is_mach',
   'sim/cockpit2/autopilot/vvi_dial_fpm',
   'sim/cockpit2/radios/actuators/nav1_obs_deg_mag_pilot',
-  'sim/cockpit2/radios/actuators/nav1_frequency_hz',
+  'sim/cockpit2/gauges/indicators/ground_track_mag_pilot',
+  'sim/flightmodel/position/mag_psi',
+  'sim/cockpit2/radios/actuators/com1_frequency_hz_833',
+  'sim/cockpit2/radios/actuators/com1_standby_frequency_hz_833',
+  'sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot',
 ];
 
 /** Byte-array datarefs, base64 on the wire, decoded into plane state strings. */
@@ -148,7 +152,11 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/cockpit2/autopilot/airspeed_dial_kts_mach': 'apAirspeed',
   'sim/cockpit2/autopilot/vvi_dial_fpm': 'apVerticalSpeed',
   'sim/cockpit2/radios/actuators/nav1_obs_deg_mag_pilot': 'nav1Course',
-  'sim/cockpit2/radios/actuators/nav1_frequency_hz': 'nav1Frequency',
+  'sim/cockpit2/gauges/indicators/ground_track_mag_pilot': 'groundTrack',
+  'sim/flightmodel/position/mag_psi': 'magneticHeading',
+  'sim/cockpit2/radios/actuators/com1_frequency_hz_833': 'com1Frequency',
+  'sim/cockpit2/radios/actuators/com1_standby_frequency_hz_833': 'com1StandbyFrequency',
+  'sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot': 'baroSettingInHg',
 };
 
 type WsState = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';

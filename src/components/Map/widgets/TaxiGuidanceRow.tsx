@@ -108,7 +108,8 @@ function statusLabel(event: RowStatus, t: TFunction): string {
 /**
  * Turn-by-turn taxi guidance under the flight strip, shown while the aircraft is
  * on the ground on a planned route. Sized to the strip (`w-0 min-w-full`), never
- * widening it: long translations truncate.
+ * widening it: on a narrow strip the instruction keeps its line and what follows
+ * wraps under it; a part too long for a line of its own truncates.
  */
 export default function TaxiGuidanceRow() {
   const { t } = useTranslation();
@@ -131,7 +132,7 @@ export default function TaxiGuidanceRow() {
     !offRoute && next ? distanceText(next, t, (m) => units.shortDistance(metersToFeet(m))) : null;
 
   return (
-    <div className="border-border/50 flex w-0 min-w-full items-center gap-2 border-t px-3 py-1.5">
+    <div className="border-border/50 flex w-0 min-w-full flex-wrap items-center gap-x-2 gap-y-1 border-t px-3 py-1.5">
       <span
         className="border-border text-muted-foreground shrink-0 rounded-sm border px-1 font-mono text-[10px] uppercase"
         title={auto ? t('taxiGuidance.sourceAutoHint') : t('taxiGuidance.sourcePlannedHint')}
@@ -144,10 +145,13 @@ export default function TaxiGuidanceRow() {
           <span className="text-cat-amber font-semibold">{guidance.taxiway}</span>
         </span>
       )}
-      <StatusIcon status={status} className={cn('h-4 w-4 shrink-0', color)} />
-      {distance && <span className="xp-value shrink-0">{distance}</span>}
-      <span className={cn('min-w-0 truncate font-mono text-sm font-semibold uppercase', color)}>
-        {statusLabel(status, t)}
+      {/* One unit, so the distance never parts from its instruction when the row wraps */}
+      <span className="flex min-w-0 items-center gap-2">
+        <StatusIcon status={status} className={cn('h-4 w-4 shrink-0', color)} />
+        {distance && <span className="xp-value shrink-0">{distance}</span>}
+        <span className={cn('min-w-0 truncate font-mono text-sm font-semibold uppercase', color)}>
+          {statusLabel(status, t)}
+        </span>
       </span>
       {!offRoute && then && (
         <span className="text-muted-foreground min-w-0 truncate text-xs uppercase">

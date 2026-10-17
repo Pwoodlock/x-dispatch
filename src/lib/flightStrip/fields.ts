@@ -9,6 +9,8 @@ export const FLIGHT_STRIP_READOUTS = [
   'verticalSpeed',
   'heading',
   'wind',
+  'com1',
+  'qnh',
 ] as const;
 export type FlightStripReadout = (typeof FLIGHT_STRIP_READOUTS)[number];
 
@@ -31,9 +33,38 @@ export const DEFAULT_FLIGHT_STRIP_FIELDS: FlightStripFields = {
   verticalSpeed: true,
   heading: true,
   wind: true,
+  // Radio and altimeter are for pilots who want them: the strip is full as it is.
+  com1: false,
+  qnh: false,
   targets: true,
   details: true,
 };
+
+/** Left to right on the strip. */
+export const DEFAULT_FLIGHT_STRIP_ORDER: readonly FlightStripReadout[] = FLIGHT_STRIP_READOUTS;
+
+function isReadout(value: unknown): value is FlightStripReadout {
+  return (FLIGHT_STRIP_READOUTS as readonly unknown[]).includes(value);
+}
+
+/**
+ * Stored input is untrusted and may predate a readout: known readouts keep their
+ * order, duplicates and strangers go, and readouts it lacks follow at the end.
+ */
+export function parseFlightStripOrder(input: unknown): FlightStripReadout[] {
+  const seen = new Set<FlightStripReadout>();
+  const order: FlightStripReadout[] = [];
+  for (const value of Array.isArray(input) ? input : []) {
+    if (isReadout(value) && !seen.has(value)) {
+      seen.add(value);
+      order.push(value);
+    }
+  }
+  for (const readout of DEFAULT_FLIGHT_STRIP_ORDER) {
+    if (!seen.has(readout)) order.push(readout);
+  }
+  return order;
+}
 
 function hasReadout(fields: FlightStripFields): boolean {
   return FLIGHT_STRIP_READOUTS.some((field) => fields[field]);

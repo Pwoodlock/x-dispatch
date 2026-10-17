@@ -1,22 +1,21 @@
 import { Fragment, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Crosshair, PictureInPicture2, Plane } from 'lucide-react';
+import { Crosshair, PictureInPicture2, Plane } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
 import { useUnits } from '@/hooks/useUnits';
+import type { FlightStripReadout } from '@/lib/flightStrip/fields';
 import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
 import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
-import type { FeetPerMinute, Knots } from '@/lib/utils/units';
+import type { FeetPerMinute, Knots, SpeedUnit } from '@/lib/utils/units';
 import { useFlightStripWindowOpen } from '@/queries';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useDragPosition } from '../hooks/useDragPosition';
 import TaxiGuidanceRow from './TaxiGuidanceRow';
-
-const PRIMARY_COLOR_CLASS = 'text-primary';
 
 interface FlightStripProps {
   onCenterPlane: () => void;
@@ -41,11 +40,6 @@ function formatHeading(heading: number | undefined): string {
   return normalized.toFixed(0).padStart(3, '0');
 }
 
-function formatNavFrequency(freq: number | undefined): string {
-  if (freq === undefined || isNaN(freq) || freq <= 0) return '---.--';
-  return (freq / 100).toFixed(2);
-}
-
 /** fpm reads in steps of 100, m/s with one decimal; both carry an explicit sign. */
 function formatVS(vs: number | undefined, metric: boolean): string {
   if (vs === undefined || isNaN(vs)) return '---';
@@ -55,9 +49,28 @@ function formatVS(vs: number | undefined, metric: boolean): string {
   return rounded > 0 ? `+${text}` : text;
 }
 
+/** The dataref holds kHz; aircraft without a COM radio leave junk in it, so only the COM band shows. */
+function formatComFrequency(khz: number | undefined): string {
+  if (khz === undefined || isNaN(khz) || khz < 118_000 || khz > 137_000) return '---.---';
+  return (khz / 1000).toFixed(3);
+}
+
+const HPA_PER_INHG = 33.8639;
+
+function formatQnhHpa(inHg: number | undefined): string {
+  if (inHg === undefined || isNaN(inHg) || inHg <= 0) return '----';
+  return Math.round(inHg * HPA_PER_INHG).toString();
+}
+
+function formatInHg(inHg: number | undefined): string {
+  if (inHg === undefined || isNaN(inHg) || inHg <= 0) return '--.--';
+  return inHg.toFixed(2);
+}
+
+/** Written as on a PFD: ".78", the leading zero dropped. */
 function formatMach(mach: number | undefined): string {
   if (mach === undefined || isNaN(mach)) return '---';
-  return mach.toFixed(2);
+  return mach.toFixed(2).replace(/^0\./, '.');
 }
 
 function formatWind(dir: number | undefined, speed: number | undefined): string {
@@ -81,15 +94,22 @@ function formatOAT(oat: number | undefined): string {
   return Math.round(oat).toString();
 }
 
-// --- Color helpers ---
-
-function getVSColor(vs: number | undefined): string {
-  if (vs === undefined || isNaN(vs)) return 'text-muted-foreground';
-  const rounded = Math.round(vs / 100) * 100;
-  if (rounded > 0) return 'text-success';
-  if (rounded < 0) return 'text-foreground';
-  return 'text-muted-foreground';
-}
+/**
+ * Widest text each formatter produces, in mono characters. A reading reserves
+ * that width so live values never resize the strip; add one with each formatter.
+ */
+const ALTITUDE_CHARS = 6; // 45,000
+const HEADING_CHARS = 3;
+const WIND_CHARS = 6; // 270/35
+const OAT_CHARS = 3; // -45
+const MACH_CHARS = 4; // 1.02
+const COM_FREQUENCY_CHARS = 7; // 118.805
+const QNH_CHARS = 4; // 1013
+const INHG_CHARS = 5; // 29.92
+/** Speed in km/h passes 1,000 with its separator; knots and mph stay in three digits. */
+const speedChars = (unit: SpeedUnit) => (unit === 'kmh' ? 5 : 3);
+/** -6,000 fpm or -25.0 m/s */
+const verticalSpeedChars = (metric: boolean) => (metric ? 5 : 6);
 
 function isLowAGL(agl: number | undefined): boolean {
   return agl !== undefined && !isNaN(agl) && agl < 500;
@@ -118,6 +138,7 @@ export default function FlightStrip({
   const followPlane = useMapStore((s) => s.followPlane);
   const stripWindowOpen = useFlightStripWindowOpen();
   const fields = useSettingsStore((s) => s.flightStrip.fields);
+  const order = useSettingsStore((s) => s.flightStrip.order);
   const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } =
     useStripDrag(detached);
   const units = useSettingsStore((s) => s.map.units);
@@ -132,6 +153,8 @@ export default function FlightStrip({
     fpm === undefined ? undefined : verticalSpeedF(fpm as FeetPerMinute);
   const metricVS = units.verticalSpeed === 'ms';
   const formatVerticalSpeed = (vs: number | undefined) => formatVS(vs, metricVS);
+  const speedWidth = speedChars(units.speed);
+  const vsWidth = verticalSpeedChars(metricVS);
 
   const handleCenter = () => {
     if (hasDragged.current) return;
@@ -143,94 +166,173 @@ export default function FlightStrip({
   // Autopilot bugs and the muted line under each value follow their own toggles.
   const target = (value: string | undefined) => (fields.targets ? value : undefined);
   const details = fields.details;
-  const columns: { key: string; node: ReactNode }[] = [];
+  // One node per readout that is on; the pilot's order picks them out below.
+  const readouts: Partial<Record<FlightStripReadout, ReactNode>> = {};
+  if (fields.attitude && planeState?.pitch !== undefined && planeState?.roll !== undefined) {
+    readouts.attitude = <MiniAttitude pitch={planeState.pitch} roll={planeState.roll} />;
+  }
   if (fields.speed) {
-    columns.push({
-      key: 'speed',
-      node: (
-        <DataColumn
-          label={t('flightStrip.ias')}
-          target={target(
-            planeState?.apAirspeedIsMach
-              ? formatTarget(formatMach, planeState.apAirspeed)
-              : formatTarget(formatValue, speed(planeState?.apAirspeed))
-          )}
-          value={formatValue(speed(planeState?.indicatedAirspeed))}
-          unit={t(`units.${units.speed}`)}
-          valueColor={PRIMARY_COLOR_CLASS}
-          showDetails={details}
-          secondary={`${t('flightStrip.gs')} ${formatValue(speed(planeState?.groundspeed))} · ${t('flightStrip.mach')} ${formatMach(planeState?.mach)}`}
-        />
-      ),
-    });
+    readouts.speed = (
+      <DataColumn
+        label={t('flightStrip.ias')}
+        target={target(
+          planeState?.apAirspeedIsMach
+            ? formatTarget(formatMach, planeState.apAirspeed)
+            : formatTarget(formatValue, speed(planeState?.apAirspeed))
+        )}
+        value={
+          <Reading chars={speedWidth}>{formatValue(speed(planeState?.indicatedAirspeed))}</Reading>
+        }
+        unit={t(`units.${units.speed}`)}
+        showDetails={details}
+        secondary={
+          <>
+            {t('flightStrip.gs')}{' '}
+            <Reading align="left" chars={speedWidth}>
+              {formatValue(speed(planeState?.groundspeed))}
+            </Reading>
+            {' · '}
+            {t('flightStrip.mach')}{' '}
+            <Reading align="left" chars={MACH_CHARS}>
+              {formatMach(planeState?.mach)}
+            </Reading>
+          </>
+        }
+      />
+    );
   }
   if (fields.altitude) {
-    columns.push({
-      key: 'altitude',
-      node: (
-        <DataColumn
-          label={t('flightStrip.alt')}
-          target={target(formatTarget(formatValue, altitude(planeState?.apAltitude)))}
-          value={formatValue(altitude(planeState?.altitudeMSL))}
-          unit={t(`units.${units.altitude}`)}
-          valueColor={PRIMARY_COLOR_CLASS}
-          showDetails={details}
-          secondary={
-            <span className={cn(isLowAGL(planeState?.altitudeAGL) && 'text-warning')}>
-              {t('flightStrip.agl')} {formatValue(altitude(planeState?.altitudeAGL))}
-            </span>
-          }
-        />
-      ),
-    });
+    readouts.altitude = (
+      <DataColumn
+        label={t('flightStrip.alt')}
+        target={target(formatTarget(formatValue, altitude(planeState?.apAltitude)))}
+        value={
+          <Reading chars={ALTITUDE_CHARS}>{formatValue(altitude(planeState?.altitudeMSL))}</Reading>
+        }
+        unit={t(`units.${units.altitude}`)}
+        showDetails={details}
+        secondary={
+          <span className={cn(isLowAGL(planeState?.altitudeAGL) && 'text-warning')}>
+            {t('flightStrip.agl')}{' '}
+            <Reading align="left" chars={ALTITUDE_CHARS}>
+              {formatValue(altitude(planeState?.altitudeAGL))}
+            </Reading>
+          </span>
+        }
+      />
+    );
   }
   if (fields.verticalSpeed) {
-    columns.push({
-      key: 'verticalSpeed',
-      node: (
-        <DataColumn
-          label={t('flightStrip.vs')}
-          target={target(
-            formatTarget(formatVerticalSpeed, verticalSpeed(planeState?.apVerticalSpeed))
-          )}
-          value={formatVerticalSpeed(verticalSpeed(planeState?.verticalSpeed))}
-          unit={t(`units.${units.verticalSpeed}`)}
-          valueColor={getVSColor(planeState?.verticalSpeed)}
-          showDetails={details}
-        />
-      ),
-    });
+    readouts.verticalSpeed = (
+      <DataColumn
+        label={t('flightStrip.vs')}
+        target={target(
+          formatTarget(formatVerticalSpeed, verticalSpeed(planeState?.apVerticalSpeed))
+        )}
+        value={
+          <Reading chars={vsWidth}>
+            {formatVerticalSpeed(verticalSpeed(planeState?.verticalSpeed))}
+          </Reading>
+        }
+        unit={t(`units.${units.verticalSpeed}`)}
+        showDetails={details}
+      />
+    );
   }
   if (fields.heading) {
-    columns.push({
-      key: 'heading',
-      node: (
-        <DataColumn
-          label={t('flightStrip.hdg')}
-          target={target(formatTarget(formatHeading, planeState?.apHeading))}
-          value={formatHeading(planeState?.heading)}
-          unit="°"
-          valueColor={PRIMARY_COLOR_CLASS}
-          showDetails={details}
-          secondary={`${t('flightStrip.crs')} ${formatHeading(planeState?.nav1Course)}° · ${t('flightStrip.nav1')} ${formatNavFrequency(planeState?.nav1Frequency)}`}
-        />
-      ),
-    });
+    readouts.heading = (
+      <DataColumn
+        label={t('flightStrip.hdg')}
+        target={target(formatTarget(formatHeading, planeState?.apHeading))}
+        value={
+          <Reading chars={HEADING_CHARS}>{formatHeading(planeState?.magneticHeading)}</Reading>
+        }
+        unit="°"
+        showDetails={details}
+        secondary={
+          <>
+            {t('flightStrip.trk')}{' '}
+            <Reading align="left" chars={HEADING_CHARS}>
+              {formatHeading(planeState?.groundTrack)}
+            </Reading>
+            °{' · '}
+            {t('flightStrip.crs')}{' '}
+            <Reading align="left" chars={HEADING_CHARS}>
+              {formatHeading(planeState?.nav1Course)}
+            </Reading>
+            °
+          </>
+        }
+      />
+    );
   }
   if (fields.wind) {
-    columns.push({
-      key: 'wind',
-      node: (
-        <DataColumn
-          label={t('flightStrip.wind')}
-          value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
-          unit={t('units.kt')}
-          showDetails={details}
-          secondary={`${t('flightStrip.oat')} ${formatOAT(planeState?.oat)}°C`}
-        />
-      ),
-    });
+    readouts.wind = (
+      <DataColumn
+        label={t('flightStrip.wind')}
+        value={
+          <Reading chars={WIND_CHARS}>
+            {formatWind(planeState?.windDirection, planeState?.windSpeed)}
+          </Reading>
+        }
+        unit={t('units.kt')}
+        showDetails={details}
+        secondary={
+          <>
+            {t('flightStrip.oat')}{' '}
+            <Reading align="left" chars={OAT_CHARS}>
+              {formatOAT(planeState?.oat)}
+            </Reading>
+            °C
+          </>
+        }
+      />
+    );
   }
+  if (fields.com1) {
+    readouts.com1 = (
+      <DataColumn
+        label={t('flightStrip.com1')}
+        value={
+          <Reading chars={COM_FREQUENCY_CHARS}>
+            {formatComFrequency(planeState?.com1Frequency)}
+          </Reading>
+        }
+        unit={t('units.mhz')}
+        showDetails={details}
+        secondary={
+          <>
+            {t('flightStrip.stby')}{' '}
+            <Reading align="left" chars={COM_FREQUENCY_CHARS}>
+              {formatComFrequency(planeState?.com1StandbyFrequency)}
+            </Reading>
+          </>
+        }
+      />
+    );
+  }
+  if (fields.qnh) {
+    readouts.qnh = (
+      <DataColumn
+        label={t('flightStrip.qnh')}
+        value={<Reading chars={QNH_CHARS}>{formatQnhHpa(planeState?.baroSettingInHg)}</Reading>}
+        unit={t('units.hpa')}
+        showDetails={details}
+        secondary={
+          <>
+            <Reading align="left" chars={INHG_CHARS}>
+              {formatInHg(planeState?.baroSettingInHg)}
+            </Reading>{' '}
+            {t('units.inhg')}
+          </>
+        }
+      />
+    );
+  }
+  const columns = order.flatMap((readout) => {
+    const node = readouts[readout];
+    return node === undefined ? [] : [{ key: readout, node }];
+  });
 
   return (
     <AnimatePresence>
@@ -286,19 +388,8 @@ export default function FlightStrip({
 
               <GroupSeparator />
 
-              {fields.attitude &&
-                planeState?.pitch !== undefined &&
-                planeState?.roll !== undefined && (
-                  <>
-                    <div className="flex items-center px-2.5 py-1">
-                      <MiniAttitude pitch={planeState.pitch} roll={planeState.roll} />
-                    </div>
-                    <GroupSeparator />
-                  </>
-                )}
-
-              {/* Up to five columns: the values you fly with are large, related
-                secondary readings sit underneath in a muted line. */}
+              {/* The readouts in the pilot's order: the values you fly with are
+                large, related secondary readings sit underneath in a muted line. */}
               {columns.length > 0 && (
                 <div className="flex items-center gap-4 px-4 py-1.5">
                   {columns.map(({ key, node }, index) => (
@@ -455,12 +546,36 @@ function MiniAttitude({ pitch, roll }: { pitch: number | undefined; roll: number
   );
 }
 
+interface ReadingProps {
+  /** Mono characters of the widest value this reading shows. */
+  chars: number;
+  /** Big values keep their digits anchored at the right; a reading after a label stays next to it. */
+  align?: 'right' | 'left';
+  children: string;
+}
+
+/**
+ * One number in a box as wide as its widest value, so live readings never resize
+ * the strip. Inherits the font it sits in: `ch` is one glyph there, as the strip's
+ * readings are mono with tabular numerals.
+ */
+function Reading({ chars, align = 'right', children }: ReadingProps) {
+  return (
+    <span
+      className={cn('inline-block tabular-nums', align === 'right' ? 'text-right' : 'text-left')}
+      style={{ minWidth: `${chars}ch` }}
+    >
+      {children}
+    </span>
+  );
+}
+
 interface DataColumnProps {
   label: string;
-  value: string;
+  /** The large live value, a `Reading` or anything else that keeps its width. */
+  value: ReactNode;
   unit: string;
-  valueColor?: string;
-  /** Selected (autopilot dial) value, shown next to the label as a bug. */
+  /** Selected (autopilot dial) value, shown above the live digits as a bug. */
   target?: string;
   /** Related smaller reading rendered under the value. */
   secondary?: ReactNode;
@@ -468,47 +583,47 @@ interface DataColumnProps {
   showDetails?: boolean;
 }
 
+/**
+ * PFD colours: live values white, the selected autopilot value magenta and placed
+ * over the digits like a bug on the tape, with the label at the left of that row.
+ */
 function DataColumn({
   label,
   value,
   unit,
-  valueColor,
   target,
   secondary,
   showDetails = true,
 }: DataColumnProps) {
   return (
-    <div className="flex min-w-0 flex-col">
-      <div className="text-2xs flex h-3.5 items-center gap-1.5 tracking-wider uppercase">
-        <span className="text-muted-foreground font-medium">{label}</span>
-        {target !== undefined && (
-          // Keyed by value: animates only when the autopilot dial changes,
-          // never on the 10 Hz live updates.
-          <motion.span
-            key={target}
-            initial={{ opacity: 0, y: -3 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={quickFade}
-            className="text-info flex items-center font-mono normal-case tabular-nums"
-          >
-            <ChevronRight className="h-2.5 w-2.5" />
-            {target}
-          </motion.span>
-        )}
-      </div>
-      <div className="flex items-baseline gap-1">
-        <span
-          className={cn(
-            'font-mono text-lg leading-6 font-semibold tabular-nums',
-            valueColor || 'text-foreground'
+    <div className="flex min-w-0 flex-col items-start">
+      {/* The first column is as wide as the digits or the label row, whichever is wider,
+        so the target's right edge always sits over the digits' right edge. */}
+      <div className="grid grid-cols-[auto_auto] items-baseline gap-x-1">
+        <div className="text-2xs flex h-3.5 items-center justify-between gap-2 tracking-wider uppercase">
+          <span className="text-muted-foreground font-medium">{label}</span>
+          {target !== undefined && (
+            // Keyed by value: animates only when the autopilot dial changes,
+            // never on the 10 Hz live updates.
+            <motion.span
+              key={target}
+              initial={{ opacity: 0, y: -3 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={quickFade}
+              className="text-cat-fuchsia font-mono font-medium normal-case tabular-nums"
+            >
+              {target}
+            </motion.span>
           )}
-        >
+        </div>
+        <span />
+        <span className="text-foreground block text-right font-mono text-lg leading-6 font-semibold">
           {value}
         </span>
         <span className="text-muted-foreground text-2xs">{unit}</span>
       </div>
       {showDetails && (
-        <div className="text-muted-foreground h-3.5 font-mono text-xs leading-tight tabular-nums">
+        <div className="text-muted-foreground h-3.5 font-mono text-xs leading-tight">
           {secondary}
         </div>
       )}

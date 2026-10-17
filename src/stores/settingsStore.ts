@@ -9,8 +9,11 @@ import {
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import {
   DEFAULT_FLIGHT_STRIP_FIELDS,
+  DEFAULT_FLIGHT_STRIP_ORDER,
   type FlightStripField,
   type FlightStripFields,
+  type FlightStripReadout,
+  parseFlightStripOrder,
   withFieldVisible,
 } from '@/lib/flightStrip/fields';
 import {
@@ -139,6 +142,8 @@ export interface FlightStripSettings {
   autoOpen: boolean;
   /** Readouts shown on the map strip and in the detached window. */
   fields: FlightStripFields;
+  /** Every readout, shown or not, left to right. */
+  order: FlightStripReadout[];
 }
 
 export interface GraphicsSettings {
@@ -241,6 +246,7 @@ interface SettingsState {
   toggleFlightStripLock: () => void;
   /** Ignored when it would hide the last readout. */
   setFlightStripField: (field: FlightStripField, visible: boolean) => void;
+  setFlightStripOrder: (order: FlightStripReadout[]) => void;
   resetToDefaults: () => void;
 }
 
@@ -319,6 +325,7 @@ const DEFAULT_FLIGHT_STRIP_SETTINGS: FlightStripSettings = {
   alwaysOnTop: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.alwaysOnTop,
   autoOpen: false,
   fields: DEFAULT_FLIGHT_STRIP_FIELDS,
+  order: [...DEFAULT_FLIGHT_STRIP_ORDER],
 };
 
 function clampFlightStripScale(scale: number): number {
@@ -520,6 +527,11 @@ export const useSettingsStore = create<SettingsState>()(
           },
         })),
 
+      setFlightStripOrder: (order) =>
+        set((state) => ({
+          flightStrip: { ...state.flightStrip, order: parseFlightStripOrder(order) },
+        })),
+
       resetToDefaults: () => {
         applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
         applyZoomLevel(DEFAULT_APPEARANCE_SETTINGS.zoomLevel);
@@ -539,7 +551,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 39,
+      version: 40,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -808,6 +820,18 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
       graphics.ownshipColor = DEFAULT_GRAPHICS_SETTINGS.ownshipColor;
     }
     state = { ...state, graphics };
+  }
+
+  if (version < 40) {
+    // Readouts in the pilot's own order.
+    state = {
+      ...state,
+      flightStrip: {
+        ...DEFAULT_FLIGHT_STRIP_SETTINGS,
+        ...state.flightStrip,
+        order: parseFlightStripOrder(state.flightStrip?.order),
+      },
+    };
   }
 
   return state as SettingsState;
