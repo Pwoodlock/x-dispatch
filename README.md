@@ -5,71 +5,110 @@
 <h1 align="center">X-Dispatch</h1>
 
 <p align="center">
-  Flight dispatch and airport visualization for X-Plane 12
+  Free flight planner, airport map and add-on manager for X-Plane 12
 </p>
 
 <p align="center">
-  Requires X-Plane 12.4+ · Windows · macOS · Linux
+  Requires X-Plane 12.4+ · Windows · macOS · Linux · 10 languages
 </p>
 
 <p align="center">
+  <a href="https://x-dispatch.app/download/"><img src="https://img.shields.io/badge/Download-x--dispatch.app-2ea44f?style=flat-square" alt="Download"></a>
   <a href="https://discord.gg/76UYpxXWW7"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://ko-fi.com/lyestarzalt"><img src="https://img.shields.io/badge/Ko--fi-Donate-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
 </p>
 
 <p align="center">
-  <a href="https://x-dispatch.app/download/">Download</a> · <a href="https://x-dispatch.app/">Website</a> · <a href="https://discord.gg/76UYpxXWW7">Discord</a>
+  <a href="https://x-dispatch.app/download/">Download</a> · <a href="https://x-dispatch.app/">Website</a> · <a href="https://x-dispatch.app/manual/">Manual</a> · <a href="https://x-dispatch.app/changelog/">Changelog</a> · <a href="https://discord.gg/76UYpxXWW7">Discord</a>
 </p>
 
 ---
 
 ![Map Overview](screenshots/map-overview.png)
 
-All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, gates, and markings rendered from X-Plane's apt.dat. Set up your flight, import from SimBrief, and launch X-Plane directly.
+Every X-Plane airport on a 3D globe. Plan a route on real airways, dispatch from a real airport diagram, import SimBrief, track the flight live, log every landing and manage your add-ons. One app, no subscription.
 
-## Screenshots
+**38,000+ downloads · 35 reviews on x-plane.org · 35,000 airports · 10 languages**
 
-![Flight Plan Builder](screenshots/flight-planner.png)
-![Ground Weather](screenshots/ground-weather.gif)
-![Airport Detail](screenshots/airport-detail.png)
-![Flight Setup](screenshots/flight-setup.png)
+## Seen on
 
-![3D Terrain](screenshots/3D-terrain.png)
-![3D Terrain — Alt view](screenshots/3D-terrain-2.png)
-
-<details>
-<summary>More screenshots</summary>
-
-![SimBrief Import](screenshots/simbrief-1.png)
-![SimBrief Briefing](screenshots/simbrief-2.png)
-![Flight Plan](screenshots/flight-plan.png)
-![Fuel Setup](screenshots/fuel-setup.png)
-![Weather Setup](screenshots/weather-setup.png)
-![Starting Position](screenshots/starting-point-select.png)
-![Addon Browser](screenshots/addon-manager-1.png)
-![Addon Manager — Scenery](screenshots/addon-manager-2.png)
-![Flight Tracking](screenshots/flight-tracking.png)
-![Procedures](screenshots/procedures.png)
-![Companion App](screenshots/companion-app.png)
-![Settings](screenshots/settings.png)
-
-</details>
+- [FSElite](https://fselite.net/content/x-dispatch-adds-world-map-flight-launcher-and-add-on-manager-to-x-plane-12/) — X-Dispatch adds world map, flight launcher and add-on manager to X-Plane 12
+- [Q8Pilot](https://www.youtube.com/watch?v=g4NxbxpyaQ8) — video review
+- [guilbair](https://www.youtube.com/watch?v=U7KC2DwMdHo) — video review
+- [x-plane.org](https://forums.x-plane.org/files/file/98500-x-dispatch-world-map-flight-launcher-addon-manager-for-x-plane-12/) — download page and reviews
 
 ## What it does
 
-- **Airport map** — 35,000+ airports on a 3D globe with terrain and contour lines. Runways, taxiways, gates, helipads, markings, lights. Custom scenery detection. Sun-lit globe with real night city lights.
-- **Flight plan builder (alpha)** — Build a route on the map with airways, procedures and fuel estimates, then save it straight to X-Plane.
-- **Ground weather** — Wind streaks that follow the live METAR's speed and direction, plus rain, snow and fog depiction over the airport.
-- **Flight setup** — Pick your aircraft, livery, starting position, fuel, payload, weather. Launch X-Plane directly or relocate mid-flight.
-- **Taxi routing** — Select a gate and runway, get a shortest-path taxi route. Drag to reroute through different taxiways.
-- **Flight recording** — Automatic flight recording with trail visualization, landing detection, replay mode, and flight logbook with landing statistics.
-- **SimBrief** — Import your OFP. Route goes on the map with fuel breakdown and nav log.
-- **Nav data** — VORs, NDBs, ILS, airways, airspace, SID/STAR/approach procedures. Works with Navigraph.
-- **Live traffic** — VATSIM and IVAO overlays. Live METAR per airport.
-- **Flight tracking** — See your aircraft in real time with a flight strip and dynamic landing report card.
-- **Addon manager** — Browse installed aircraft, scenery, plugins. Drag-and-drop install. Scenery priority reordering.
+### Plan the flight on real airways
 
-10 languages. Requires X-Plane 12.4+. More details on the [project page](https://x-dispatch.app/).
+Pick departure and arrival, auto-route on real airways with SIDs and STARs, even across the North Atlantic Tracks. Edit the enroute string by hand and the map redraws as you type. Save straight to X-Plane as a .fms file.
+
+![Flight Planner](screenshots/flight-planner.png)
+
+### Weather you can see on the ground
+
+Rain, snow, fog and wind blow across the airport straight from the live METAR. At night the airfield lights come on: runway, taxiway and approach lighting, including the sequenced flashers on final.
+
+![Ground Weather](screenshots/ground-weather.gif)
+
+### Your aircraft, live on the map
+
+While X-Plane runs, a symbol follows your aircraft from the globe down to the taxiway. The Flight Strip keeps speed, altitude, heading, COM1 and QNH on screen, on the map or in its own window over X-Plane, with click-through so it never gets between you and the cockpit. Press the map button and a heading-up taxi map tells you the next turn and where to hold short.
+
+![Flight Tracking](screenshots/flight-tracking.png)
+
+### Fly online with VATSIM and IVAO
+
+Live traffic, sectors and staffed airports on the map. Click a pilot to see their route, then hand their filed plan to the planner with one button.
+
+![VATSIM](screenshots/vatsim-plan.png)
+
+### Search any ICAO. Jump there.
+
+35,000 airports on a 3D globe with nav aids, airspaces and live weather underneath. Four basemaps built in (Dark, Light, Light + 3D, Satellite) plus bring-your-own style URL. Star favorites and set a home airport.
+
+![Satellite basemap](screenshots/map-overview-satellite.png)
+
+### 3D terrain
+
+Hillshade and real elevation under the map, so mountain airports like Innsbruck read the way they should. ILS glide slopes are drawn in 3D above the runway.
+
+![3D Terrain](screenshots/3D-terrain.png)
+![3D Terrain on satellite](screenshots/3D-terrain-2.png)
+
+### Real airport diagrams
+
+Layouts pulled straight from your X-Plane install: runways, taxiways, gates, painted lines, lighting, custom scenery. Click any frequency in the info panel and it tunes COM1 or COM2 in the sim.
+
+![Airport Detail](screenshots/airport-detail.png)
+
+### Configure the flight at the gate
+
+Aircraft, livery, fuel, payload, weather, time of day. Set up the whole flight before the sim opens, launch X-Plane directly or relocate mid-flight.
+
+![Flight Setup](screenshots/flight-setup.png)
+
+### SimBrief and flight plans on the globe
+
+Fetch the latest OFP, review route, weights and fuel, drop the FMS file into your sim folder. Load any FMS file and the route draws on the globe. Export in the format your aircraft expects: X-Plane FMS, MSFS PLN and others.
+
+![SimBrief](screenshots/simbrief-1.png)
+![Flight Plan](screenshots/flight-plan.png)
+
+### Logbook
+
+Every flight recorded automatically with trail, landing detection, replay and landing statistics.
+
+![Logbook](screenshots/log-book.png)
+
+### Companion apps and add-ons in one place
+
+Register companion apps (XPME, ATC clients, hardware drivers) and X-Dispatch launches them with X-Plane. Browse aircraft, plugins, liveries, Lua scripts and scenery priority across multiple X-Plane installs. Drop a file in and the installer figures out where it goes.
+
+![Companion Apps](screenshots/companion-app.png)
+![Add-on Manager](screenshots/addon-manager-1.png)
+
+Full feature list and walkthroughs in the [manual](https://x-dispatch.app/manual/).
 
 > **Don't own X-Plane?** X-Plane has a [free demo](https://www.x-plane.com/desktop/try-it/) that works with X-Dispatch, so you can try both.
 
