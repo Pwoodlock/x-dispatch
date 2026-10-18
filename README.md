@@ -24,6 +24,12 @@
 
 ---
 
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=9FeWRLthFDc"><img src="https://img.youtube.com/vi/9FeWRLthFDc/maxresdefault.jpg" alt="Watch the X-Dispatch trailer" width="800"></a>
+  <br>
+  <a href="https://www.youtube.com/watch?v=9FeWRLthFDc">Watch the one minute trailer</a>
+</p>
+
 ![Map Overview](screenshots/map-overview.png)
 
 Every X-Plane airport on a 3D globe. Plan a route on real airways, dispatch from a real airport diagram, import SimBrief, track the flight live, log every landing and manage your add-ons. One app, no subscription.
