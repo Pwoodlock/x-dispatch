@@ -31,7 +31,7 @@ export default function ReplayWidget() {
   };
 
   return (
-    <div className="border-border/60 bg-background/90 w-[480px] rounded-xl border px-4 py-3 shadow-xl backdrop-blur-md">
+    <div className="border-border/60 bg-background/90 w-[480px] rounded-lg border px-4 py-3 backdrop-blur-md">
       <div className="flex items-center gap-2">
         <Button
           size="icon"

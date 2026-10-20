@@ -8,15 +8,15 @@ import type { RouteLegKind } from '@/lib/flightplan/builder/routeLine';
 import { NAT_TRACK_RE } from '@/lib/flightplan/builder/routeTokens';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 
-/** Line colour per leg kind. Enroute keeps the --violet token, oceanic tracks the --cat-pink
- * token; procedures reuse the phase palette. */
+/** Line colour per leg kind, each the sRGB hex of a design token: enroute is --chart-route
+ * (yellow), oceanic tracks --cat-pink, SID --cat-emerald, STAR --cat-orange, approach --cat-sky. */
 export const ROUTE_KIND_COLORS: Record<RouteLegKind, string> = {
-  enroute: '#8B5CF6',
-  track: '#F472B6',
-  sid: '#22C55E',
-  star: '#F59E0B',
-  approach: '#06B6D4',
-  missed: '#06B6D4',
+  enroute: '#f2cf3b',
+  track: '#f38abe',
+  sid: '#68ca80',
+  star: '#f49752',
+  approach: '#1bc3f3',
+  missed: '#1bc3f3',
 };
 
 export const ROUTE_LINE_WIDTH: maplibregl.ExpressionSpecification = [

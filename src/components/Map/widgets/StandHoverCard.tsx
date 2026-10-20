@@ -8,7 +8,7 @@ import { useStandHoverStore } from '@/stores/standHoverStore';
 
 const MAX_AIRLINES = 6;
 const CURSOR_OFFSET_PX = 14;
-const SEPARATOR = ' · ';
+const SEPARATOR = ', ';
 
 /** Small card following the cursor over a stand with its size, operator and airlines. */
 export default function StandHoverCard() {
@@ -37,7 +37,7 @@ function Card({ hover }: { hover: StandHover }) {
 
   return (
     <motion.div
-      className="border-border bg-background/90 pointer-events-none absolute top-0 left-0 z-30 w-56 rounded-md border p-2.5 text-xs shadow-xl backdrop-blur"
+      className="border-border bg-background/90 pointer-events-none absolute top-0 left-0 z-30 w-56 rounded-md border p-2.5 text-xs backdrop-blur"
       style={{ x, y }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

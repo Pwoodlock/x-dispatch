@@ -130,8 +130,8 @@ function CompassWidget() {
     <div className="absolute bottom-10 left-12 z-10" role="region" aria-label="Compass heading">
       <div
         className={cn(
-          'flex flex-col items-center rounded-xl border p-3',
-          'border-border/50 bg-card/90 shadow-xl',
+          'flex flex-col items-center rounded-lg border p-3',
+          'border-border/50 bg-card/90',
           'backdrop-blur-xl'
         )}
       >

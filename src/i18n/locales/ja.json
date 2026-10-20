@@ -95,8 +95,8 @@
     "configureXPlanePath": "X-Plane のパスを設定",
     "verifying": "変更を確認中...",
     "upToDate": "すべて最新です",
-    "firstLaunch": "初回起動 — データベースを設定中...",
-    "sceneryChanged": "シーナリーの変更を検出 — 再構築中...",
+    "firstLaunch": "初回起動: データベースを設定中...",
+    "sceneryChanged": "シーナリーの変更を検出: 再構築中...",
     "parsingGlobal": "グローバル空港を解析中...",
     "scanningCustom": "カスタムシーナリーを確認中 {{current}}/{{total}}: {{name}}",
     "savingToDb": "データベースに保存中...",
@@ -109,8 +109,8 @@
     "messages": {
       "checking": "変更を確認中...",
       "upToDate": "すべて最新です",
-      "firstLaunch": "初回起動 — データベースを設定中...",
-      "sceneryChanged": "シーナリーの変更を検出 — 再構築中...",
+      "firstLaunch": "初回起動: データベースを設定中...",
+      "sceneryChanged": "シーナリーの変更を検出: 再構築中...",
       "globalAirports": "Global Airports を解析中...",
       "customScenery": "Custom Scenery を確認中 ({{current}}/{{total}})",
       "savingDatabase": "データベースに保存中...",
@@ -164,7 +164,7 @@
     "anyRunway": "任意の滑走路",
     "anyShort": "任意",
     "alternate": "代替空港",
-    "alternateAt": "代替 · {{value}}",
+    "alternateAt": "代替 {{value}}",
     "noAlternate": "代替空港なし",
     "fuel": "搭載燃料",
     "tracks": {
@@ -271,7 +271,7 @@
         "duskArrival": "日没に着陸"
       },
       "tomorrow": "明日",
-      "scrubLabel": "{{time}}Z · {{phase}}"
+      "scrubLabel": "{{time}}Z {{phase}}"
     },
     "planCleared": "プランを消去しました",
     "routeCleared": "ルートを消去しました",
@@ -470,7 +470,7 @@
       "favorites": {
         "title": "お気に入り",
         "description": "空港パネルの星マークをクリックすると、ここに追加できます。拠点空港が最初に表示されます。",
-        "empty": "お気に入りの空港はまだありません — 空港パネルの星マークから追加できます。",
+        "empty": "お気に入りの空港はまだありません: 空港パネルの星マークから追加できます。",
         "notInAirac": "現在の AIRAC にありません"
       },
       "actions": {
@@ -498,7 +498,7 @@
       "description": "SimBrief からフライトプランをインポート",
       "pilotId": "パイロットIDまたはユーザー名",
       "pilotIdHelp": "SimBriefのユーザー名（Navigraphエイリアス）または数字のパイロットID",
-      "pilotIdNote": "どちらでも使えます。ユーザー名はログインに使うエイリアス、パイロットIDは simbrief.com → Account Settings にあります。",
+      "pilotIdNote": "どちらでも使えます。ユーザー名はログインに使うエイリアス、パイロットIDは simbrief.com > Account Settings にあります。",
       "testSuccess": "フライトプランが見つかりました",
       "needAccount": "SimBrief アカウントをお持ちでないですか？",
       "freeService": "SimBrief は無料のフライトプランニングサービスです",
@@ -528,7 +528,7 @@
       "betaUpdatesNone": "現在ベータ版はありません。",
       "title": "情報",
       "description": "X-Plane 向けフライトディスパッチと空港表示",
-      "updateAvailable": "アップデートが利用可能 — v{{version}}",
+      "updateAvailable": "アップデートが利用可能: v{{version}}",
       "upToDate": "最新版です",
       "checkForUpdates": "アップデートを確認",
       "checkingForUpdates": "アップデートを確認しています…",
@@ -886,7 +886,7 @@
       "empty": {
         "noPath": "X-Plane のパスが設定されていません。",
         "noPathCta": "X-Plane 設定を開く",
-        "noLog": "ログがまだありません — このインストールで X-Plane を一度でも起動しましたか？",
+        "noLog": "ログがまだありません: このインストールで X-Plane を一度でも起動しましたか？",
         "allClear": "このログに問題は見つかりませんでした。",
         "noMatches": "現在のフィルターに該当するエントリはありません。"
       },
@@ -1024,8 +1024,8 @@
       "standby": "STBY",
       "simOffline": "X-Plane が実行されていません",
       "toast": {
-        "activeSet": "{{radio}} アクティブ → {{freq}}",
-        "standbySet": "{{radio}} スタンバイ → {{freq}}",
+        "activeSet": "{{radio}} アクティブ: {{freq}}",
+        "standbySet": "{{radio}} スタンバイ: {{freq}}",
         "failed": "{{radio}} を設定できませんでした"
       }
     },
@@ -1134,7 +1134,7 @@
     },
     "gateway": {
       "updateAvailable": "Gatewayに新しいリリースがあります",
-      "credit": "{{artist}} · {{date}}",
+      "credit": "{{artist}}、{{date}}",
       "viewOnGateway": "Gatewayで表示"
     },
     "taxiRoute": {
@@ -1151,7 +1151,7 @@
       "pointsPlaced": "{{count}}ポイント",
       "export": "Follow the Greens用にエクスポート",
       "exportSuccess": "Follow the Greens用にルートをエクスポートしました",
-      "summary": "{{taxiways}} 経由 · {{distance}}"
+      "summary": "{{taxiways}} 経由、{{distance}}"
     },
     "frequencies": "周波数"
   },
@@ -1317,12 +1317,12 @@
     "selectAircraft": "機体を選択",
     "spawnErrorAccess": "Windows が起動をブロックしました。X-Dispatch を右クリックして「管理者として実行」を選択し、もう一度お試しください。",
     "spawnErrorMissing": "設定されたパスに X-Plane の実行ファイルが見つかりません。設定で X-Plane のインストールパスを確認してください。",
-    "spawnErrorGeneric": "X-Plane の起動に失敗しました。詳細はログをご確認ください（設定 → ログ）。",
+    "spawnErrorGeneric": "X-Plane の起動に失敗しました。詳細はログをご確認ください（設定 > ログ）。",
     "spawnErrorNeedsAdmin": "Windows が X-Plane の起動を拒否しました。管理者権限が必要か、ウイルス対策ソフトがブロックしている可能性があります。X-Dispatch を管理者として実行してみてください。",
     "spawnErrorAccessBlocked": "X-Dispatch はすでに管理者として実行されていますが、Windows が X-Plane の起動を拒否しました。権限の問題ではありません。ウイルス対策ソフトまたはフォルダー アクセスの制御がブロックしている可能性が高いです。X-Plane のフォルダーを許可してから、もう一度お試しください。",
     "changeFlightRejected": "X-Plane がフライトを受け付けませんでした: {{message}}",
     "spawnErrorAlreadyRunning": "X-Plane はすでに実行中です。代わりに「フライトを変更」ボタンをご利用ください。",
-    "spawnErrorPathNotConfigured": "X-Plane のインストールパスが設定されていません。設定 → X-Plane インストール で指定してください。",
+    "spawnErrorPathNotConfigured": "X-Plane のインストールパスが設定されていません。設定 > X-Plane インストール で指定してください。",
     "spawnErrorInvalidConfig": "フライト設定が未完了です。機体と出発地点を選択してから、もう一度お試しください。",
     "aircraft": {
       "title": "機体",
@@ -1649,7 +1649,7 @@
       "toggle": "切り替え",
       "lock": "ロック",
       "unlock": "ロック解除",
-      "tabStats": "{{total}} 個のアドオン · 有効 {{enabled}} · 無効 {{disabled}}",
+      "tabStats": "{{total}} 個のアドオン、有効 {{enabled}}、無効 {{disabled}}",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1665,7 +1665,7 @@
       "deleted": "{{name}}を削除しました",
       "deleteFailed": "削除に失敗しました",
       "packages": "{{count}} 個のシーナリーパッケージ",
-      "tabStats": "{{total}} 個のパック · 有効 {{enabled}} · 無効 {{disabled}}",
+      "tabStats": "{{total}} 個のパック、有効 {{enabled}}、無効 {{disabled}}",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
       "unsafeMode": "危険",
@@ -1767,7 +1767,7 @@
     "title": "SimBrief からインポート",
     "description": "SimBrief から最新のフライトプランを取得",
     "notConfigured": "SimBrief 未設定",
-    "configurePilotId": "設定 → SimBrief でSimBriefのユーザー名またはパイロットIDを追加してください",
+    "configurePilotId": "設定 > SimBrief でSimBriefのユーザー名またはパイロットIDを追加してください",
     "fetching": "フライトプランを取得中...",
     "fetchError": "フライトプランの取得に失敗しました",
     "ready": "取得準備完了",
@@ -1804,12 +1804,12 @@
     },
     "briefing": {
       "sigmetsTitle": "有効な SIGMET ({{count}} 件)",
-      "sigmetsDesc": "ルート沿いの重大な気象警報 — 乱気流、着氷、雷雨など",
+      "sigmetsDesc": "ルート沿いの重大な気象警報: 乱気流、着氷、雷雨など",
       "noSigmets": "ルート沿いに重大な気象警報はありません",
       "firTitle": "FIR ルート",
       "firDesc": "フライトが通過する飛行情報区",
       "notamsTitle": "NOTAM",
-      "notamsDesc": "航空情報 — 空港閉鎖、滑走路変更、その他の運用上の注意事項",
+      "notamsDesc": "航空情報: 空港閉鎖、滑走路変更、その他の運用上の注意事項",
       "noNotams": "NOTAMはありません",
       "transAltTitle": "遷移高度",
       "transAltDesc": "現地気圧（QNH）と標準気圧（STD）を切り替える高度です。高度計を適切に設定してください。"
@@ -2166,7 +2166,7 @@
     "centerlineOffset": "センターラインから {{side}}に {{m}} m",
     "left": "左",
     "right": "右",
-    "runway": "{{icao}} · 滑走路 {{runway}}",
+    "runway": "{{icao}} 滑走路 {{runway}}",
     "unknownRunway": "滑走路を特定できません",
     "showOnMap": "マップに表示",
     "dismiss": "閉じる",
@@ -2235,7 +2235,7 @@
   "analytics": {
     "consent": {
       "title": "X-Dispatch の改善にご協力ください",
-      "description": "匿名の利用データを共有いただくと、どの機能が使われているか把握し、開発の優先度を決められます。オンにしない限り無効で、設定 → サポートでいつでも変更できます。",
+      "description": "匿名の利用データを共有いただくと、どの機能が使われているか把握し、開発の優先度を決められます。オンにしない限り無効で、設定 > サポートでいつでも変更できます。",
       "collectedTitle": "共有される情報",
       "collected": "使っている機能・設定・フライトオプション、アプリの動作状況（起動時間、ウィンドウサイズ、エラー）、アプリと X-Plane のバージョン、OS、地域。",
       "notCollectedTitle": "共有されない情報",

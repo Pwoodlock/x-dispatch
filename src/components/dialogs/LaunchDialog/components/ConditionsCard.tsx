@@ -156,7 +156,7 @@ export function ConditionsCard({
       formatWind(m.wind, { verbose: true }),
     ];
     if (m.temperature != null) parts.push(`${m.temperature} °C`);
-    return { text: parts.join(' · '), category: metar.flightCategory };
+    return { text: parts.join(', '), category: metar.flightCategory };
   }, [metar, t]);
 
   return (

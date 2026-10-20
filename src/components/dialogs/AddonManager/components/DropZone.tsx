@@ -84,7 +84,7 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={cn(
-        'group relative flex h-44 flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed transition-all duration-200',
+        'group relative flex h-44 flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all duration-200',
         isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/20 bg-muted/10',
         disabled ? 'cursor-not-allowed opacity-50' : 'hover:border-primary/40 hover:bg-muted/30'
       )}
@@ -103,7 +103,7 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       {/* Icon */}
       <div
         className={cn(
-          'relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-200',
+          'relative mb-3 flex h-14 w-14 items-center justify-center rounded-lg transition-all duration-200',
           isDragOver
             ? 'bg-primary/20 text-primary scale-110'
             : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'

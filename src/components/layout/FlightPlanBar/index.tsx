@@ -180,15 +180,16 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
 }
 
 // Badge variant mapping for chip types
-const CHIP_VARIANTS: Record<string, 'warning' | 'violet' | 'info' | 'outline'> = {
-  departure: 'warning',
-  arrival: 'warning',
-  sid: 'violet',
-  star: 'violet',
-  vor: 'info',
-  ndb: 'info',
-  dme: 'info',
-};
+const CHIP_VARIANTS: Record<string, 'warning' | 'cat-emerald' | 'cat-orange' | 'info' | 'outline'> =
+  {
+    departure: 'warning',
+    arrival: 'warning',
+    sid: 'cat-emerald',
+    star: 'cat-orange',
+    vor: 'info',
+    ndb: 'info',
+    dme: 'info',
+  };
 
 const CHIP_ICONS: Record<string, React.ReactNode> = {
   departure: <Star className="h-3 w-3" />,

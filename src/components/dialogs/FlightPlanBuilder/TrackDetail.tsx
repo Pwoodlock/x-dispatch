@@ -65,7 +65,7 @@ export function TrackDetail({
               t('planBuilder.tracks.eurRts', { list: track.feederFixes.join(' ') }),
           ]
             .filter(Boolean)
-            .join(' · ')}
+            .join(', ')}
         </p>
       )}
       {warnings.map((w) => (

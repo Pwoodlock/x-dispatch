@@ -144,7 +144,7 @@ function FlightEditForm({
   const { data: aircraftList = [] } = useAircraftList();
   const selected = installedAircraft(aircraftList, form);
   // A flight recorded in an aircraft that is no longer installed keeps its name.
-  const recordedLabel = [form.aircraftName, form.aircraftIcao].filter(Boolean).join(' · ');
+  const recordedLabel = [form.aircraftName, form.aircraftIcao].filter(Boolean).join(', ');
   const aircraftValue = selected?.path ?? (recordedLabel ? KEEP_RECORDED : '');
   const chooseAircraft = (path: string) => {
     if (path === KEEP_RECORDED) return;
@@ -236,7 +236,7 @@ function FlightEditForm({
                 {aircraftList.map((a) => (
                   <SelectItem key={a.path} value={a.path}>
                     {a.name}
-                    {a.icao && <span className="text-muted-foreground font-mono"> · {a.icao}</span>}
+                    {a.icao && <span className="text-muted-foreground font-mono">, {a.icao}</span>}
                   </SelectItem>
                 ))}
               </SelectContent>

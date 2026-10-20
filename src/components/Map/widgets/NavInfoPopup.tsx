@@ -82,7 +82,7 @@ function NavInfoCard({ info, airports, onClose }: NavInfoCardProps) {
   const isNavaid = info.kind !== 'WPT';
 
   return (
-    <div className="border-border/50 bg-card/95 w-56 rounded-xl border p-3 text-xs shadow-xl backdrop-blur-xl">
+    <div className="border-border/50 bg-card/95 w-56 rounded-lg border p-3 text-xs backdrop-blur-xl">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">

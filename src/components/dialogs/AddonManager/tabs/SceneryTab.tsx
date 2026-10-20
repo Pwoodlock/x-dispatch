@@ -382,7 +382,7 @@ export function SceneryTab() {
                   );
 
                 if (parts.length > 0) {
-                  toast.success(parts.join(' · '));
+                  toast.success(parts.join(', '));
                 } else {
                   toast(t('addonManager.rescanNoChanges'), {
                     icon: <Check className="h-4 w-4" />,

@@ -108,7 +108,7 @@ function AirportInfoPanel({
         isCollapsed ? 'w-12' : 'w-80'
       )}
     >
-      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm">
+      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
         {/* Collapsed state */}
         <div
           className={cn(

@@ -95,8 +95,8 @@
     "configureXPlanePath": "Configurar ruta de X-Plane",
     "verifying": "Comprobando cambios...",
     "upToDate": "Todo actualizado",
-    "firstLaunch": "Primer inicio — configurando la base de datos...",
-    "sceneryChanged": "Cambios de escenario detectados — reconstruyendo...",
+    "firstLaunch": "Primer inicio: configurando la base de datos...",
+    "sceneryChanged": "Cambios de escenario detectados: reconstruyendo...",
     "parsingGlobal": "Analizando aeropuertos globales...",
     "scanningCustom": "Analizando Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Guardando en la base de datos...",
@@ -164,7 +164,7 @@
     "anyRunway": "Cualquier pista",
     "anyShort": "Todas",
     "alternate": "Alternativo",
-    "alternateAt": "Alternativo · {{value}}",
+    "alternateAt": "Alternativo {{value}}",
     "noAlternate": "Sin alternativo",
     "fuel": "Combustible",
     "tracks": {
@@ -271,7 +271,7 @@
         "duskArrival": "Aterrizaje al atardecer"
       },
       "tomorrow": "Mañana",
-      "scrubLabel": "{{time}}Z · {{phase}}"
+      "scrubLabel": "{{time}}Z {{phase}}"
     },
     "planCleared": "Plan borrado",
     "routeCleared": "Ruta borrada",
@@ -470,7 +470,7 @@
       "favorites": {
         "title": "Favoritos",
         "description": "Pulsa la estrella en cualquier panel de aeropuerto para añadirlo aquí. Tu aeropuerto base aparece primero.",
-        "empty": "Aún no hay favoritos — toca la estrella en cualquier panel de aeropuerto.",
+        "empty": "Aún no hay favoritos: toca la estrella en cualquier panel de aeropuerto.",
         "notInAirac": "No está en el AIRAC actual"
       },
       "actions": {
@@ -498,7 +498,7 @@
       "description": "Importar planes de vuelo desde SimBrief",
       "pilotId": "ID de piloto o nombre de usuario",
       "pilotIdHelp": "Tu nombre de usuario de SimBrief (alias de Navigraph) o tu ID de piloto numérico",
-      "pilotIdNote": "Ambos sirven. El nombre de usuario es el alias con el que inicias sesión; el ID de piloto está en simbrief.com → Account Settings.",
+      "pilotIdNote": "Ambos sirven. El nombre de usuario es el alias con el que inicias sesión; el ID de piloto está en simbrief.com > Account Settings.",
       "testSuccess": "Plan de vuelo encontrado",
       "needAccount": "¿No tienes cuenta SimBrief?",
       "freeService": "SimBrief es un servicio gratuito de planificación de vuelos",
@@ -528,7 +528,7 @@
       "betaUpdatesNone": "No hay ninguna versión beta por ahora.",
       "title": "Acerca de",
       "description": "Despacho de vuelos y visualización de aeropuertos para X-Plane",
-      "updateAvailable": "Actualización disponible — v{{version}}",
+      "updateAvailable": "Actualización disponible: v{{version}}",
       "upToDate": "Estás al día",
       "checkForUpdates": "Buscar actualizaciones",
       "checkingForUpdates": "Buscando actualizaciones…",
@@ -886,7 +886,7 @@
       "empty": {
         "noPath": "Ruta de X-Plane no configurada.",
         "noPathCta": "Abrir configuración de X-Plane",
-        "noLog": "Aún no hay registro — ¿se ha iniciado X-Plane al menos una vez en esta instalación?",
+        "noLog": "Aún no hay registro: ¿se ha iniciado X-Plane al menos una vez en esta instalación?",
         "allClear": "No hay incidencias en este registro.",
         "noMatches": "Ninguna entrada coincide con el filtro actual."
       },
@@ -1024,8 +1024,8 @@
       "standby": "STBY",
       "simOffline": "X-Plane no está en ejecución",
       "toast": {
-        "activeSet": "{{radio}} activa → {{freq}}",
-        "standbySet": "{{radio}} en espera → {{freq}}",
+        "activeSet": "{{radio}} activa: {{freq}}",
+        "standbySet": "{{radio}} en espera: {{freq}}",
         "failed": "No se pudo sintonizar {{radio}}"
       }
     },
@@ -1134,7 +1134,7 @@
     },
     "gateway": {
       "updateAvailable": "Gateway tiene una versión más reciente",
-      "credit": "por {{artist}} · {{date}}",
+      "credit": "por {{artist}}, {{date}}",
       "viewOnGateway": "Ver en Gateway"
     },
     "taxiRoute": {
@@ -1151,7 +1151,7 @@
       "pointsPlaced": "{{count}} punto(s)",
       "export": "Guardar ruta de rodaje",
       "exportSuccess": "Ruta de rodaje guardada",
-      "summary": "vía {{taxiways}} · {{distance}}"
+      "summary": "vía {{taxiways}}, {{distance}}"
     },
     "frequencies": "Frecuencias"
   },
@@ -1317,12 +1317,12 @@
     "selectAircraft": "Selecciona una aeronave",
     "spawnErrorAccess": "Windows bloqueó el inicio. Haz clic con el botón derecho en X-Dispatch y elige «Ejecutar como administrador», luego inténtalo de nuevo.",
     "spawnErrorMissing": "No se encontró el ejecutable de X-Plane en la ruta configurada. Comprueba la ruta de instalación de X-Plane en Ajustes.",
-    "spawnErrorGeneric": "No se pudo iniciar X-Plane. Consulta los registros para más detalles (Ajustes → Registros).",
+    "spawnErrorGeneric": "No se pudo iniciar X-Plane. Consulta los registros para más detalles (Ajustes > Registros).",
     "spawnErrorNeedsAdmin": "Windows se negó a iniciar X-Plane. Puede que necesite permisos de administrador o que un antivirus lo esté bloqueando. Prueba a ejecutar X-Dispatch como administrador.",
     "spawnErrorAccessBlocked": "Windows se negó a iniciar X-Plane aunque X-Dispatch ya se ejecuta como administrador, así que no es un problema de permisos. Lo más probable es que lo bloquee un antivirus o el Acceso controlado a carpetas. Permite la carpeta de X-Plane e inténtalo de nuevo.",
     "changeFlightRejected": "X-Plane no aceptó el vuelo: {{message}}",
     "spawnErrorAlreadyRunning": "X-Plane ya está en ejecución. Usa el botón «Cambiar vuelo» en su lugar.",
-    "spawnErrorPathNotConfigured": "No hay ninguna ruta de instalación de X-Plane configurada. Configúrala en Ajustes → Instalación de X-Plane.",
+    "spawnErrorPathNotConfigured": "No hay ninguna ruta de instalación de X-Plane configurada. Configúrala en Ajustes > Instalación de X-Plane.",
     "spawnErrorInvalidConfig": "La configuración del vuelo está incompleta. Selecciona una aeronave y un punto de salida, luego inténtalo de nuevo.",
     "aircraft": {
       "title": "Aeronave",
@@ -1649,7 +1649,7 @@
       "toggle": "Activar/Desactivar",
       "lock": "Bloquear",
       "unlock": "Desbloquear",
-      "tabStats": "{{total}} complementos · {{enabled}} activos · {{disabled}} inactivos",
+      "tabStats": "{{total}} complementos, {{enabled}} activos, {{disabled}} inactivos",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1665,7 +1665,7 @@
       "deleted": "{{name}} eliminado",
       "deleteFailed": "Error al eliminar",
       "packages": "{{count}} paquetes de escenario",
-      "tabStats": "{{total}} paquetes · {{enabled}} activos · {{disabled}} inactivos",
+      "tabStats": "{{total}} paquetes, {{enabled}} activos, {{disabled}} inactivos",
       "unsavedChanges": "Sin guardar",
       "safeMode": "Seguro",
       "unsafeMode": "Inseguro",
@@ -1767,7 +1767,7 @@
     "title": "Importar desde SimBrief",
     "description": "Obtener tu último plan de vuelo desde SimBrief",
     "notConfigured": "SimBrief no configurado",
-    "configurePilotId": "Añade tu nombre de usuario o ID de piloto de SimBrief en Ajustes → SimBrief",
+    "configurePilotId": "Añade tu nombre de usuario o ID de piloto de SimBrief en Ajustes > SimBrief",
     "fetching": "Obteniendo plan de vuelo...",
     "fetchError": "Error al obtener el plan de vuelo",
     "ready": "Listo para obtener",
@@ -1804,15 +1804,15 @@
     },
     "briefing": {
       "sigmetsTitle": "SIGMETs activos ({{count}})",
-      "sigmetsDesc": "Avisos meteorológicos significativos a lo largo de la ruta — turbulencia, engelamiento, tormentas, etc.",
+      "sigmetsDesc": "Avisos meteorológicos significativos a lo largo de la ruta: turbulencia, engelamiento, tormentas, etc.",
       "noSigmets": "Sin avisos meteorológicos significativos en la ruta",
       "firTitle": "Ruta FIR",
       "firDesc": "Regiones de información de vuelo que atraviesa tu ruta",
       "notamsTitle": "NOTAMs",
-      "notamsDesc": "Avisos aeronáuticos — cierres de aeropuertos, cambios de pista y otras alertas operativas",
+      "notamsDesc": "Avisos aeronáuticos: cierres de aeropuertos, cambios de pista y otras alertas operativas",
       "noNotams": "No hay NOTAMs disponibles",
       "transAltTitle": "Altitudes de transición",
-      "transAltDesc": "Altitud donde cambias entre altímetro local (QNH) y presión estándar (STD) — ajusta tu altímetro en consecuencia"
+      "transAltDesc": "Altitud donde cambias entre altímetro local (QNH) y presión estándar (STD): ajusta tu altímetro en consecuencia"
     },
     "errors": {
       "invalid_user": "Eso no parece un nombre de usuario ni un ID de piloto de SimBrief.",
@@ -2166,7 +2166,7 @@
     "centerlineOffset": "{{m}} m a la {{side}} del eje",
     "left": "izquierda",
     "right": "derecha",
-    "runway": "{{icao}} · Pista {{runway}}",
+    "runway": "{{icao}} Pista {{runway}}",
     "unknownRunway": "Pista no identificada",
     "showOnMap": "Mostrar en el mapa",
     "dismiss": "Cerrar",
@@ -2235,7 +2235,7 @@
   "analytics": {
     "consent": {
       "title": "Ayuda a mejorar X-Dispatch",
-      "description": "Comparte datos de uso anónimos para que sepamos qué funciones se usan y en qué centrarnos. Está desactivado salvo que lo actives y puedes cambiarlo cuando quieras en Ajustes → Soporte.",
+      "description": "Comparte datos de uso anónimos para que sepamos qué funciones se usan y en qué centrarnos. Está desactivado salvo que lo actives y puedes cambiarlo cuando quieras en Ajustes > Soporte.",
       "collectedTitle": "Qué se comparte",
       "collected": "Qué funciones, ajustes y opciones de vuelo usas, cómo funciona la app (tiempo de inicio, tamaño de ventana, errores), además de la versión de la app y de X-Plane, el sistema y la región.",
       "notCollectedTitle": "Nunca se comparte",

@@ -69,7 +69,7 @@ function AircraftListItem({
         }
       }}
       title={[
-        [aircraft.name, aircraft.studio.trim(), aircraft.author.trim()].filter(Boolean).join(' · '),
+        [aircraft.name, aircraft.studio.trim(), aircraft.author.trim()].filter(Boolean).join(', '),
         aircraft.path,
       ].join('\n')}
       className={cn(
@@ -116,10 +116,10 @@ function AircraftListItem({
         <div className="text-muted-foreground truncate text-sm">
           {aircraft.manufacturer}
           {aircraftStudio(aircraft) && (
-            <span className="text-foreground/70"> · {aircraftStudio(aircraft)}</span>
+            <span className="text-foreground/70">, {aircraftStudio(aircraft)}</span>
           )}
           {aircraftVersionLabel(aircraft) && (
-            <span className="text-muted-foreground/70"> · {aircraftVersionLabel(aircraft)}</span>
+            <span className="text-muted-foreground/70">, {aircraftVersionLabel(aircraft)}</span>
           )}
         </div>
         {copyLabel && (
@@ -361,7 +361,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
         <div className="text-muted-foreground text-sm">
           {t('launcher.aircraft.count', { count: filteredAircraft.length })}
           {showFavoritesOnly &&
-            ` · ${t('launcher.aircraft.favorites', { count: favorites.length })}`}
+            `, ${t('launcher.aircraft.favorites', { count: favorites.length })}`}
         </div>
       </div>
 

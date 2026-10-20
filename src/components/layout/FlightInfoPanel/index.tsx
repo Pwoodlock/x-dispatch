@@ -56,7 +56,7 @@ function FlightInfoPanel() {
     >
       <div
         className={cn(
-          'border-border/40 bg-card/95 relative flex flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm transition-all duration-300',
+          'border-border/40 bg-card/95 relative flex flex-col overflow-hidden rounded-lg border backdrop-blur-sm transition-all duration-300',
           isCollapsed && 'h-72'
         )}
       >

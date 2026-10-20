@@ -21,7 +21,7 @@ export function thresholdLine(t: TFunction, report: LandingReport): string | nul
     m: Math.abs(runway.centerlineOffsetM).toFixed(1),
     side,
   });
-  return `${along} · ${offset}`;
+  return `${along}, ${offset}`;
 }
 
 export interface StatCell {

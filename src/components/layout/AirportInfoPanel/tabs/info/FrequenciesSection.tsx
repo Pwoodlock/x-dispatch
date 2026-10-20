@@ -73,7 +73,7 @@ export function FrequenciesSection({
           ) : (
             <>
               <ChevronDown className="h-3 w-3" />
-              {t('common.showAll')} · {hidden} {t('sidebar.more')}
+              {t('common.showAll')} ({hidden})
             </>
           )}
         </Button>

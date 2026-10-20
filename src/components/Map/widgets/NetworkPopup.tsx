@@ -114,7 +114,7 @@ function PilotCard({
   };
   const progress = flightProgress(pilot, airportAt(plan?.departure), airportAt(plan?.arrival));
   const canPlan = canPlanFromPilot(airports, pilot);
-  const subtitle = [plan?.aircraft, pilot.name].filter(Boolean).join(' · ');
+  const subtitle = [plan?.aircraft, pilot.name].filter(Boolean).join(', ');
 
   const usePlan = () => {
     if (!openPlannerForPilot(airports, pilot)) return;
@@ -210,7 +210,7 @@ function PilotCard({
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border-border/50 bg-card/95 w-72 rounded-xl border p-3 text-xs shadow-xl backdrop-blur-xl">
+    <div className="border-border/50 bg-card/95 w-72 rounded-lg border p-3 text-xs backdrop-blur-xl">
       {children}
     </div>
   );

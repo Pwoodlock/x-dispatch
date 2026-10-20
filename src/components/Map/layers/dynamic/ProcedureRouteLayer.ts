@@ -113,7 +113,7 @@ const LEG_LABEL_SOURCE_ID = 'procedure-leg-labels-source';
 
 /**
  * One shared style for every procedure type (SID/STAR/approach), not a color per type - matching
- * both the `--violet` "procedures" design token this app already uses for the flight-plan route
+ * both the `--chart-route` design token this app already uses for the flight-plan route
  * line (`FlightPlanLayer.ts`'s `COLORS.routeLine`) and how reference charting tools draw
  * procedures: a single consistent line style, not a different neon color per leg's role.
  */

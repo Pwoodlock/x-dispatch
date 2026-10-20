@@ -102,7 +102,7 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
           exit={{ opacity: 0, y: 12, scale: 0.98, transition: exitEase }}
           transition={cardSpring}
           className={cn(
-            'border-border/50 bg-card/90 z-20 w-[400px] cursor-grab rounded-xl border shadow-xl backdrop-blur-xl select-none active:cursor-grabbing',
+            'border-border/50 bg-card/90 z-20 w-[400px] cursor-grab rounded-lg border backdrop-blur-xl select-none active:cursor-grabbing',
             isDefault ? 'absolute right-4 bottom-4' : 'fixed'
           )}
           style={!isDefault ? { left: position.x, top: position.y } : undefined}

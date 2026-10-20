@@ -44,7 +44,7 @@ const WEATHER_GRADIENTS: Record<string, string> = {
   clear: 'from-cat-sky/15 via-cat-sky/5 to-transparent',
   cloudy: 'from-muted-foreground/15 via-muted-foreground/5 to-transparent',
   rainy: 'from-cat-blue/15 via-cat-blue/5 to-transparent',
-  stormy: 'from-cat-fuchsia/15 via-cat-fuchsia/5 to-transparent',
+  stormy: 'from-cat-red/15 via-cat-red/5 to-transparent',
   snowy: 'from-foreground/10 via-foreground/5 to-transparent',
   foggy: 'from-muted-foreground/10 via-muted-foreground/5 to-transparent',
   real: 'from-primary/10 via-primary/5 to-transparent',
@@ -232,26 +232,26 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
           )}
         </div>
 
-        {/* Row 2: Metadata as icon·value pairs (AircraftPreview dot-separator pattern) */}
+        {/* Row 2: Metadata as icon/value pairs separated by hairline rules */}
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
           <WeatherIcon className="h-3 w-3 shrink-0" />
           <span>{getWeatherLabel(entry, t)}</span>
-          <span className="text-border">·</span>
+          <span className="bg-border h-3 w-px shrink-0" aria-hidden />
           <Fuel className="h-3 w-3 shrink-0" />
           <span className="font-mono">{formatFuelSummary(entry.tankPercentages)}</span>
-          <span className="text-border">·</span>
+          <span className="bg-border h-3 w-px shrink-0" aria-hidden />
           <Weight className="h-3 w-3 shrink-0" />
           <span className="font-mono">
             {payloadLbs === 0 ? t('weightBalance.empty') : units.weight(payloadLbs)}
           </span>
-          <span className="text-border">·</span>
+          <span className="bg-border h-3 w-px shrink-0" aria-hidden />
           <Clock className="h-3 w-3 shrink-0" />
           <span className="font-mono">
             {entry.useRealWorldTime
               ? t('launcher.logbook.timeLive')
               : formatTimeOfDay(entry.timeOfDay)}
           </span>
-          <span className="text-border">·</span>
+          <span className="bg-border h-3 w-px shrink-0" aria-hidden />
           <span>
             {entry.coldAndDark ? t('launcher.logbook.coldAndDark') : t('launcher.logbook.ready')}
           </span>

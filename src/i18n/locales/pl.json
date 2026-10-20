@@ -95,8 +95,8 @@
     "configureXPlanePath": "Skonfiguruj ścieżkę X-Plane",
     "verifying": "Sprawdzanie zmian...",
     "upToDate": "Wszystko aktualne",
-    "firstLaunch": "Pierwszy start — konfiguracja bazy danych...",
-    "sceneryChanged": "Wykryto zmiany scenerii — odbudowa...",
+    "firstLaunch": "Pierwszy start: konfiguracja bazy danych...",
+    "sceneryChanged": "Wykryto zmiany scenerii: odbudowa...",
     "parsingGlobal": "Analiza globalnych lotnisk...",
     "scanningCustom": "Analizowanie Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Zapisywanie do bazy danych...",
@@ -109,8 +109,8 @@
     "messages": {
       "checking": "Sprawdzanie zmian...",
       "upToDate": "Wszystko aktualne",
-      "firstLaunch": "Pierwsze uruchomienie — konfigurowanie bazy danych...",
-      "sceneryChanged": "Wykryto zmiany scenerii — przebudowywanie...",
+      "firstLaunch": "Pierwsze uruchomienie: konfigurowanie bazy danych...",
+      "sceneryChanged": "Wykryto zmiany scenerii: przebudowywanie...",
       "globalAirports": "Analizowanie Global Airports...",
       "customScenery": "Analizowanie Custom Scenery ({{current}}/{{total}})",
       "savingDatabase": "Zapisywanie do bazy danych...",
@@ -164,7 +164,7 @@
     "anyRunway": "Dowolny pas",
     "anyShort": "Dowolny",
     "alternate": "Lotnisko zapasowe",
-    "alternateAt": "Zapasowe · {{value}}",
+    "alternateAt": "Zapasowe {{value}}",
     "noAlternate": "Brak zapasowego",
     "fuel": "Paliwo",
     "tracks": {
@@ -271,7 +271,7 @@
         "duskArrival": "Lądowanie o zachodzie słońca"
       },
       "tomorrow": "Jutro",
-      "scrubLabel": "{{time}}Z · {{phase}}"
+      "scrubLabel": "{{time}}Z {{phase}}"
     },
     "planCleared": "Plan wyczyszczony",
     "routeCleared": "Trasa wyczyszczona",
@@ -470,7 +470,7 @@
       "favorites": {
         "title": "Ulubione",
         "description": "Kliknij gwiazdkę w panelu lotniska, aby je dodać. Lotnisko bazowe jest wyświetlane jako pierwsze.",
-        "empty": "Brak ulubionych — kliknij gwiazdkę w panelu lotniska.",
+        "empty": "Brak ulubionych: kliknij gwiazdkę w panelu lotniska.",
         "notInAirac": "Brak w obecnym AIRAC"
       },
       "actions": {
@@ -498,7 +498,7 @@
       "description": "Importuj plany lotu z SimBrief",
       "pilotId": "ID pilota lub nazwa użytkownika",
       "pilotIdHelp": "Twoja nazwa użytkownika SimBrief (alias Navigraph) lub numeryczne ID pilota",
-      "pilotIdNote": "Oba działają. Nazwa użytkownika to alias, którym się logujesz; ID pilota znajdziesz na simbrief.com → Account Settings.",
+      "pilotIdNote": "Oba działają. Nazwa użytkownika to alias, którym się logujesz; ID pilota znajdziesz na simbrief.com > Account Settings.",
       "testSuccess": "Znaleziono plan lotu",
       "needAccount": "Nie masz konta SimBrief?",
       "freeService": "SimBrief to darmowy serwis planowania lotów",
@@ -528,7 +528,7 @@
       "betaUpdatesNone": "Obecnie nie ma wersji beta.",
       "title": "O programie",
       "description": "Planowanie lotów i wizualizacja lotnisk dla X-Plane",
-      "updateAvailable": "Dostępna aktualizacja — v{{version}}",
+      "updateAvailable": "Dostępna aktualizacja: v{{version}}",
       "upToDate": "Masz najnowszą wersję",
       "checkForUpdates": "Sprawdź aktualizacje",
       "checkingForUpdates": "Sprawdzanie aktualizacji…",
@@ -886,7 +886,7 @@
       "empty": {
         "noPath": "Ścieżka X-Plane nie jest skonfigurowana.",
         "noPathCta": "Otwórz ustawienia X-Plane",
-        "noLog": "Brak dziennika — czy X-Plane został uruchomiony przynajmniej raz w tej instalacji?",
+        "noLog": "Brak dziennika: czy X-Plane został uruchomiony przynajmniej raz w tej instalacji?",
         "allClear": "W tym dzienniku nie wykryto problemów.",
         "noMatches": "Żadne wpisy nie pasują do bieżącego filtra."
       },
@@ -1024,8 +1024,8 @@
       "standby": "STBY",
       "simOffline": "X-Plane nie jest uruchomiony",
       "toast": {
-        "activeSet": "{{radio}} aktywne → {{freq}}",
-        "standbySet": "{{radio}} standby → {{freq}}",
+        "activeSet": "{{radio}} aktywne: {{freq}}",
+        "standbySet": "{{radio}} standby: {{freq}}",
         "failed": "Nie udało się ustawić {{radio}}"
       }
     },
@@ -1134,7 +1134,7 @@
     },
     "gateway": {
       "updateAvailable": "Gateway ma nowszą wersję",
-      "credit": "od {{artist}} · {{date}}",
+      "credit": "od {{artist}}, {{date}}",
       "viewOnGateway": "Zobacz na Gateway"
     },
     "taxiRoute": {
@@ -1151,7 +1151,7 @@
       "pointsPlaced": "{{count}} punktów",
       "export": "Zapisz trasę kołowania",
       "exportSuccess": "Trasa kołowania zapisana",
-      "summary": "przez {{taxiways}} · {{distance}}"
+      "summary": "przez {{taxiways}}, {{distance}}"
     },
     "frequencies": "Częstotliwości"
   },
@@ -1317,12 +1317,12 @@
     "selectAircraft": "Wybierz samolot",
     "spawnErrorAccess": "Windows zablokował uruchomienie. Kliknij prawym przyciskiem myszy X-Dispatch, wybierz „Uruchom jako administrator” i spróbuj ponownie.",
     "spawnErrorMissing": "Nie znaleziono pliku wykonywalnego X-Plane w skonfigurowanej ścieżce. Sprawdź ścieżkę instalacji X-Plane w Ustawieniach.",
-    "spawnErrorGeneric": "Nie udało się uruchomić X-Plane. Szczegóły w dzienniku (Ustawienia → Dzienniki).",
+    "spawnErrorGeneric": "Nie udało się uruchomić X-Plane. Szczegóły w dzienniku (Ustawienia > Dzienniki).",
     "spawnErrorNeedsAdmin": "Windows odmówił uruchomienia X-Plane. Mogą być potrzebne uprawnienia administratora lub blokuje to program antywirusowy. Spróbuj uruchomić X-Dispatch jako administrator.",
     "spawnErrorAccessBlocked": "Windows odmówił uruchomienia X-Plane, mimo że X-Dispatch działa już jako administrator, więc to nie problem z uprawnieniami. Najprawdopodobniej blokuje to program antywirusowy lub Kontrolowany dostęp do folderów. Zezwól na folder X-Plane i spróbuj ponownie.",
     "changeFlightRejected": "X-Plane nie zaakceptował lotu: {{message}}",
     "spawnErrorAlreadyRunning": "X-Plane jest już uruchomiony. Użyj zamiast tego przycisku „Zmień lot”.",
-    "spawnErrorPathNotConfigured": "Nie skonfigurowano ścieżki instalacji X-Plane. Ustaw ją w Ustawienia → Instalacja X-Plane.",
+    "spawnErrorPathNotConfigured": "Nie skonfigurowano ścieżki instalacji X-Plane. Ustaw ją w Ustawienia > Instalacja X-Plane.",
     "spawnErrorInvalidConfig": "Konfiguracja lotu jest niekompletna. Wybierz samolot i miejsce startu, a następnie spróbuj ponownie.",
     "aircraft": {
       "title": "Samolot",
@@ -1649,7 +1649,7 @@
       "toggle": "Przełącz",
       "lock": "Zablokuj",
       "unlock": "Odblokuj",
-      "tabStats": "{{total}} dodatków · {{enabled}} wł. · {{disabled}} wył.",
+      "tabStats": "{{total}} dodatków, {{enabled}} wł., {{disabled}} wył.",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1665,15 +1665,15 @@
       "deleted": "Usunięto {{name}}",
       "deleteFailed": "Nie udało się usunąć",
       "packages": "{{count}} pakietów scenerii",
-      "tabStats": "{{total}} pakietów · {{enabled}} wł. · {{disabled}} wył.",
+      "tabStats": "{{total}} pakietów, {{enabled}} wł., {{disabled}} wył.",
       "unsavedChanges": "Niezapisane",
       "safeMode": "Bezpieczny",
       "unsafeMode": "Niebezpieczny",
       "safeModeOn": "Przeciąganie ograniczone do tej samej kategorii. Wyłącz, aby swobodnie zmieniać kolejność (zaawansowane).",
-      "safeModeOff": "Włączono swobodne sortowanie. Elementy można przenosić między kategoriami — ostrożnie!",
+      "safeModeOff": "Włączono swobodne sortowanie. Elementy można przenosić między kategoriami: ostrożnie!",
       "priorityHint": "Wpisy na górze nadpisują te poniżej. Przeciągnij, aby zmienić kolejność lub użyj automatycznego sortowania.",
       "dragHintSafe": "Przeciągnij, aby zmienić kolejność w tej samej kategorii. Zmiany są zapisywane po kliknięciu Zapisz.",
-      "dragHintUnsafe": "Tryb bezpieczny wyłączony — możesz przenosić elementy między kategoriami. Błędna kolejność może powodować problemy ze scenerią.",
+      "dragHintUnsafe": "Tryb bezpieczny wyłączony: możesz przenosić elementy między kategoriami. Błędna kolejność może powodować problemy ze scenerią.",
       "saveOrder": "Zapisz",
       "discardOrder": "Odrzuć",
       "autoSort": "Sortuj automatycznie",
@@ -1767,7 +1767,7 @@
     "title": "Importuj z SimBrief",
     "description": "Pobierz najnowszy plan lotu z SimBrief",
     "notConfigured": "SimBrief nie jest skonfigurowany",
-    "configurePilotId": "Dodaj swoją nazwę użytkownika lub ID pilota SimBrief w Ustawienia → SimBrief",
+    "configurePilotId": "Dodaj swoją nazwę użytkownika lub ID pilota SimBrief w Ustawienia > SimBrief",
     "fetching": "Pobieranie planu lotu...",
     "fetchError": "Nie udało się pobrać planu lotu",
     "ready": "Gotowy do pobrania",
@@ -1804,15 +1804,15 @@
     },
     "briefing": {
       "sigmetsTitle": "Aktywne SIGMETy ({{count}})",
-      "sigmetsDesc": "Istotne ostrzeżenia pogodowe wzdłuż trasy — turbulencje, oblodzenie, burze itp.",
+      "sigmetsDesc": "Istotne ostrzeżenia pogodowe wzdłuż trasy: turbulencje, oblodzenie, burze itp.",
       "noSigmets": "Brak istotnych ostrzeżeń pogodowych wzdłuż trasy",
       "firTitle": "Trasa FIR",
       "firDesc": "Rejony informacji powietrznej, przez które przebiega trasa",
       "notamsTitle": "NOTAM",
-      "notamsDesc": "Informacje lotnicze — zamknięcia lotnisk, zmiany dróg startowych i inne komunikaty operacyjne",
+      "notamsDesc": "Informacje lotnicze: zamknięcia lotnisk, zmiany dróg startowych i inne komunikaty operacyjne",
       "noNotams": "Brak dostępnych NOTAM",
       "transAltTitle": "Wysokości przejścia",
-      "transAltDesc": "Wysokość, na której przełącza się między lokalnym ciśnieniem (QNH) a ciśnieniem standardowym (STD) — ustaw odpowiednio wysokościomierz"
+      "transAltDesc": "Wysokość, na której przełącza się między lokalnym ciśnieniem (QNH) a ciśnieniem standardowym (STD): ustaw odpowiednio wysokościomierz"
     },
     "errors": {
       "invalid_user": "To nie wygląda na nazwę użytkownika ani ID pilota SimBrief.",
@@ -2166,7 +2166,7 @@
     "centerlineOffset": "{{m}} m na {{side}} od osi",
     "left": "lewo",
     "right": "prawo",
-    "runway": "{{icao}} · Pas {{runway}}",
+    "runway": "{{icao}} Pas {{runway}}",
     "unknownRunway": "Nie rozpoznano pasa",
     "showOnMap": "Pokaż na mapie",
     "dismiss": "Zamknij",
@@ -2235,7 +2235,7 @@
   "analytics": {
     "consent": {
       "title": "Pomóż ulepszyć X-Dispatch",
-      "description": "Udostępniaj anonimowe dane o użytkowaniu, abyśmy wiedzieli, z których funkcji korzystasz i na czym się skupić. Domyślnie wyłączone – możesz to zmienić w każdej chwili w Ustawienia → Wsparcie.",
+      "description": "Udostępniaj anonimowe dane o użytkowaniu, abyśmy wiedzieli, z których funkcji korzystasz i na czym się skupić. Domyślnie wyłączone – możesz to zmienić w każdej chwili w Ustawienia > Wsparcie.",
       "collectedTitle": "Co jest udostępniane",
       "collected": "Z jakich funkcji, ustawień i opcji lotu korzystasz, jak działa aplikacja (czas uruchamiania, rozmiar okna, błędy), a także wersja aplikacji i X-Plane, system i region.",
       "notCollectedTitle": "Nigdy nie udostępniane",

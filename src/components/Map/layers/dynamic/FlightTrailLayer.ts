@@ -24,21 +24,22 @@ export const FLIGHT_TRAIL_LAYER_IDS = [
   REPLAY_LAYER,
 ];
 
-/** Cyan near the ground through violet to pink at airliner cruise levels. */
+/** Sky blue near the ground through green and yellow to orange and red at airliner cruise
+ * levels. Hex values are the sRGB of the --cat-* / --chart-route tokens. */
 const ALTITUDE_COLOR: maplibregl.ExpressionSpecification = [
   'interpolate',
   ['linear'],
   ['get', 'alt'],
   0,
-  '#22d3ee',
+  '#1bc3f3',
   5000,
-  '#38bdf8',
+  '#68ca80',
   15000,
-  '#818cf8',
+  '#f2cf3b',
   30000,
-  '#c084fc',
+  '#f49752',
   45000,
-  '#f472b6',
+  '#fe8b83',
 ];
 
 const LINE_WIDTH: maplibregl.ExpressionSpecification = [

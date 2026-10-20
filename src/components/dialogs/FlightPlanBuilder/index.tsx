@@ -413,7 +413,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     ...routeNotes.map((note) => t(`planBuilder.adjustments.${note.kind}`, { name: note.text })),
   ]
     .filter(Boolean)
-    .join(' · ');
+    .join(', ');
   const used = (tk: RouteToken) => tk.status === 'ok' || tk.status === 'warning';
   const fixCount = tokens.filter((tk) => used(tk) && tk.kind !== 'airway').length;
   const airwayCount = tokens.filter((tk) => used(tk) && tk.kind === 'airway').length;
@@ -665,7 +665,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         showFlightPlanBar ? 'top-28' : 'top-16'
       )}
     >
-      <div className="border-border/40 bg-card/95 flex h-full flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm">
+      <div className="border-border/40 bg-card/95 flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
         <header className="border-border/30 space-y-3 border-b px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">

@@ -190,7 +190,7 @@ export function AircraftPreview() {
                 )}
                 {selectedAircraft.emptyWeight > 0 && (
                   <>
-                    <span className="text-border">·</span>
+                    <span className="bg-border h-3 w-px shrink-0" aria-hidden />
                     <span className="flex items-center gap-1">
                       <Scale className="h-3.5 w-3.5" />
                       {formatWeight(selectedAircraft.emptyWeight, weightUnit)}
@@ -199,7 +199,7 @@ export function AircraftPreview() {
                 )}
                 {selectedAircraft.maxFuel > 0 && (
                   <>
-                    <span className="text-border">·</span>
+                    <span className="bg-border h-3 w-px shrink-0" aria-hidden />
                     <span className="flex items-center gap-1">
                       <Fuel className="h-3.5 w-3.5" />
                       {formatWeight(selectedAircraft.maxFuel, weightUnit)}
@@ -208,7 +208,7 @@ export function AircraftPreview() {
                 )}
                 {selectedAircraft.tailNumber && (
                   <>
-                    <span className="text-border">·</span>
+                    <span className="bg-border h-3 w-px shrink-0" aria-hidden />
                     <span className="flex items-center gap-1">
                       <Tag className="h-3.5 w-3.5" />
                       <span className="text-primary font-mono font-medium">

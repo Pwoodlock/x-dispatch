@@ -16,7 +16,7 @@ const PRIORITY_CONFIG: Record<
   [SceneryPriority.DefaultAirport]: { label: 'defaultAirports', variant: 'info' },
   [SceneryPriority.Library]: { label: 'libraries', variant: 'cat-sky' },
   [SceneryPriority.Other]: { label: 'other', variant: 'secondary' },
-  [SceneryPriority.Overlay]: { label: 'overlays', variant: 'violet' },
+  [SceneryPriority.Overlay]: { label: 'overlays', variant: 'cat-orange' },
   [SceneryPriority.AirportMesh]: { label: 'mesh', variant: 'cat-amber' },
   [SceneryPriority.Mesh]: { label: 'mesh', variant: 'secondary' },
   [SceneryPriority.Unrecognized]: { label: { literal: '???' }, variant: 'danger' },

@@ -72,20 +72,10 @@ export function FrequencyRow({
           </div>
         </div>
         {live && (
-          <div className="text-muted-foreground mt-0.5 flex min-w-0 items-center gap-1.5 pl-[1.65rem] text-xs">
-            {showName && (
-              <>
-                <span className="truncate">{row.staticName}</span>
-                <span className="text-muted-foreground/40">·</span>
-              </>
-            )}
+          <div className="text-muted-foreground mt-0.5 flex min-w-0 items-center gap-2 pl-[1.65rem] text-xs">
+            {showName && <span className="truncate">{row.staticName}</span>}
             <span className="text-foreground/80 shrink-0 font-mono">{live.callsign}</span>
-            {live.controllerName && (
-              <>
-                <span className="text-muted-foreground/40">·</span>
-                <span className="truncate">{live.controllerName}</span>
-              </>
-            )}
+            {live.controllerName && <span className="truncate">{live.controllerName}</span>}
           </div>
         )}
       </Button>

@@ -211,7 +211,7 @@ export function TabletAccessSection({ className }: SettingsSectionProps) {
                         <div className="min-w-0 flex-1">
                           <p className="xp-label truncate">{client.userAgent || client.ip}</p>
                           <p className="xp-value">
-                            {client.ip} · {new Date(client.connectedAt).toLocaleTimeString()}
+                            {client.ip}, {new Date(client.connectedAt).toLocaleTimeString()}
                           </p>
                         </div>
                       </div>

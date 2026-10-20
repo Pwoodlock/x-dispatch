@@ -129,7 +129,7 @@ export function RandomRouteFinder({
         {origin ? (
           <>
             <IcaoCode className="text-sm">{origin.icao}</IcaoCode>
-            <span className="truncate">· {t(`planBuilder.class.${cls}`)}</span>
+            <span className="truncate">{t(`planBuilder.class.${cls}`)}</span>
           </>
         ) : (
           <span className="truncate">{t('explorePanel.random.needOrigin')}</span>
@@ -264,7 +264,7 @@ export function RandomRouteFinder({
                   </span>
                   <span className="text-muted-foreground flex items-center gap-1.5 font-mono text-xs tabular-nums">
                     {units.distance(route.distanceNm as NauticalMiles)}
-                    <span>·</span>
+                    <span className="bg-border h-3 w-px shrink-0" aria-hidden />
                     {formatDuration(route.minutes * 60)}
                     {route.weather.slice(0, 3).map((w) => {
                       const Icon = WEATHER_CATEGORY_ICON[w];

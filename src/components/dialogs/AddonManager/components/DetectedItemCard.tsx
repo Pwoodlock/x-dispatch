@@ -31,7 +31,7 @@ type BadgeVariant =
   | 'cat-sky'
   | 'cat-emerald'
   | 'cat-teal'
-  | 'violet'
+  | 'cat-amber'
   | 'cat-orange'
   | 'cat-pink'
   | 'default'
@@ -60,10 +60,10 @@ const TYPE_STYLES: Record<
     badgeVariant: 'cat-teal',
   },
   Plugin: {
-    bg: 'bg-violet/10',
-    text: 'text-violet',
-    border: 'border-violet/20',
-    badgeVariant: 'violet',
+    bg: 'bg-cat-amber/10',
+    text: 'text-cat-amber',
+    border: 'border-cat-amber/20',
+    badgeVariant: 'cat-amber',
   },
   LuaScript: {
     bg: 'bg-cat-orange/10',
