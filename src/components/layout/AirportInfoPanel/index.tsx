@@ -235,7 +235,7 @@ function AirportInfoPanel({
         {/* Selected position indicator */}
         {selectedStartPosition && (
           <div className="border-border/30 bg-cat-emerald/5 flex items-center justify-between border-b px-4 py-2">
-            <span className="text-cat-emerald/70 text-xs">{t('airportInfo.tabs.start')}</span>
+            <span className="text-cat-emerald/80 text-sm">{t('airportInfo.tabs.start')}</span>
             <span className="text-cat-emerald font-mono text-sm font-medium">
               {selectedStartPosition.name}
             </span>
