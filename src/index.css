@@ -137,7 +137,7 @@
     outline: 2px solid oklch(var(--ring));
     outline-offset: 2px;
   }
-  /* B612 Mono draws larger and wider than Roboto at the same size; scale it to Roboto's cap height. */
+  /* B612 draws larger than Roboto at the same size; scale it to Roboto's cap height. */
   .font-mono,
   .xp-value,
   .xp-value-primary,
