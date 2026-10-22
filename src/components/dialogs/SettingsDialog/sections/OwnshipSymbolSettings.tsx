@@ -156,9 +156,14 @@ export function OwnshipSymbolSettings() {
                   'ring-offset-background focus-visible:ring-primary focus-visible:ring-2 focus-visible:outline-none',
                   color === option ? 'ring-primary ring-2 ring-offset-2' : 'ring-0'
                 )}
-                style={{ background: fill, boxShadow: `inset 0 0 0 3px ${edge}` }}
                 onClick={() => updateGraphics({ ownshipColor: option })}
-              />
+              >
+                {/* The edge lives on the inner disc: the selection ring is a box-shadow on the button. */}
+                <span
+                  className="block h-full w-full rounded-full"
+                  style={{ background: fill, boxShadow: `inset 0 0 0 3px ${edge}` }}
+                />
+              </button>
             );
           })}
         </div>
