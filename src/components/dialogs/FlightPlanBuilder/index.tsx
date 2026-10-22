@@ -77,7 +77,7 @@ import {
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
-import { type ExploreTab, usePlanBuilderStore } from '@/stores/planBuilderStore';
+import { type ExploreTab, routerOwnsRoute, usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
@@ -536,7 +536,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     setCruiseAltitude,
   ]);
 
-  // A new class means a new cruise level, and the airways that suit it; route again once it is set.
+  // A new class means a new cruise level, and the airways that suit it; route again once it is
+  // set. A route the pilot typed or edited stays theirs: only the cruise follows the class.
   const rerouteAfterCruise = useRef(false);
   useEffect(() => {
     if (!rerouteAfterCruise.current || cruiseAltitudeFt === null || autoRouting) return;
@@ -554,7 +555,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     const previous = previousCruise.current;
     previousCruise.current = cruiseAltitudeFt;
     if (previous === null || cruiseAltitudeFt === null || previous === cruiseAltitudeFt) return;
-    if (!isOpen || autoRouting || routeText === '' || routeText !== autoRoutedText) return;
+    if (!isOpen || autoRouting || !routerOwnsRoute({ routeText, autoRoutedText })) return;
     markVisit({ route: 'auto' });
     void autoRoute(joins, trackInRoute(routeText));
     // Only a cruise change should route again; the rest is read at that moment.
@@ -762,7 +763,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               onValueChange={(v) => {
                 if (!v) return;
                 setAircraftClass(v as RangeRingCategory);
-                rerouteAfterCruise.current = true;
+                rerouteAfterCruise.current = routerOwnsRoute({ routeText, autoRoutedText });
               }}
             >
               {CLASSES.map((c) => (
