@@ -538,10 +538,13 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
 
   // A new class means a new cruise level, and the airways that suit it; route again once it is
   // set. A route the pilot typed or edited stays theirs: only the cruise follows the class.
+  // Ownership is checked again when the route runs, since a route still being built at the
+  // click lands afterwards, and the pilot may have typed in between.
   const rerouteAfterCruise = useRef(false);
   useEffect(() => {
     if (!rerouteAfterCruise.current || cruiseAltitudeFt === null || autoRouting) return;
     rerouteAfterCruise.current = false;
+    if (!routerOwnsRoute(usePlanBuilderStore.getState())) return;
     markVisit({ route: 'auto' });
     void autoRoute(joins);
   }, [cruiseAltitudeFt, autoRouting, autoRoute, joins]);
@@ -763,7 +766,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               onValueChange={(v) => {
                 if (!v) return;
                 setAircraftClass(v as RangeRingCategory);
-                rerouteAfterCruise.current = routerOwnsRoute({ routeText, autoRoutedText });
+                rerouteAfterCruise.current =
+                  autoRouting || routerOwnsRoute({ routeText, autoRoutedText });
               }}
             >
               {CLASSES.map((c) => (
