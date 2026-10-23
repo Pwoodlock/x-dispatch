@@ -38,8 +38,8 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
     >
       <div
         className={cn(
-          'flex items-center gap-2 rounded-xl border px-3 py-2',
-          'border-border/50 bg-card/90 shadow-xl',
+          'flex items-center gap-2 rounded-lg border px-3 py-2',
+          'border-border/50 bg-card/90',
           'backdrop-blur-xl'
         )}
       >

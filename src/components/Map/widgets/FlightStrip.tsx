@@ -191,7 +191,7 @@ export default function FlightStrip({
             <Reading align="left" chars={speedWidth}>
               {formatValue(speed(planeState?.groundspeed))}
             </Reading>
-            {' · '}
+            <span className="inline-block w-2" />
             {t('flightStrip.mach')}{' '}
             <Reading align="left" chars={MACH_CHARS}>
               {formatMach(planeState?.mach)}
@@ -255,7 +255,7 @@ export default function FlightStrip({
             <Reading align="left" chars={HEADING_CHARS}>
               {formatHeading(planeState?.groundTrack)}
             </Reading>
-            °{' · '}
+            °<span className="inline-block w-2" />
             {t('flightStrip.crs')}{' '}
             <Reading align="left" chars={HEADING_CHARS}>
               {formatHeading(planeState?.nav1Course)}
@@ -359,8 +359,8 @@ export default function FlightStrip({
         >
           <div
             className={cn(
-              'flex flex-col rounded-xl border',
-              'border-border/50 bg-card/90 shadow-xl',
+              'flex flex-col rounded-lg border',
+              'border-border/50 bg-card/90',
               'backdrop-blur-xl',
               !detached && 'cursor-grab active:cursor-grabbing'
             )}

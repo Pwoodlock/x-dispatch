@@ -71,7 +71,7 @@ export function SettingsSliderRow({
           disabled={disabled}
           className="flex-1"
         />
-        <span className="min-w-[4ch] text-center font-mono text-sm">{display}%</span>
+        <span className="min-w-[4.5ch] text-center font-mono text-sm">{display}%</span>
         <Button
           variant="ghost"
           size="xs"

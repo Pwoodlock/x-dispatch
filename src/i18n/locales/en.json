@@ -95,8 +95,8 @@
     "configureXPlanePath": "Configure X-Plane path",
     "verifying": "Checking for changes...",
     "upToDate": "Everything is up to date",
-    "firstLaunch": "First launch — setting up the database...",
-    "sceneryChanged": "Scenery changes detected — rebuilding the database...",
+    "firstLaunch": "First launch: setting up the database...",
+    "sceneryChanged": "Scenery changes detected: rebuilding the database...",
     "parsingGlobal": "Parsing Global Airports...",
     "scanningCustom": "Scanning Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Saving to the database...",
@@ -109,8 +109,8 @@
     "messages": {
       "checking": "Checking for changes...",
       "upToDate": "Everything is up to date",
-      "firstLaunch": "First launch — setting up the database...",
-      "sceneryChanged": "Scenery changes detected — rebuilding the database...",
+      "firstLaunch": "First launch: setting up the database...",
+      "sceneryChanged": "Scenery changes detected: rebuilding the database...",
       "globalAirports": "Parsing Global Airports...",
       "customScenery": "Scanning Custom Scenery {{current}}/{{total}}",
       "savingDatabase": "Saving to the database...",
@@ -164,7 +164,7 @@
     "anyRunway": "Any runway",
     "anyShort": "Any",
     "alternate": "Alternate",
-    "alternateAt": "Alternate · {{value}}",
+    "alternateAt": "Alternate {{value}}",
     "noAlternate": "No alternate",
     "fuel": "Block fuel",
     "tracks": {
@@ -271,7 +271,7 @@
         "duskArrival": "Sunset landing"
       },
       "tomorrow": "Tomorrow",
-      "scrubLabel": "{{time}}Z · {{phase}}"
+      "scrubLabel": "{{time}}Z {{phase}}"
     },
     "planCleared": "Plan cleared",
     "routeCleared": "Route cleared",
@@ -470,7 +470,7 @@
       "favorites": {
         "title": "Favorites",
         "description": "Select the star in any airport panel to add it here. Your home airport is shown first.",
-        "empty": "No favorite airports yet — select the star in any airport panel to add one.",
+        "empty": "No favorite airports yet: select the star in any airport panel to add one.",
         "notInAirac": "Not in current AIRAC"
       },
       "actions": {
@@ -498,7 +498,7 @@
       "description": "Import flight plans from SimBrief",
       "pilotId": "Pilot ID or username",
       "pilotIdHelp": "Your SimBrief username (Navigraph alias) or numeric Pilot ID",
-      "pilotIdNote": "Both work. The username is the alias you sign in with; the Pilot ID is under simbrief.com → Account Settings.",
+      "pilotIdNote": "Both work. The username is the alias you sign in with; the Pilot ID is under simbrief.com > Account Settings.",
       "testSuccess": "Found flight plan",
       "needAccount": "Don't have a SimBrief account?",
       "freeService": "SimBrief is a free flight planning service",
@@ -528,7 +528,7 @@
       "betaUpdatesNone": "No beta release right now.",
       "title": "About",
       "description": "Flight dispatch and airport visualization for X-Plane",
-      "updateAvailable": "Update available — v{{version}}",
+      "updateAvailable": "Update available: v{{version}}",
       "upToDate": "You're up to date",
       "checkForUpdates": "Check for updates",
       "checkingForUpdates": "Checking for updates…",
@@ -886,7 +886,7 @@
       "empty": {
         "noPath": "X-Plane path not configured.",
         "noPathCta": "Open X-Plane settings",
-        "noLog": "No log yet — has X-Plane been launched at least once from this installation?",
+        "noLog": "No log yet: has X-Plane been launched at least once from this installation?",
         "allClear": "X-Dispatch did not flag anything in this log.",
         "noMatches": "No entries match the current filter."
       },
@@ -1024,8 +1024,8 @@
       "standby": "STBY",
       "simOffline": "X-Plane not running",
       "toast": {
-        "activeSet": "{{radio}} active → {{freq}}",
-        "standbySet": "{{radio}} standby → {{freq}}",
+        "activeSet": "{{radio}} active: {{freq}}",
+        "standbySet": "{{radio}} standby: {{freq}}",
         "failed": "Couldn't tune {{radio}}"
       }
     },
@@ -1134,7 +1134,7 @@
     },
     "gateway": {
       "updateAvailable": "Gateway has a newer release",
-      "credit": "by {{artist}} · {{date}}",
+      "credit": "by {{artist}}, {{date}}",
       "viewOnGateway": "View on Gateway"
     },
     "taxiRoute": {
@@ -1151,7 +1151,7 @@
       "pointsPlaced": "{{count}} point(s)",
       "export": "Save taxi route",
       "exportSuccess": "Taxi route saved",
-      "summary": "via {{taxiways}} · {{distance}}"
+      "summary": "via {{taxiways}}, {{distance}}"
     },
     "frequencies": "Frequencies"
   },
@@ -1317,12 +1317,12 @@
     "selectAircraft": "Select an aircraft",
     "spawnErrorAccess": "Windows blocked the launch. Right-click X-Dispatch and choose \"Run as administrator\", then try again.",
     "spawnErrorMissing": "X-Plane executable not found at the configured path. Check the X-Plane install path in Settings.",
-    "spawnErrorGeneric": "Failed to launch X-Plane. See the log for details (Settings → Logs).",
+    "spawnErrorGeneric": "Failed to launch X-Plane. See the log for details (Settings > Logs).",
     "spawnErrorNeedsAdmin": "Windows refused to start X-Plane. It may need administrator rights, or antivirus may be blocking it. Try running X-Dispatch as administrator.",
     "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it. Allow X-Plane's folder and try again.",
     "changeFlightRejected": "X-Plane did not accept the flight: {{message}}",
     "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
-    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane Installation.",
+    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings > X-Plane Installation.",
     "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
     "aircraft": {
       "title": "Aircraft",
@@ -1649,7 +1649,7 @@
       "toggle": "Toggle",
       "lock": "Lock",
       "unlock": "Unlock",
-      "tabStats": "{{total}} add-ons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} add-ons, {{enabled}} on, {{disabled}} off",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1665,15 +1665,15 @@
       "deleted": "Deleted {{name}}",
       "deleteFailed": "Failed to delete scenery",
       "packages": "{{count}} scenery packages",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} packs, {{enabled}} on, {{disabled}} off",
       "unsavedChanges": "Unsaved",
       "safeMode": "Safe",
       "unsafeMode": "Unsafe",
       "safeModeOn": "Drag restricted to same category. Turn off to freely reorder (advanced).",
-      "safeModeOff": "Free reorder enabled. Items can be dragged across categories — use with caution.",
+      "safeModeOff": "Free reorder enabled. Items can be dragged across categories: use with caution.",
       "priorityHint": "Entries at the top override those below. Drag to reorder or use Auto Sort.",
       "dragHintSafe": "Drag to reorder within the same category. Changes are saved when you click Save Order.",
-      "dragHintUnsafe": "Safe mode off — you can drag items across categories. This may cause scenery issues if done incorrectly.",
+      "dragHintUnsafe": "Safe mode off: you can drag items across categories. This may cause scenery issues if done incorrectly.",
       "saveOrder": "Save",
       "discardOrder": "Discard",
       "autoSort": "Auto-Sort",
@@ -1767,7 +1767,7 @@
     "title": "Import from SimBrief",
     "description": "Fetch your latest flight plan from SimBrief",
     "notConfigured": "SimBrief not configured",
-    "configurePilotId": "Add your SimBrief username or Pilot ID in Settings → SimBrief",
+    "configurePilotId": "Add your SimBrief username or Pilot ID in Settings > SimBrief",
     "fetching": "Fetching flight plan...",
     "fetchError": "Failed to fetch flight plan",
     "ready": "Ready to fetch",
@@ -1804,15 +1804,15 @@
     },
     "briefing": {
       "sigmetsTitle": "Active SIGMETs ({{count}})",
-      "sigmetsDesc": "Significant weather warnings along your route — turbulence, icing, thunderstorms, etc.",
+      "sigmetsDesc": "Significant weather warnings along your route: turbulence, icing, thunderstorms, etc.",
       "noSigmets": "No significant weather warnings along the route",
       "firTitle": "FIR Route",
       "firDesc": "Air traffic control regions your flight passes through",
       "notamsTitle": "NOTAMs",
-      "notamsDesc": "Operational notices — airport closures, runway changes, and other alerts",
+      "notamsDesc": "Operational notices: airport closures, runway changes, and other alerts",
       "noNotams": "No NOTAMs available",
       "transAltTitle": "Transition Altitudes",
-      "transAltDesc": "Altitude where you switch between local altimeter (QNH) and standard pressure (STD) — set your altimeter accordingly"
+      "transAltDesc": "Altitude where you switch between local altimeter (QNH) and standard pressure (STD): set your altimeter accordingly"
     },
     "errors": {
       "invalid_user": "That doesn't look like a SimBrief username or Pilot ID.",
@@ -2166,7 +2166,7 @@
     "centerlineOffset": "{{m}} m {{side}} of centreline",
     "left": "left",
     "right": "right",
-    "runway": "{{icao}} · Runway {{runway}}",
+    "runway": "{{icao}} Runway {{runway}}",
     "unknownRunway": "Runway not identified",
     "showOnMap": "Show on map",
     "dismiss": "Dismiss",
@@ -2235,7 +2235,7 @@
   "analytics": {
     "consent": {
       "title": "Help improve X-Dispatch",
-      "description": "Share anonymous usage data so we can see which features are used and where to focus. It stays off unless you turn it on, and you can change it any time in Settings → Support.",
+      "description": "Share anonymous usage data so we can see which features are used and where to focus. It stays off unless you turn it on, and you can change it any time in Settings > Support.",
       "collectedTitle": "What's shared",
       "collected": "Which features, settings and flight options you use, how the app runs (startup time, window size, errors), plus app and X-Plane version, OS and region.",
       "notCollectedTitle": "Never shared",

@@ -71,7 +71,7 @@ export function TitleBar() {
       {version && <span className="font-mono">{t('titleBar.version', { version })}</span>}
       {installation && (
         <>
-          <span className="text-border">·</span>
+          <span className="bg-border h-3 w-px shrink-0" aria-hidden />
           <span className="text-primary truncate">{installation}</span>
         </>
       )}

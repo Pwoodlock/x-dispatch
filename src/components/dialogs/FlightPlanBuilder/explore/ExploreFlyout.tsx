@@ -58,7 +58,7 @@ export function ExploreFlyout({
   return (
     <div
       className={cn(
-        'border-border/40 bg-card/95 flex flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm',
+        'border-border/40 bg-card/95 flex flex-col overflow-hidden rounded-lg border backdrop-blur-sm',
         className
       )}
     >

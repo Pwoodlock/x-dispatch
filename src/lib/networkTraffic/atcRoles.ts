@@ -4,27 +4,27 @@
  */
 import type { AtcRole, NetworkStation } from '@/types/networkTraffic';
 
-/** Role colour per the design tokens: --cat-sky, --cat-emerald, --cat-red, --violet,
+/** Role colour per the design tokens: --cat-sky, --cat-emerald, --cat-red, --cat-orange,
  * --cat-teal, --cat-amber. The sector layer and the panel badges use the same set. */
 export const ATC_ROLE_COLORS: Record<AtcRole, string> = {
-  DEL: '#38bdf8',
-  GND: '#34d399',
-  TWR: '#f87171',
-  APP: '#8B5CF6',
-  CTR: '#2dd4bf',
-  FSS: '#2dd4bf',
-  ATIS: '#fbbf24',
+  DEL: '#1bc3f3',
+  GND: '#68ca80',
+  TWR: '#fe8b83',
+  APP: '#f49752',
+  CTR: '#00cdc5',
+  FSS: '#00cdc5',
+  ATIS: '#daa932',
   OTHER: '#717880',
 };
 
 export type AtcBadgeVariant =
-  'secondary' | 'cat-sky' | 'cat-emerald' | 'cat-red' | 'violet' | 'cat-teal' | 'cat-amber';
+  'secondary' | 'cat-sky' | 'cat-emerald' | 'cat-red' | 'cat-orange' | 'cat-teal' | 'cat-amber';
 
 export const ATC_ROLE_BADGE_VARIANTS: Record<AtcRole, AtcBadgeVariant> = {
   DEL: 'cat-sky',
   GND: 'cat-emerald',
   TWR: 'cat-red',
-  APP: 'violet',
+  APP: 'cat-orange',
   CTR: 'cat-teal',
   FSS: 'cat-teal',
   ATIS: 'cat-amber',

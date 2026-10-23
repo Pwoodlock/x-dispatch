@@ -198,12 +198,12 @@ export function BrowserTab() {
             {/* Plugins tab first */}
             <TabsTrigger
               value="plugins"
-              className="data-[state=active]:border-violet data-[state=active]:text-violet gap-2 px-4 py-3"
+              className="data-[state=active]:border-cat-amber data-[state=active]:text-cat-amber gap-2 px-4 py-3"
             >
               <Plug className="h-4 w-4" />
               <span>{t('addonManager.installed.plugins')}</span>
               <Badge
-                variant="violet"
+                variant="cat-amber"
                 className="ml-1 rounded-full px-2 py-0.5 text-xs tabular-nums"
               >
                 {plugins.length}
@@ -249,7 +249,7 @@ export function BrowserTab() {
         >
           {pluginsLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Spinner className="text-violet size-8" />
+              <Spinner className="text-cat-amber size-8" />
               <span className="text-muted-foreground text-sm">
                 {t('addonManager.installed.scanningPlugins')}
               </span>

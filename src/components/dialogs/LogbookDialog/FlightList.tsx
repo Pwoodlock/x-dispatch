@@ -74,9 +74,9 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
         <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs">
           <Plane className="h-3 w-3" />
           <span className="truncate">{aircraftLabel}</span>
-          <span className="text-border">·</span>
+          <span className="bg-border h-3 w-px shrink-0" aria-hidden />
           <span className="font-mono">{formatDuration(flight.blockTimeSec)}</span>
-          <span className="text-border">·</span>
+          <span className="bg-border h-3 w-px shrink-0" aria-hidden />
           <span className="font-mono">{units.distance(flight.distanceNm as NauticalMiles)}</span>
         </div>
         <div className="text-muted-foreground/60 mt-0.5 text-xs">

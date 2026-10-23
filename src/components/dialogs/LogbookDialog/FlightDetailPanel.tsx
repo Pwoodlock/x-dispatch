@@ -128,7 +128,7 @@ function FlightDetailBody({
             <p className="mt-1 text-sm">
               {flight.aircraft.name ?? flight.aircraft.icao ?? t('logbook.unknownAircraft')}
               {flight.aircraft.livery && (
-                <span className="text-muted-foreground"> · {flight.aircraft.livery}</span>
+                <span className="text-muted-foreground">, {flight.aircraft.livery}</span>
               )}
             </p>
             <p className="text-muted-foreground/70 text-xs">

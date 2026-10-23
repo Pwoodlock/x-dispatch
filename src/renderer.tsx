@@ -1,6 +1,8 @@
-import '@fontsource/roboto-mono/400.css';
-import '@fontsource/roboto-mono/500.css';
 // Bundled typefaces: nothing is fetched from a font CDN at runtime.
+// Roboto is X-Plane 12's own UI face; B612 is the Airbus cockpit-display face, used for readouts.
+// Its digits share one width, so numbers line up like a mono font, while dots and colons stay narrow.
+import '@fontsource/b612/400.css';
+import '@fontsource/b612/700.css';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';

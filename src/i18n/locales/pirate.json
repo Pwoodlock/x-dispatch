@@ -95,8 +95,8 @@
     "configureXPlanePath": "Chart X-Plane path",
     "verifying": "Checkin' fer changes...",
     "upToDate": "All shipshape",
-    "firstLaunch": "First voyage — settin' up the ledger...",
-    "sceneryChanged": "Scenery changes spotted — rebuilding...",
+    "firstLaunch": "First voyage: settin' up the ledger...",
+    "sceneryChanged": "Scenery changes spotted: rebuilding...",
     "parsingGlobal": "Parsin' Global Airports...",
     "scanningCustom": "Scannin' Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Stowin' ta database...",
@@ -109,8 +109,8 @@
     "messages": {
       "checking": "Checkin' fer changes...",
       "upToDate": "All shipshape",
-      "firstLaunch": "First launch — settin' up the data chest...",
-      "sceneryChanged": "Scenery changes spotted — rebuildin'...",
+      "firstLaunch": "First launch: settin' up the data chest...",
+      "sceneryChanged": "Scenery changes spotted: rebuildin'...",
       "globalAirports": "Parsin' Global Airports...",
       "customScenery": "Scannin' Custom Scenery {{current}}/{{total}}",
       "savingDatabase": "Stashin' in the data chest...",
@@ -164,7 +164,7 @@
     "anyRunway": "Any strip",
     "anyShort": "Any",
     "alternate": "Safe harbour",
-    "alternateAt": "Safe harbour · {{value}}",
+    "alternateAt": "Safe harbour {{value}}",
     "noAlternate": "No safe harbour",
     "fuel": "Grog in the tanks",
     "tracks": {
@@ -271,7 +271,7 @@
         "duskArrival": "Make port at sunset"
       },
       "tomorrow": "On the morrow",
-      "scrubLabel": "{{time}}Z · {{phase}}"
+      "scrubLabel": "{{time}}Z {{phase}}"
     },
     "planCleared": "Chart wiped clean",
     "routeCleared": "Course wiped",
@@ -470,7 +470,7 @@
       "favorites": {
         "title": "Favorites",
         "description": "Tap the star in any port's log to add it here. Yer home harbor be shown first, arr.",
-        "empty": "No favorite ports yet — tap the star in any port's log.",
+        "empty": "No favorite ports yet: tap the star in any port's log.",
         "notInAirac": "Not in current AIRAC charts"
       },
       "actions": {
@@ -498,7 +498,7 @@
       "description": "Import voyage plans from SimBrief",
       "pilotId": "Pilot ID or handle",
       "pilotIdHelp": "Yer SimBrief handle (Navigraph alias) or yer numeric Pilot ID",
-      "pilotIdNote": "Either’ll do, matey. The handle be the alias ye sign in with; the Pilot ID hides under simbrief.com → Account Settings.",
+      "pilotIdNote": "Either’ll do, matey. The handle be the alias ye sign in with; the Pilot ID hides under simbrief.com > Account Settings.",
       "testSuccess": "Voyage plan sighted",
       "needAccount": "Need a SimBrief account, matey?",
       "freeService": "SimBrief be a free flight-planning service",
@@ -528,7 +528,7 @@
       "betaUpdatesNone": "No beta on the horizon, matey.",
       "title": "Ship's Log",
       "description": "Flight dispatch an' airport visualization fer X-Plane",
-      "updateAvailable": "New booty available — v{{version}}",
+      "updateAvailable": "New booty available: v{{version}}",
       "upToDate": "Yer ship be shipshape",
       "checkForUpdates": "Scout fer booty",
       "checkingForUpdates": "Scoutin' fer booty…",
@@ -886,7 +886,7 @@
       "empty": {
         "noPath": "X-Plane port not charted.",
         "noPathCta": "Set yer course in X-Plane settings",
-        "noLog": "No scroll yet — has th' sim ever set sail on this rig?",
+        "noLog": "No scroll yet: has th' sim ever set sail on this rig?",
         "allClear": "Th' bilge be clean — nothin' flagged in this scroll.",
         "noMatches": "No entries match yer filter, matey."
       },
@@ -1024,8 +1024,8 @@
       "standby": "STBY",
       "simOffline": "X-Plane be not runnin', matey",
       "toast": {
-        "activeSet": "{{radio}} active → {{freq}}, arrr!",
-        "standbySet": "{{radio}} standby → {{freq}}, savvy?",
+        "activeSet": "{{radio}} active: {{freq}}, arrr!",
+        "standbySet": "{{radio}} standby: {{freq}}, savvy?",
         "failed": "Couldn't tune {{radio}}, ye scallywag!"
       }
     },
@@ -1134,7 +1134,7 @@
     },
     "gateway": {
       "updateAvailable": "Gateway has a newer chart",
-      "credit": "charted by {{artist}} · {{date}}",
+      "credit": "charted by {{artist}}, {{date}}",
       "viewOnGateway": "Spy on Gateway"
     },
     "taxiRoute": {
@@ -1151,7 +1151,7 @@
       "pointsPlaced": "{{count}} point(s) laid",
       "export": "Stow taxi route",
       "exportSuccess": "Taxi route stowed",
-      "summary": "via {{taxiways}} · {{distance}}"
+      "summary": "via {{taxiways}}, {{distance}}"
     },
     "frequencies": "Freqs"
   },
@@ -1317,12 +1317,12 @@
     "selectAircraft": "Choose yer craft",
     "spawnErrorAccess": "Windows scuttled th’ launch, matey. Right-click X-Dispatch and choose „Run as administrator“, then hoist th’ sails again.",
     "spawnErrorMissing": "Couldn’\t find X-Plane at th’ configured course. Check th’ X-Plane install path in Settings.",
-    "spawnErrorGeneric": "X-Plane refused to launch, arr. Check th’ log fer clues (Settings → Logs).",
+    "spawnErrorGeneric": "X-Plane refused to launch, arr. Check th’ log fer clues (Settings > Logs).",
     "spawnErrorNeedsAdmin": "Windows refused to start X-Plane, arr. She may be wantin’ administrator rights, or th’ antivirus be blockin’ her. Try runnin’ X-Dispatch as administrator.",
     "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch already sails under th’ captain’s flag, so it be no permissions trouble. Most likely th’ antivirus or Controlled Folder Access be blockin’ her. Allow X-Plane’s folder and try again.",
     "changeFlightRejected": "X-Plane refused th’ voyage: {{message}}",
     "spawnErrorAlreadyRunning": "X-Plane already be underway. Use th’ \"Change Voyage\" button instead.",
-    "spawnErrorPathNotConfigured": "No X-Plane install course be set. Chart it in Settings → X-Plane Install.",
+    "spawnErrorPathNotConfigured": "No X-Plane install course be set. Chart it in Settings > X-Plane Install.",
     "spawnErrorInvalidConfig": "Th’ voyage plan be incomplete. Choose yer craft and a departure, then try again.",
     "aircraft": {
       "title": "Craft",
@@ -1649,7 +1649,7 @@
       "toggle": "Hoist/strike",
       "lock": "Lock fast",
       "unlock": "Unbolt",
-      "tabStats": "{{total}} addons · {{enabled}} aboard · {{disabled}} ashore",
+      "tabStats": "{{total}} addons, {{enabled}} aboard, {{disabled}} ashore",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1665,7 +1665,7 @@
       "deleted": "Scuttled {{name}}",
       "deleteFailed": "Failed ta delete scenery",
       "packages": "{{count}} scenery packs",
-      "tabStats": "{{total}} packs · {{enabled}} aboard · {{disabled}} ashore",
+      "tabStats": "{{total}} packs, {{enabled}} aboard, {{disabled}} ashore",
       "unsavedChanges": "Not stowed",
       "safeMode": "Careful",
       "unsafeMode": "Free rein",
@@ -1767,7 +1767,7 @@
     "title": "SimBrief Import",
     "description": "Fetch yer latest flight plan from SimBrief",
     "notConfigured": "SimBrief ain't rigged",
-    "configurePilotId": "Scrawl yer SimBrief handle or Pilot ID in Settings → SimBrief",
+    "configurePilotId": "Scrawl yer SimBrief handle or Pilot ID in Settings > SimBrief",
     "fetching": "Fetchin' flight plan...",
     "fetchError": "Failed ta fetch flight plan",
     "ready": "Ready ta haul",
@@ -1804,15 +1804,15 @@
     },
     "briefing": {
       "sigmetsTitle": "Active SIGMETs off the bow ({{count}})",
-      "sigmetsDesc": "Significant weather warnings along yer route — turbulence, icing, thunderstorms, etc.",
+      "sigmetsDesc": "Significant weather warnings along yer route: turbulence, icing, thunderstorms, etc.",
       "noSigmets": "No foul weather warnings on this route",
       "firTitle": "FIR course",
       "firDesc": "Air traffic control regions yer flight passes through",
       "notamsTitle": "NOTAMs",
-      "notamsDesc": "Notices ta airmen — airport closures, runway changes, an' other operational alerts",
+      "notamsDesc": "Notices ta airmen: airport closures, runway changes, an' other operational alerts",
       "noNotams": "No NOTAMs in sight",
       "transAltTitle": "Altimeter change heights",
-      "transAltDesc": "Altitude where ye switch between local altimeter (QNH) an' standard pressure (STD) — set yer altimeter accordingly"
+      "transAltDesc": "Altitude where ye switch between local altimeter (QNH) an' standard pressure (STD): set yer altimeter accordingly"
     },
     "errors": {
       "invalid_user": "That be no SimBrief handle nor Pilot ID, ye scallywag.",
@@ -2166,7 +2166,7 @@
     "centerlineOffset": "{{m}} m {{side}} o' centreline",
     "left": "port",
     "right": "starboard",
-    "runway": "{{icao}} · Runway {{runway}}",
+    "runway": "{{icao}} Runway {{runway}}",
     "unknownRunway": "Runway not spied",
     "showOnMap": "Show on the chart",
     "dismiss": "Begone",
@@ -2235,7 +2235,7 @@
   "analytics": {
     "consent": {
       "title": "Help make X-Dispatch shipshape",
-      "description": "Share anonymous usage data so we know which parts o' the ship be used and where to put the crew to work. It stays furled unless ye hoist it, and ye can change yer mind any time in Settings → Support.",
+      "description": "Share anonymous usage data so we know which parts o' the ship be used and where to put the crew to work. It stays furled unless ye hoist it, and ye can change yer mind any time in Settings > Support.",
       "collectedTitle": "What be shared",
       "collected": "Which features, settings an' flight options ye use, how the app sails (startup time, window size, errors), plus app an' X-Plane version, OS an' home waters.",
       "notCollectedTitle": "Never shared",

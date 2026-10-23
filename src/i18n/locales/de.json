@@ -95,8 +95,8 @@
     "configureXPlanePath": "X-Plane-Pfad konfigurieren",
     "verifying": "Änderungen werden überprüft...",
     "upToDate": "Alles aktuell",
-    "firstLaunch": "Erststart — Datenbank wird eingerichtet...",
-    "sceneryChanged": "Szenerie-Änderungen erkannt — Datenbank wird neu aufgebaut...",
+    "firstLaunch": "Erststart: Datenbank wird eingerichtet...",
+    "sceneryChanged": "Szenerie-Änderungen erkannt: Datenbank wird neu aufgebaut...",
     "parsingGlobal": "Globale Flughäfen werden analysiert...",
     "scanningCustom": "Custom Scenery wird durchsucht ({{current}}/{{total}}): {{name}}",
     "savingToDb": "Wird in der Datenbank gespeichert...",
@@ -109,8 +109,8 @@
     "messages": {
       "checking": "Änderungen werden überprüft...",
       "upToDate": "Alles aktuell",
-      "firstLaunch": "Erster Start — Datenbank wird eingerichtet...",
-      "sceneryChanged": "Szenerie-Änderungen erkannt — Datenbank wird neu aufgebaut...",
+      "firstLaunch": "Erster Start: Datenbank wird eingerichtet...",
+      "sceneryChanged": "Szenerie-Änderungen erkannt: Datenbank wird neu aufgebaut...",
       "globalAirports": "Global Airports werden ausgewertet...",
       "customScenery": "Custom Scenery wird durchsucht ({{current}}/{{total}})",
       "savingDatabase": "Wird in der Datenbank gespeichert...",
@@ -164,7 +164,7 @@
     "anyRunway": "Beliebige Piste",
     "anyShort": "Alle",
     "alternate": "Ausweichflughafen",
-    "alternateAt": "Ausweich · {{value}}",
+    "alternateAt": "Ausweich {{value}}",
     "noAlternate": "Kein Ausweichflughafen",
     "fuel": "Blockkraftstoff",
     "tracks": {
@@ -271,7 +271,7 @@
         "duskArrival": "Landung bei Sonnenuntergang"
       },
       "tomorrow": "Morgen",
-      "scrubLabel": "{{time}}Z · {{phase}}"
+      "scrubLabel": "{{time}}Z {{phase}}"
     },
     "planCleared": "Plan geleert",
     "routeCleared": "Route geleert",
@@ -498,7 +498,7 @@
       "description": "Flugpläne von SimBrief importieren",
       "pilotId": "Pilot-ID oder Benutzername",
       "pilotIdHelp": "Dein SimBrief-Benutzername (Navigraph-Alias) oder deine numerische Pilot-ID",
-      "pilotIdNote": "Beides funktioniert. Der Benutzername ist der Alias, mit dem du dich anmeldest; die Pilot-ID steht unter simbrief.com → Account Settings.",
+      "pilotIdNote": "Beides funktioniert. Der Benutzername ist der Alias, mit dem du dich anmeldest; die Pilot-ID steht unter simbrief.com > Account Settings.",
       "testSuccess": "Flugplan gefunden",
       "needAccount": "Kein SimBrief-Konto?",
       "freeService": "SimBrief ist ein kostenloser Flugplanungsdienst",
@@ -528,7 +528,7 @@
       "betaUpdatesNone": "Derzeit gibt es keine Beta-Version.",
       "title": "Über",
       "description": "Flugdisposition und Flughafenvisualisierung für X-Plane",
-      "updateAvailable": "Update verfügbar — v{{version}}",
+      "updateAvailable": "Update verfügbar: v{{version}}",
       "upToDate": "Sie sind auf dem neuesten Stand",
       "checkForUpdates": "Nach Updates suchen",
       "checkingForUpdates": "Suche nach Updates…",
@@ -886,7 +886,7 @@
       "empty": {
         "noPath": "X-Plane-Pfad nicht konfiguriert.",
         "noPathCta": "X-Plane-Einstellungen öffnen",
-        "noLog": "Noch kein Protokoll — wurde X-Plane mindestens einmal mit dieser Installation gestartet?",
+        "noLog": "Noch kein Protokoll: wurde X-Plane mindestens einmal mit dieser Installation gestartet?",
         "allClear": "Keine Auffälligkeiten in diesem Protokoll.",
         "noMatches": "Keine Einträge entsprechen dem aktuellen Filter."
       },
@@ -1024,8 +1024,8 @@
       "standby": "STBY",
       "simOffline": "X-Plane läuft nicht",
       "toast": {
-        "activeSet": "{{radio}} aktiv → {{freq}}",
-        "standbySet": "{{radio}} Standby → {{freq}}",
+        "activeSet": "{{radio}} aktiv: {{freq}}",
+        "standbySet": "{{radio}} Standby: {{freq}}",
         "failed": "{{radio}} konnte nicht eingestellt werden"
       }
     },
@@ -1134,7 +1134,7 @@
     },
     "gateway": {
       "updateAvailable": "Auf Gateway ist eine neuere Version verfügbar",
-      "credit": "von {{artist}} · {{date}}",
+      "credit": "von {{artist}}, {{date}}",
       "viewOnGateway": "Auf Gateway ansehen"
     },
     "taxiRoute": {
@@ -1151,7 +1151,7 @@
       "pointsPlaced": "Punkte: {{count}}",
       "export": "Rollroute speichern",
       "exportSuccess": "Rollroute gespeichert",
-      "summary": "über {{taxiways}} · {{distance}}"
+      "summary": "über {{taxiways}}, {{distance}}"
     },
     "frequencies": "Frequenzen"
   },
@@ -1317,12 +1317,12 @@
     "selectAircraft": "Wählen Sie ein Flugzeug",
     "spawnErrorAccess": "Windows hat den Start blockiert. Klicken Sie mit der rechten Maustaste auf X-Dispatch, wählen Sie „Als Administrator ausführen“ und versuchen Sie es erneut.",
     "spawnErrorMissing": "Die X-Plane-Programmdatei wurde am angegebenen Pfad nicht gefunden. Überprüfen Sie den X-Plane-Installationspfad in den Einstellungen.",
-    "spawnErrorGeneric": "X-Plane konnte nicht gestartet werden. Details finden Sie im Protokoll (Einstellungen → Protokolle).",
+    "spawnErrorGeneric": "X-Plane konnte nicht gestartet werden. Details finden Sie im Protokoll (Einstellungen > Protokolle).",
     "spawnErrorNeedsAdmin": "Windows hat den Start von X-Plane verweigert. Möglicherweise sind Administratorrechte erforderlich oder ein Antivirenprogramm blockiert den Start. Führen Sie X-Dispatch als Administrator aus.",
     "spawnErrorAccessBlocked": "Windows hat den Start von X-Plane verweigert, obwohl X-Dispatch bereits als Administrator läuft. Es liegt also nicht an den Berechtigungen. Wahrscheinlich blockiert ein Antivirenprogramm oder der überwachte Ordnerzugriff den Start. Geben Sie den X-Plane-Ordner frei und versuchen Sie es erneut.",
     "changeFlightRejected": "X-Plane hat den Flug nicht akzeptiert: {{message}}",
     "spawnErrorAlreadyRunning": "X-Plane läuft bereits. Verwenden Sie stattdessen die Schaltfläche „Flug ändern“.",
-    "spawnErrorPathNotConfigured": "Es ist kein X-Plane-Installationspfad konfiguriert. Legen Sie ihn unter Einstellungen → X-Plane-Installation fest.",
+    "spawnErrorPathNotConfigured": "Es ist kein X-Plane-Installationspfad konfiguriert. Legen Sie ihn unter Einstellungen > X-Plane-Installation fest.",
     "spawnErrorInvalidConfig": "Die Flugkonfiguration ist unvollständig. Wählen Sie ein Flugzeug und einen Startpunkt und versuchen Sie es erneut.",
     "aircraft": {
       "title": "Flugzeug",
@@ -1649,7 +1649,7 @@
       "toggle": "Umschalten",
       "lock": "Sperren",
       "unlock": "Entsperren",
-      "tabStats": "{{total}} Add-ons · {{enabled}} ein · {{disabled}} aus",
+      "tabStats": "{{total}} Add-ons, {{enabled}} ein, {{disabled}} aus",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1665,7 +1665,7 @@
       "deleted": "{{name}} gelöscht",
       "deleteFailed": "Löschen fehlgeschlagen",
       "packages": "{{count}} Szenerie-Pakete",
-      "tabStats": "{{total}} Pakete · {{enabled}} ein · {{disabled}} aus",
+      "tabStats": "{{total}} Pakete, {{enabled}} ein, {{disabled}} aus",
       "unsavedChanges": "Ungespeichert",
       "safeMode": "Sicher",
       "unsafeMode": "Unsicher",
@@ -1767,7 +1767,7 @@
     "title": "Von SimBrief importieren",
     "description": "Ihren letzten Flugplan von SimBrief abrufen",
     "notConfigured": "SimBrief nicht konfiguriert",
-    "configurePilotId": "Trage deinen SimBrief-Benutzernamen oder deine Pilot-ID unter Einstellungen → SimBrief ein",
+    "configurePilotId": "Trage deinen SimBrief-Benutzernamen oder deine Pilot-ID unter Einstellungen > SimBrief ein",
     "fetching": "Flugplan wird abgerufen...",
     "fetchError": "Flugplan konnte nicht abgerufen werden",
     "ready": "Bereit zum Abrufen",
@@ -1804,15 +1804,15 @@
     },
     "briefing": {
       "sigmetsTitle": "Aktive SIGMETs ({{count}})",
-      "sigmetsDesc": "Bedeutende Wetterwarnungen entlang der Route — Turbulenzen, Vereisung, Gewitter usw.",
+      "sigmetsDesc": "Bedeutende Wetterwarnungen entlang der Route: Turbulenzen, Vereisung, Gewitter usw.",
       "noSigmets": "Keine signifikanten Wetterwarnungen entlang der Route",
       "firTitle": "FIR-Route",
       "firDesc": "Fluginformationsgebiete, die der Flug durchquert",
       "notamsTitle": "NOTAMs",
-      "notamsDesc": "Nachrichten für Luftfahrer — Flughafensperrungen, Pistenänderungen und andere betriebliche Hinweise",
+      "notamsDesc": "Nachrichten für Luftfahrer: Flughafensperrungen, Pistenänderungen und andere betriebliche Hinweise",
       "noNotams": "Keine NOTAMs verfügbar",
       "transAltTitle": "Übergangshöhen",
-      "transAltDesc": "Höhe, bei der zwischen lokalem Höhenmesser (QNH) und Standarddruck (STD) gewechselt wird — Höhenmesser entsprechend einstellen"
+      "transAltDesc": "Höhe, bei der zwischen lokalem Höhenmesser (QNH) und Standarddruck (STD) gewechselt wird: Höhenmesser entsprechend einstellen"
     },
     "errors": {
       "invalid_user": "Das sieht nicht wie ein SimBrief-Benutzername oder eine Pilot-ID aus.",
@@ -2166,7 +2166,7 @@
     "centerlineOffset": "{{m}} m {{side}} der Mittellinie",
     "left": "links",
     "right": "rechts",
-    "runway": "{{icao}} · Bahn {{runway}}",
+    "runway": "{{icao}} Bahn {{runway}}",
     "unknownRunway": "Bahn nicht erkannt",
     "showOnMap": "Auf der Karte zeigen",
     "dismiss": "Ausblenden",
@@ -2235,7 +2235,7 @@
   "analytics": {
     "consent": {
       "title": "Hilf mit, X-Dispatch zu verbessern",
-      "description": "Teile anonyme Nutzungsdaten, damit wir sehen, welche Funktionen genutzt werden und worauf wir uns konzentrieren sollten. Standardmäßig aus – du kannst es jederzeit unter Einstellungen → Support ändern.",
+      "description": "Teile anonyme Nutzungsdaten, damit wir sehen, welche Funktionen genutzt werden und worauf wir uns konzentrieren sollten. Standardmäßig aus – du kannst es jederzeit unter Einstellungen > Support ändern.",
       "collectedTitle": "Was geteilt wird",
       "collected": "Welche Funktionen, Einstellungen und Flugoptionen du nutzt, wie die App läuft (Startzeit, Fenstergröße, Fehler), dazu App- und X-Plane-Version, Betriebssystem und Region.",
       "notCollectedTitle": "Nie geteilt",

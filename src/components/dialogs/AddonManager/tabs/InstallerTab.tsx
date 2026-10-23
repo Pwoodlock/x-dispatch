@@ -288,7 +288,7 @@ export function InstallerTab() {
           <div className="flex flex-1 flex-col items-center justify-center p-8">
             <div
               className={cn(
-                'w-full max-w-sm rounded-xl border p-6 text-center',
+                'w-full max-w-sm rounded-lg border p-6 text-center',
                 result.success
                   ? 'border-success/30 bg-success/5'
                   : 'border-destructive/30 bg-destructive/5'

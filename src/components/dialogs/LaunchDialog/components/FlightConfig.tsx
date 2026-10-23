@@ -418,7 +418,7 @@ export function FlightConfig({
                       metersToFeet(startPosition.airAltitudeM ?? DEFAULT_AIR_ALTITUDE_M)
                     )}
                     {isValidAirStartSpeed(startPosition.airSpeedMs) &&
-                      ` · ${Math.round(airSpeedFromMs(startPosition.airSpeedMs, startPosition.airSpeedUnit ?? 'kt'))} ${t(`units.${startPosition.airSpeedUnit ?? 'kt'}`)}`}
+                      `, ${Math.round(airSpeedFromMs(startPosition.airSpeedMs, startPosition.airSpeedUnit ?? 'kt'))} ${t(`units.${startPosition.airSpeedUnit ?? 'kt'}`)}`}
                   </div>
                 )}
                 {(startPosition?.customStartMode === 'carrier' ||

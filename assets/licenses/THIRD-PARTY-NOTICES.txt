@@ -1654,11 +1654,11 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------------
-@fontsource/roboto 5.3.0
+@fontsource/b612 5.3.0
 License: OFL-1.1
 Source: https://github.com/fontsource/font-files
 
-Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic) Roboto-Italic[wdth,wght].ttf: Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic)
+Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612-Italic.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612-Bold.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612-BoldItalic.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
@@ -1753,11 +1753,11 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ------------------------------------------------------------------------------
-@fontsource/roboto-mono 5.3.0
+@fontsource/roboto 5.3.0
 License: OFL-1.1
 Source: https://github.com/fontsource/font-files
 
-Copyright 2015 The Roboto Mono Project Authors (https://github.com/googlefonts/robotomono) RobotoMono-Italic[wght].ttf: Copyright 2015 The Roboto Mono Project Authors (https://github.com/googlefonts/robotomono)
+Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic) Roboto-Italic[wdth,wght].ttf: Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

@@ -16,7 +16,8 @@
    * Tailwind wraps these with oklch() and injects alpha for opacity modifiers
    */
   :root {
-    --radius: 0.375rem;
+    /* Instrument-panel radius: 4px containers, 3px / 2px for nested chrome */
+    --radius: 0.25rem;
 
     /* Background scale (navy-tinted darks) */
     --background: 0.13 0.02 250; /* #06090D - deepest */
@@ -62,9 +63,6 @@
     --info: 0.7 0.12 230; /* Light cyan - info */
     --info-foreground: 0.13 0.02 250;
 
-    --violet: 0.6 0.2 300; /* Purple - procedures */
-    --violet-foreground: 0.98 0 0;
-
     --xp-cyan-glow: 0.85 0.08 230; /* #A5D9FA - glowing text */
     --xp-cyan-light: 0.78 0.1 230; /* #77C6E7 - hover glow */
     --xp-cyan-hover: 0.72 0.14 230; /* #4AB3F5 - hover states */
@@ -78,16 +76,20 @@
     --xp-gray-200: 0.4 0.02 250; /* #474F59 - disabled text */
     --xp-gray-300: 0.25 0.02 250; /* #263240 - borders */
 
-    /* Category colors — classification badges & indicators */
-    --cat-emerald: 0.76 0.17 163; /* #34d399 - VFR, departures, ATC, Scenery */
-    --cat-sky: 0.75 0.14 237; /* #38bdf8 - MVFR, Aircraft, narrow/wide */
-    --cat-amber: 0.82 0.16 78; /* #fbbf24 - arrivals, heavy, cargo */
-    --cat-red: 0.7 0.19 22; /* #f87171 - IFR, super, military, north */
-    --cat-fuchsia: 0.73 0.2 323; /* #e879f9 - LIFR */
-    --cat-blue: 0.7 0.14 261; /* #60a5fa - IVAO */
-    --cat-orange: 0.75 0.16 52; /* #fb923c - LuaScript */
-    --cat-pink: 0.73 0.18 350; /* #f472b6 - Livery */
-    --cat-teal: 0.76 0.11 186; /* #2dd4bf - SceneryLibrary */
+    /*
+     * Category colors: classification badges & indicators.
+     * One perceptual ring: every swatch shares L 0.76 / C 0.14 so no badge
+     * shouts louder than another; only the hue changes, spaced ~40deg apart.
+     */
+    --cat-red: 0.76 0.14 25; /* IFR, super, military, north */
+    --cat-orange: 0.76 0.14 55; /* LuaScript */
+    --cat-amber: 0.76 0.14 85; /* arrivals, heavy, cargo */
+    --cat-emerald: 0.76 0.14 150; /* VFR, departures, ATC, Scenery */
+    --cat-teal: 0.76 0.14 190; /* SceneryLibrary */
+    --cat-sky: 0.76 0.14 225; /* MVFR, Aircraft, narrow/wide */
+    --cat-blue: 0.76 0.14 265; /* IVAO */
+    --cat-fuchsia: 0.76 0.14 325; /* LIFR - the magenta flight-category convention */
+    --cat-pink: 0.76 0.14 350; /* Livery */
 
     /* Legacy aliases (keep for backward compatibility) */
     --xp-accent-hover: var(--xp-cyan-hover);
@@ -100,11 +102,12 @@
     /* Chart colors for map layers */
     --chart-vor: 0.65 0.15 230; /* Cyan */
     --chart-ndb: 0.7 0.15 85; /* Amber */
-    --chart-dme: 0.6 0.2 300; /* Violet */
+    --chart-dme: 0.76 0.14 55; /* Orange */
     --chart-waypoint: 0.65 0.2 145; /* Green */
     --chart-ils: 0.6 0.2 25; /* Red */
     --chart-runway: 0.55 0.02 250; /* Gray */
     --chart-taxiway: 0.75 0.15 85; /* Amber */
+    --chart-route: 0.86 0.16 95; /* Yellow - drawn flight plan line */
   }
 }
 
@@ -133,6 +136,16 @@
   [role='button']:focus-visible {
     outline: 2px solid oklch(var(--ring));
     outline-offset: 2px;
+  }
+  /* B612 draws larger than Roboto at the same size; scale it to Roboto's cap height. */
+  .font-mono,
+  .xp-value,
+  .xp-value-primary,
+  code,
+  kbd,
+  pre,
+  samp {
+    font-size-adjust: cap-height 0.711;
   }
 }
 
@@ -184,7 +197,7 @@
   background: transparent !important;
   padding: 0 !important;
   box-shadow: none !important;
-  border-radius: 8px !important;
+  border-radius: var(--radius) !important;
 }
 
 .maplibregl-popup-tip {
@@ -232,7 +245,7 @@
 .maplibregl-ctrl-group {
   background: oklch(var(--card) / 0.95) !important;
   border: 1px solid oklch(var(--border)) !important;
-  border-radius: 6px !important;
+  border-radius: var(--radius) !important;
   backdrop-filter: blur(8px);
 }
 

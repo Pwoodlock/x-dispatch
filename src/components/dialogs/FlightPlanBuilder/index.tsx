@@ -77,7 +77,7 @@ import {
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
-import { type ExploreTab, usePlanBuilderStore } from '@/stores/planBuilderStore';
+import { type ExploreTab, routerOwnsRoute, usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
@@ -413,7 +413,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     ...routeNotes.map((note) => t(`planBuilder.adjustments.${note.kind}`, { name: note.text })),
   ]
     .filter(Boolean)
-    .join(' · ');
+    .join(', ');
   const used = (tk: RouteToken) => tk.status === 'ok' || tk.status === 'warning';
   const fixCount = tokens.filter((tk) => used(tk) && tk.kind !== 'airway').length;
   const airwayCount = tokens.filter((tk) => used(tk) && tk.kind === 'airway').length;
@@ -536,11 +536,15 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     setCruiseAltitude,
   ]);
 
-  // A new class means a new cruise level, and the airways that suit it; route again once it is set.
+  // A new class means a new cruise level, and the airways that suit it; route again once it is
+  // set. A route the pilot typed or edited stays theirs: only the cruise follows the class.
+  // Ownership is checked again when the route runs, since a route still being built at the
+  // click lands afterwards, and the pilot may have typed in between.
   const rerouteAfterCruise = useRef(false);
   useEffect(() => {
     if (!rerouteAfterCruise.current || cruiseAltitudeFt === null || autoRouting) return;
     rerouteAfterCruise.current = false;
+    if (!routerOwnsRoute(usePlanBuilderStore.getState())) return;
     markVisit({ route: 'auto' });
     void autoRoute(joins);
   }, [cruiseAltitudeFt, autoRouting, autoRoute, joins]);
@@ -554,7 +558,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     const previous = previousCruise.current;
     previousCruise.current = cruiseAltitudeFt;
     if (previous === null || cruiseAltitudeFt === null || previous === cruiseAltitudeFt) return;
-    if (!isOpen || autoRouting || routeText === '' || routeText !== autoRoutedText) return;
+    if (!isOpen || autoRouting || !routerOwnsRoute({ routeText, autoRoutedText })) return;
     markVisit({ route: 'auto' });
     void autoRoute(joins, trackInRoute(routeText));
     // Only a cruise change should route again; the rest is read at that moment.
@@ -665,7 +669,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         showFlightPlanBar ? 'top-28' : 'top-16'
       )}
     >
-      <div className="border-border/40 bg-card/95 flex h-full flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm">
+      <div className="border-border/40 bg-card/95 flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
         <header className="border-border/30 space-y-3 border-b px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
@@ -762,7 +766,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               onValueChange={(v) => {
                 if (!v) return;
                 setAircraftClass(v as RangeRingCategory);
-                rerouteAfterCruise.current = true;
+                rerouteAfterCruise.current =
+                  autoRouting || routerOwnsRoute({ routeText, autoRoutedText });
               }}
             >
               {CLASSES.map((c) => (

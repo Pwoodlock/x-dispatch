@@ -418,7 +418,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
             <span className="text-sm font-medium">{t('launcher.title')}</span>
             {startPosition && (
               <span className="text-muted-foreground text-sm">
-                {startPosition.airport} · {startPosition.name}
+                {startPosition.airport} {startPosition.name}
               </span>
             )}
           </div>

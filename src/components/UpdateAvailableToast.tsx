@@ -30,7 +30,7 @@ function UpdateToast({
   onAction,
 }: UpdateToastProps) {
   return (
-    <div className="border-primary/20 bg-card flex items-start gap-3 rounded-lg border p-4 shadow-lg">
+    <div className="border-primary/20 bg-card flex items-start gap-3 rounded-lg border p-4">
       <Icon className="text-primary mt-0.5 h-5 w-5 shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="text-foreground text-sm font-medium">{title}</p>

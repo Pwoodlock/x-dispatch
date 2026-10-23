@@ -18,7 +18,10 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['Roboto', 'system-ui', 'sans-serif'],
-        mono: ['Roboto Mono', 'monospace'],
+        // The readout face. B612 is proportional, but its digits share one width (tabular).
+        mono: ['B612', 'monospace'],
+        // True fixed-width text, for content laid out in columns of characters (licence ASCII art).
+        code: ['ui-monospace', 'Menlo', 'Consolas', 'monospace'],
       },
       fontSize: {
         // Dense readouts only (flight strip, info panel stats, chart ticks, compact badges).
@@ -55,10 +58,6 @@ module.exports = {
         info: {
           DEFAULT: 'oklch(var(--info) / <alpha-value>)',
           foreground: 'oklch(var(--info-foreground) / <alpha-value>)',
-        },
-        violet: {
-          DEFAULT: 'oklch(var(--violet) / <alpha-value>)',
-          foreground: 'oklch(var(--violet-foreground) / <alpha-value>)',
         },
         muted: {
           DEFAULT: 'oklch(var(--muted) / <alpha-value>)',
@@ -118,12 +117,13 @@ module.exports = {
           ils: 'oklch(var(--chart-ils) / <alpha-value>)',
           runway: 'oklch(var(--chart-runway) / <alpha-value>)',
           taxiway: 'oklch(var(--chart-taxiway) / <alpha-value>)',
+          route: 'oklch(var(--chart-route) / <alpha-value>)',
         },
       },
       borderRadius: {
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 1px)',
+        sm: 'calc(var(--radius) - 2px)',
       },
       keyframes: {
         'accordion-down': {

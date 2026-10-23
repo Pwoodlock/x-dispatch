@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlanEndpoint } from '@/lib/flightplan/builder/types';
 import type { EnrichedFlightPlan } from '@/types/fms';
 import { useFlightPlanStore } from './flightPlanStore';
-import { usePlanBuilderStore } from './planBuilderStore';
+import { routerOwnsRoute, usePlanBuilderStore } from './planBuilderStore';
 
 // electron-log's renderer transport waits for the main process, which a node test never has.
 vi.mock('@/lib/utils/loggerRenderer', () => {
@@ -221,5 +221,24 @@ describe('planBuilderStore — Explore flyout', () => {
     const builder = usePlanBuilderStore.getState();
     expect(builder.isOpen).toBe(true);
     expect(builder.explore).toBeNull();
+  });
+});
+
+describe('planBuilderStore — whose route it is', () => {
+  it('the router owns the route it wrote', () => {
+    expect(routerOwnsRoute({ routeText: 'XATEL UY30 MTL', autoRoutedText: 'XATEL UY30 MTL' })).toBe(
+      true
+    );
+  });
+
+  it('a route the pilot typed or edited is theirs, so a class change keeps it', () => {
+    expect(routerOwnsRoute({ routeText: 'BX LGM TFN', autoRoutedText: null })).toBe(false);
+    expect(
+      routerOwnsRoute({ routeText: 'XATEL UY30 MTL DCT', autoRoutedText: 'XATEL UY30 MTL' })
+    ).toBe(false);
+  });
+
+  it('an empty field is nobody’s route', () => {
+    expect(routerOwnsRoute({ routeText: '', autoRoutedText: '' })).toBe(false);
   });
 });

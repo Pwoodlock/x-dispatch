@@ -137,7 +137,7 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
                   {(tool.args || tool.delayBeforeXPlaneSec > 0) && (
                     <p className="text-muted-foreground/70 mt-0.5 text-xs">
                       {tool.args && <span className="font-mono">{tool.args}</span>}
-                      {tool.args && tool.delayBeforeXPlaneSec > 0 && ' · '}
+                      {tool.args && tool.delayBeforeXPlaneSec > 0 && ', '}
                       {tool.delayBeforeXPlaneSec > 0 && (
                         <span>
                           {t('settings.companionApps.delayInline', {

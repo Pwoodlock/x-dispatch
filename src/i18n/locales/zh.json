@@ -95,8 +95,8 @@
     "configureXPlanePath": "配置 X-Plane 路径",
     "verifying": "正在检查更改...",
     "upToDate": "已是最新",
-    "firstLaunch": "首次启动 — 正在配置数据库...",
-    "sceneryChanged": "检测到地景更改 — 正在重建...",
+    "firstLaunch": "首次启动: 正在配置数据库...",
+    "sceneryChanged": "检测到地景更改: 正在重建...",
     "parsingGlobal": "正在解析全球机场...",
     "scanningCustom": "正在扫描自定义地景 {{current}}/{{total}}: {{name}}",
     "savingToDb": "正在保存到数据库...",
@@ -109,8 +109,8 @@
     "messages": {
       "checking": "正在检查更改...",
       "upToDate": "全部已是最新",
-      "firstLaunch": "首次启动 — 正在设置数据库...",
-      "sceneryChanged": "检测到地景更改 — 正在重建...",
+      "firstLaunch": "首次启动: 正在设置数据库...",
+      "sceneryChanged": "检测到地景更改: 正在重建...",
       "globalAirports": "正在解析 Global Airports...",
       "customScenery": "正在扫描 Custom Scenery {{current}}/{{total}}",
       "savingDatabase": "正在保存到数据库...",
@@ -164,7 +164,7 @@
     "anyRunway": "任意跑道",
     "anyShort": "任意",
     "alternate": "备降机场",
-    "alternateAt": "备降 · {{value}}",
+    "alternateAt": "备降 {{value}}",
     "noAlternate": "无备降机场",
     "fuel": "总油量",
     "tracks": {
@@ -271,7 +271,7 @@
         "duskArrival": "日落降落"
       },
       "tomorrow": "明天",
-      "scrubLabel": "{{time}}Z · {{phase}}"
+      "scrubLabel": "{{time}}Z {{phase}}"
     },
     "planCleared": "计划已清除",
     "routeCleared": "航路已清除",
@@ -470,7 +470,7 @@
       "favorites": {
         "title": "收藏",
         "description": "点击任意机场面板中的星标即可添加到此处。基地机场显示在最前。",
-        "empty": "尚无收藏机场 — 点击机场面板中的星标即可添加。",
+        "empty": "尚无收藏机场: 点击机场面板中的星标即可添加。",
         "notInAirac": "不在当前 AIRAC 中"
       },
       "actions": {
@@ -498,7 +498,7 @@
       "description": "从 SimBrief 导入飞行计划",
       "pilotId": "飞行员 ID 或用户名",
       "pilotIdHelp": "你的 SimBrief 用户名（Navigraph 别名）或数字飞行员 ID",
-      "pilotIdNote": "两者都可以。用户名是你登录时使用的别名；飞行员 ID 在 simbrief.com → Account Settings 中。",
+      "pilotIdNote": "两者都可以。用户名是你登录时使用的别名；飞行员 ID 在 simbrief.com > Account Settings 中。",
       "testSuccess": "找到飞行计划",
       "needAccount": "没有 SimBrief 账户？",
       "freeService": "SimBrief 是免费的飞行计划服务",
@@ -528,7 +528,7 @@
       "betaUpdatesNone": "目前没有测试版。",
       "title": "关于",
       "description": "X-Plane 飞行签派和机场可视化",
-      "updateAvailable": "有可用更新 — v{{version}}",
+      "updateAvailable": "有可用更新: v{{version}}",
       "upToDate": "已是最新版本",
       "checkForUpdates": "检查更新",
       "checkingForUpdates": "正在检查更新…",
@@ -886,7 +886,7 @@
       "empty": {
         "noPath": "未配置 X-Plane 路径。",
         "noPathCta": "打开 X-Plane 设置",
-        "noLog": "尚无日志 — X-Plane 在此安装中是否至少启动过一次？",
+        "noLog": "尚无日志: X-Plane 在此安装中是否至少启动过一次？",
         "allClear": "未发现明显问题。",
         "noMatches": "没有条目匹配当前筛选。"
       },
@@ -1024,8 +1024,8 @@
       "standby": "备用",
       "simOffline": "X-Plane 未运行",
       "toast": {
-        "activeSet": "{{radio}} 主用 → {{freq}}",
-        "standbySet": "{{radio}} 备用 → {{freq}}",
+        "activeSet": "{{radio}} 主用: {{freq}}",
+        "standbySet": "{{radio}} 备用: {{freq}}",
         "failed": "无法调谐 {{radio}}"
       }
     },
@@ -1134,7 +1134,7 @@
     },
     "gateway": {
       "updateAvailable": "Gateway 有更新的版本",
-      "credit": "{{artist}} · {{date}}",
+      "credit": "{{artist}}，{{date}}",
       "viewOnGateway": "在 Gateway 上查看"
     },
     "taxiRoute": {
@@ -1151,7 +1151,7 @@
       "pointsPlaced": "{{count}} 个点",
       "export": "保存滑行路线",
       "exportSuccess": "滑行路线已保存",
-      "summary": "经 {{taxiways}} · {{distance}}"
+      "summary": "经 {{taxiways}}，{{distance}}"
     },
     "frequencies": "频率"
   },
@@ -1317,12 +1317,12 @@
     "selectAircraft": "选择飞机",
     "spawnErrorAccess": "Windows 阻止了启动。请右键单击 X-Dispatch，选择「以管理员身份运行」，然后重试。",
     "spawnErrorMissing": "在配置路径中找不到 X-Plane 可执行文件。请在「设置」中检查 X-Plane 安装路径。",
-    "spawnErrorGeneric": "无法启动 X-Plane。请查看日志了解详情（设置 → 日志）。",
+    "spawnErrorGeneric": "无法启动 X-Plane。请查看日志了解详情（设置 > 日志）。",
     "spawnErrorNeedsAdmin": "Windows 拒绝启动 X-Plane。可能需要管理员权限，或被杀毒软件阻止。请尝试以管理员身份运行 X-Dispatch。",
     "spawnErrorAccessBlocked": "X-Dispatch 已以管理员身份运行，但 Windows 仍拒绝启动 X-Plane，因此不是权限问题。很可能是杀毒软件或「受控文件夹访问」阻止了它。请允许 X-Plane 所在文件夹后重试。",
     "changeFlightRejected": "X-Plane 未接受此飞行：{{message}}",
     "spawnErrorAlreadyRunning": "X-Plane 已在运行。请改用「更改飞行」按钮。",
-    "spawnErrorPathNotConfigured": "尚未配置 X-Plane 安装路径。请在「设置 → X-Plane 安装」中设置。",
+    "spawnErrorPathNotConfigured": "尚未配置 X-Plane 安装路径。请在「设置 > X-Plane 安装」中设置。",
     "spawnErrorInvalidConfig": "飞行配置不完整。请选择飞机和出发点后重试。",
     "aircraft": {
       "title": "飞机",
@@ -1649,7 +1649,7 @@
       "toggle": "切换",
       "lock": "锁定",
       "unlock": "解锁",
-      "tabStats": "{{total}} 个附加组件 · {{enabled}} 开 · {{disabled}} 关",
+      "tabStats": "{{total}} 个附加组件，{{enabled}} 开，{{disabled}} 关",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1665,7 +1665,7 @@
       "deleted": "已删除 {{name}}",
       "deleteFailed": "删除失败",
       "packages": "{{count}} 个地景包",
-      "tabStats": "{{total}} 个包 · {{enabled}} 开 · {{disabled}} 关",
+      "tabStats": "{{total}} 个包，{{enabled}} 开，{{disabled}} 关",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
       "unsafeMode": "不安全",
@@ -1767,7 +1767,7 @@
     "title": "从 SimBrief 导入",
     "description": "从 SimBrief 获取最新飞行计划",
     "notConfigured": "SimBrief 未配置",
-    "configurePilotId": "请在 设置 → SimBrief 中填写你的 SimBrief 用户名或飞行员 ID",
+    "configurePilotId": "请在 设置 > SimBrief 中填写你的 SimBrief 用户名或飞行员 ID",
     "fetching": "正在获取飞行计划...",
     "fetchError": "获取飞行计划失败",
     "ready": "准备获取",
@@ -1804,15 +1804,15 @@
     },
     "briefing": {
       "sigmetsTitle": "有效 SIGMET ({{count}})",
-      "sigmetsDesc": "沿航路的重大气象警报 — 颠簸、积冰、雷暴等",
+      "sigmetsDesc": "沿航路的重大气象警报: 颠簸、积冰、雷暴等",
       "noSigmets": "沿航路无重大气象警报",
       "firTitle": "FIR 航路",
       "firDesc": "航班经过的飞行情报区",
       "notamsTitle": "NOTAM",
-      "notamsDesc": "航行通告 — 机场关闭、跑道变更及其他运行提示",
+      "notamsDesc": "航行通告: 机场关闭、跑道变更及其他运行提示",
       "noNotams": "暂无 NOTAM",
       "transAltTitle": "过渡高度",
-      "transAltDesc": "在本场气压（QNH）和标准气压（STD）之间切换的高度 — 请相应调整高度表"
+      "transAltDesc": "在本场气压（QNH）和标准气压（STD）之间切换的高度: 请相应调整高度表"
     },
     "errors": {
       "invalid_user": "这看起来不像 SimBrief 用户名或飞行员 ID。",
@@ -2166,7 +2166,7 @@
     "centerlineOffset": "偏离中线{{side}} {{m}} 米",
     "left": "左",
     "right": "右",
-    "runway": "{{icao}} · 跑道 {{runway}}",
+    "runway": "{{icao}} 跑道 {{runway}}",
     "unknownRunway": "未能识别跑道",
     "showOnMap": "在地图上显示",
     "dismiss": "关闭",
@@ -2235,7 +2235,7 @@
   "analytics": {
     "consent": {
       "title": "帮助改进 X-Dispatch",
-      "description": "共享匿名使用数据，让我们了解哪些功能被使用、应把精力放在哪里。除非你开启，否则保持关闭，可随时在 设置 → 支持 中更改。",
+      "description": "共享匿名使用数据，让我们了解哪些功能被使用、应把精力放在哪里。除非你开启，否则保持关闭，可随时在 设置 > 支持 中更改。",
       "collectedTitle": "共享的内容",
       "collected": "你使用的功能、设置和飞行选项，应用运行情况（启动时间、窗口大小、错误），以及应用和 X-Plane 版本、操作系统和地区。",
       "notCollectedTitle": "绝不共享",

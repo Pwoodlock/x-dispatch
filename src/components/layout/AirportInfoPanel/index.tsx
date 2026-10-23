@@ -108,7 +108,7 @@ function AirportInfoPanel({
         isCollapsed ? 'w-12' : 'w-80'
       )}
     >
-      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm">
+      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
         {/* Collapsed state */}
         <div
           className={cn(
@@ -235,7 +235,7 @@ function AirportInfoPanel({
         {/* Selected position indicator */}
         {selectedStartPosition && (
           <div className="border-border/30 bg-cat-emerald/5 flex items-center justify-between border-b px-4 py-2">
-            <span className="text-cat-emerald/70 text-xs">{t('airportInfo.tabs.start')}</span>
+            <span className="text-cat-emerald/80 text-sm">{t('airportInfo.tabs.start')}</span>
             <span className="text-cat-emerald font-mono text-sm font-medium">
               {selectedStartPosition.name}
             </span>
