@@ -60,7 +60,7 @@ function NoticeRow({ notice }: { notice: ThirdPartyNotice }) {
               <span className="truncate">{notice.repository}</span>
             </Button>
           )}
-          <pre className="bg-secondary/50 text-muted-foreground max-h-72 overflow-auto rounded px-3 py-2 font-mono text-xs leading-snug whitespace-pre-wrap">
+          <pre className="bg-secondary/50 text-muted-foreground font-code max-h-72 overflow-auto rounded px-3 py-2 text-xs leading-snug whitespace-pre-wrap">
             {notice.text}
           </pre>
         </div>

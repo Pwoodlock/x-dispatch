@@ -20,6 +20,8 @@ module.exports = {
         sans: ['Roboto', 'system-ui', 'sans-serif'],
         // The readout face. B612 is proportional, but its digits share one width (tabular).
         mono: ['B612', 'monospace'],
+        // True fixed-width text, for content laid out in columns of characters (licence ASCII art).
+        code: ['ui-monospace', 'Menlo', 'Consolas', 'monospace'],
       },
       fontSize: {
         // Dense readouts only (flight strip, info panel stats, chart ticks, compact badges).
