@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { buildGuidanceRoute, createGuidanceTracker } from '@/lib/taxiGuidance';
-import type { GuidanceDirection } from '@/lib/taxiGuidance';
+import type { GuidanceDirection, GuidanceRoute } from '@/lib/taxiGuidance';
 import { useAppStore } from '@/stores/appStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import { useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
+import type { StartPosition } from '@/types/position';
 
 type PlannerState = ReturnType<typeof useTaxiRouteStore.getState>;
 
@@ -49,6 +50,19 @@ export function guidanceSyncAction(prev: PlannerState, next: PlannerState): Guid
 }
 
 /**
+ * The departure route starts at a gate the aircraft no longer starts from: the pilot picked
+ * another start (a helipad, a runway, another stand) at that airport. A cleared start or one
+ * at another airport leaves the route alone.
+ */
+export function departureLeftBehind(
+  route: Pick<GuidanceRoute, 'icao' | 'gateName'> | null,
+  start: Pick<StartPosition, 'airport' | 'name'> | null
+): boolean {
+  if (!route || !start) return false;
+  return route.icao.toUpperCase() === start.airport.toUpperCase() && route.gateName !== start.name;
+}
+
+/**
  * Main window only: turns the planner's route into the guidance route both the
  * map and the detached strip follow, and drops the departure route once the
  * aircraft has taken off from it.
@@ -85,9 +99,16 @@ export function useTaxiGuidancePublisher(): void {
       if (tracker.update([departure], position)) guidance.clearRoute('departure');
     });
 
+    const unsubStart = useAppStore.subscribe((next, prev) => {
+      if (next.startPosition === prev.startPosition) return;
+      const { departure } = useTaxiGuidanceStore.getState();
+      if (departureLeftBehind(departure, next.startPosition)) guidance.clearRoute('departure');
+    });
+
     return () => {
       unsubPlanner();
       unsubPlane();
+      unsubStart();
     };
   }, []);
 }

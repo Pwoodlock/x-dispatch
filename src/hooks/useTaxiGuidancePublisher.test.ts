@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { TaxiGraph } from '@/lib/taxiGraph';
+import type { GuidanceRoute } from '@/lib/taxiGuidance';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
-import { guidanceSyncAction } from './useTaxiGuidancePublisher';
+import type { StartPosition } from '@/types/position';
+import { departureLeftBehind, guidanceSyncAction } from './useTaxiGuidancePublisher';
 
 type PlannerState = ReturnType<typeof useTaxiRouteStore.getState>;
 
@@ -49,5 +51,25 @@ describe('guidanceSyncAction', () => {
   it('keeps the departure route when the pilot switches to planning the arrival', () => {
     const arrival = { ...base, direction: 'arrival' as const, networkNodeIds: [] };
     expect(guidanceSyncAction(base, arrival)).toBeNull();
+  });
+});
+
+describe('departureLeftBehind', () => {
+  const route = { icao: 'GCHI', gateName: '4' } as GuidanceRoute;
+  const start = (name: string, airport = 'GCHI') => ({ name, airport }) as StartPosition;
+
+  it('drops the departure route when the pilot starts somewhere else at that airport', () => {
+    expect(departureLeftBehind(route, start('H1'))).toBe(true);
+    expect(departureLeftBehind(route, start('H1', 'gchi'))).toBe(true);
+  });
+
+  it('keeps it while the start is still its gate', () => {
+    expect(departureLeftBehind(route, start('4'))).toBe(false);
+  });
+
+  it('keeps it when the start is cleared or at another airport', () => {
+    expect(departureLeftBehind(route, null)).toBe(false);
+    expect(departureLeftBehind(route, start('H1', 'GCLA'))).toBe(false);
+    expect(departureLeftBehind(null, start('H1'))).toBe(false);
   });
 });

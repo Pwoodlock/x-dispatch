@@ -1654,11 +1654,11 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------------
-@fontsource/b612-mono 5.3.0
+@fontsource/b612 5.3.0
 License: OFL-1.1
 Source: https://github.com/fontsource/font-files
 
-Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612Mono-Italic.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612Mono-Bold.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612Mono-BoldItalic.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612)
+Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612-Italic.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612-Bold.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) B612-BoldItalic.ttf: Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

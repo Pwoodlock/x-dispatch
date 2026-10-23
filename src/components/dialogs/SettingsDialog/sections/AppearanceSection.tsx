@@ -63,7 +63,7 @@ function ZoomSlider({
         className="flex-1"
       />
       <span className="text-muted-foreground text-xs">{ZOOM_MAX}%</span>
-      <span className="min-w-[4ch] text-center font-mono text-sm">{display}%</span>
+      <span className="min-w-[4.5ch] text-center font-mono text-sm">{display}%</span>
       {persisted !== 100 && (
         <Button
           variant="ghost"

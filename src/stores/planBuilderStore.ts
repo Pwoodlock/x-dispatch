@@ -136,6 +136,16 @@ function draftKey(state: PlanDraft): string {
   ]);
 }
 
+/**
+ * The route is the router's to replace: it is what the router last wrote. A route the pilot
+ * typed or edited is theirs, and only the pilot changes it.
+ */
+export function routerOwnsRoute(
+  state: Pick<PlanBuilderState, 'routeText' | 'autoRoutedText'>
+): boolean {
+  return state.routeText !== '' && state.routeText === state.autoRoutedText;
+}
+
 /** Takes the planner's plan off the map; a plan loaded from SimBrief or a file stays. */
 function clearDrawnPlan(departure: PlanEndpoint | null, arrival: PlanEndpoint | null): void {
   const map = useFlightPlanStore.getState();

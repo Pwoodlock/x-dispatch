@@ -137,6 +137,16 @@
     outline: 2px solid oklch(var(--ring));
     outline-offset: 2px;
   }
+  /* B612 draws larger than Roboto at the same size; scale it to Roboto's cap height. */
+  .font-mono,
+  .xp-value,
+  .xp-value-primary,
+  code,
+  kbd,
+  pre,
+  samp {
+    font-size-adjust: cap-height 0.711;
+  }
 }
 
 /* X-Plane Typography Utilities */
